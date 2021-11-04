@@ -548,7 +548,7 @@ void timestep(CubeMesh& CM)
 #pragma omp parallel
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
-		CM.VelocityList[i] = 0.99 * CM.VelocityList[i];
+		CM.VelocityList[i] = (1.0 - 0.7 * dt) * CM.VelocityList[i];
 		CM.PositionList[i] = tempp[i];
 	}
 }
@@ -643,7 +643,7 @@ int main(int argc, char const* argv[])
 
 	//myphysics.rbodyvec.reserve(10);
 
-	CubeMesh CM0(10, 5.0, fvec3(-8.0, -5.0, 0.0));
+	CubeMesh CM0(10, 3.0, fvec3(-8.0, -5.0, 0.0));
 
 	//init
 
@@ -664,13 +664,15 @@ int main(int argc, char const* argv[])
 	double ctime = 0.0;
 	double vtime = 0.0;
 
+	double prevtime = 0.0;
+
 	while (!Visualizer::Is_Closed()) {
 		Renderer3D::Clear();
 		//imgui reset
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(300, 450), ImGuiCond_FirstUseEver);
 
 		static bool is_stop = true;
 
@@ -685,23 +687,15 @@ int main(int argc, char const* argv[])
 
 		static bool nextframe = false;
 
-		//physics
-		ctime = Visualizer::GetTime();
-		if (!is_stop || nextframe) {
-			Physics::timestep(CM0);
-			vtime += dt;
-			nextframe = false;
-
-			CM0.UpdataVertarray();
-			CM0.Setdata();
-		}
+		static float realdt = 0.1;
 
 		//imgui
 		{
 
 			ImGui::Begin("SoftCube");
 
-			ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
+			ImGui::Text("Rendering FPS : %.1f", ImGui::GetIO().Framerate);
+			ImGui::Text("Simulation FPS : %.1f", 1.0 / realdt);
 
 			ImGui::Checkbox("stop", &is_stop);
 			if (ImGui::Button("nextframe")) {
@@ -761,6 +755,22 @@ int main(int argc, char const* argv[])
 			}
 
 			ImGui::End();
+		}
+
+		//physics
+		ctime = Visualizer::GetTime();
+
+		if ((!is_stop || nextframe) && ctime - prevtime > 0.8 * dt) {
+
+			realdt	 = ctime - prevtime;
+			prevtime = ctime;
+
+			Physics::timestep(CM0);
+			vtime += dt;
+			nextframe = false;
+
+			CM0.UpdataVertarray();
+			CM0.Setdata();
 		}
 
 		//renderer set

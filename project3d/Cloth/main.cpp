@@ -18,15 +18,17 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-constexpr uint32_t FPS = 60;
+constexpr uint32_t FPS = 30;
 constexpr float dt     = 1.0 / FPS;
 //glfwSwapInterval(1); なので60FPS以下になる。
 //これはモニタやGPUに依るかもしれない。
 
-float mu      = 40;
-float lambda  = 80;
-float bendCof = 1.0;
-float rho     = 0.01;
+float mu      = 80;
+float lambda  = 60;
+float bendCof = 0.10;
+float rho     = 0.0025;
+
+float edgedist = 2.5;
 
 class ClothMesh {
     public:
@@ -85,7 +87,7 @@ class ClothMesh {
 			float vy = -0.5 * length + length * (y / float(N - 1));
 			for (uint32_t x = 0; x < N; x++) {
 				float vx = -0.5 * length + length * (x / float(N - 1));
-				PositionList.emplace_back(fvec3(vx, vy, -vy + 0.5) + bias);
+				PositionList.emplace_back(fvec3(vx, 0.70710 * vy, -0.70710 * vy) + bias);
 				RestPositionList.emplace_back(fvec2(vx, vy) + fvec2(bias.x, bias.y));
 				VelocityList.emplace_back(fvec3(0.0));
 			}
@@ -257,6 +259,7 @@ class ClothMesh {
 	UpdataVertarray()
 	{
 
+#pragma omp parallel
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v				      = PositionList[N * y + x];
@@ -278,6 +281,7 @@ class ClothMesh {
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
+#pragma omp parallel
 		for (uint32_t i = 0; i < 4 * (N - 1) * (N - 1); i++) {
 			fvec3 v0 = fvec3(tvdata[tilist[3 * i + 0]].position);
 			fvec3 v1 = fvec3(tvdata[tilist[3 * i + 1]].position);
@@ -292,6 +296,7 @@ class ClothMesh {
 			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
 		}
 
+#pragma omp parallel
 		for (uint32_t i = 0; i < 2 * N * N; i++) {
 			tvdata[i].normal[0] = NormalSet[i].x;
 			tvdata[i].normal[1] = NormalSet[i].y;
@@ -300,6 +305,8 @@ class ClothMesh {
 			tvdata[i].position[1] += 0.005 * NormalSet[i].y;
 			tvdata[i].position[2] += 0.005 * NormalSet[i].z;
 		}
+
+#pragma omp parallel
 		for (uint32_t i = 0; i < N * N; i++) {
 			lvdata[i].position[0] += 0.005 * NormalSet[i].x;
 			lvdata[i].position[1] += 0.005 * NormalSet[i].y;
@@ -309,15 +316,17 @@ class ClothMesh {
 
 	void Setdata()
 	{
-		tva.setdata(tvdata);
-		lva.setdata(lvdata);
+		tva.vboupdate();
+		lva.vboupdate();
 	}
 
 	void ClearLamda()
 	{
+#pragma omp parallel
 		for (auto& x : ElasticLamdalist) {
 			x = 0.0;
 		}
+#pragma omp parallel
 		for (auto& x : BendLamdalist) {
 			x = 0.0;
 		}
@@ -464,7 +473,7 @@ class ClothMesh {
 
 			float Q = XCot.x * XCot.x + XCot.y * XCot.y + XCot.z * XCot.z;
 
-			std::cout << Q << std::endl;
+			//std::cout << Q << std::endl;
 
 			if (Q > 0.0) {
 				float C = std::sqrt(Q);
@@ -501,6 +510,10 @@ class ClothMesh {
 	void FemBendProjectionJC(std::vector<fvec3>& TempPosition)
 	{
 
+		std::vector<fvec3> dx;
+		dx.resize(4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)));
+
+#pragma omp parallel
 		for (uint32_t i = 0; i < (N - 1) * (N - 1) + 2 * (N - 2) * (N - 2); i++) {
 			fvec3 x0 = TempPosition[InnerEdgeIndList[4 * i + 0]];
 			fvec3 x1 = TempPosition[InnerEdgeIndList[4 * i + 1]];
@@ -516,7 +529,7 @@ class ClothMesh {
 
 			float Q = XCot.x * XCot.x + XCot.y * XCot.y + XCot.z * XCot.z;
 
-			std::cout << Q << std::endl;
+			//std::cout << Q << std::endl;
 
 			if (Q > 0.0) {
 				float C = std::sqrt(Q);
@@ -540,13 +553,23 @@ class ClothMesh {
 
 				float dtdtdlambda = (-C - BendLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
 
-				TempPosition[InnerEdgeIndList[4 * i + 0]] = TempPosition[InnerEdgeIndList[4 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
-				TempPosition[InnerEdgeIndList[4 * i + 1]] = TempPosition[InnerEdgeIndList[4 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
-				TempPosition[InnerEdgeIndList[4 * i + 2]] = TempPosition[InnerEdgeIndList[4 * i + 2]] + dtdtdlambda * (1.0 / mass) * dC2;
-				TempPosition[InnerEdgeIndList[4 * i + 3]] = TempPosition[InnerEdgeIndList[4 * i + 3]] + dtdtdlambda * (1.0 / mass) * dC3;
+				dx[4 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
+				dx[4 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
+				dx[4 * i + 2] = dtdtdlambda * (1.0 / mass) * dC2;
+				dx[4 * i + 3] = dtdtdlambda * (1.0 / mass) * dC3;
 
 				BendLamdalist[i] += dtdtdlambda / (dt * dt);
+			} else {
+				dx[4 * i + 0] = fvec3(0.0);
+				dx[4 * i + 1] = fvec3(0.0);
+				dx[4 * i + 2] = fvec3(0.0);
+				dx[4 * i + 3] = fvec3(0.0);
 			}
+		}
+
+#pragma omp parallel
+		for (uint32_t i = 0; i < 4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)); i++) {
+			TempPosition[InnerEdgeIndList[i]] = TempPosition[InnerEdgeIndList[i]] + dx[i];
 		}
 	}
 
@@ -559,10 +582,10 @@ class ClothMesh {
 		//	TempPosition[i].z = 0.0f;
 		//}
 
-		TempPosition[N * (N - 1)].x = RestPositionList[N * (N - 1)].x;
+		TempPosition[N * (N - 1)].x = RestPositionList[N * (N - 1)].x + 0.5 * edgedist;
 		TempPosition[N * (N - 1)].y = RestPositionList[N * (N - 1)].y;
 		TempPosition[N * (N - 1)].z = 0.0f;
-		TempPosition[N * N - 1].x   = RestPositionList[N * N - 1].x;
+		TempPosition[N * N - 1].x   = RestPositionList[N * N - 1].x - 0.5 * edgedist;
 		TempPosition[N * N - 1].y   = RestPositionList[N * N - 1].y;
 		TempPosition[N * N - 1].z   = 0.0f;
 
@@ -591,23 +614,23 @@ void timestep(ClothMesh& CM)
 		tempp[i]       = CM.PositionList[i] + dt * velocity;
 	}
 
-#pragma omp parallel
 	if (solver == 0)
-		for (uint32_t x = 0; x < 5; x++) {
+		for (uint32_t x = 0; x < 40; x++) {
 			CM.FixedProjection(tempp);
 			CM.FemElasticProjectGS(tempp);
-			CM.FemBendProjection(tempp);
+			CM.FemBendProjectionGS(tempp);
 		}
 	else
-		for (uint32_t x = 0; x < 5; x++) {
+		for (uint32_t x = 0; x < 40; x++) {
 			CM.FixedProjection(tempp);
 			CM.FemElasticProjectJC(tempp);
-			CM.FemBendProjection(tempp);
+			CM.FemBendProjectionJC(tempp);
 		}
 
 #pragma omp parallel
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
+		CM.VelocityList[i] = (1.0 - 0.7 * dt) * CM.VelocityList[i];
 		CM.PositionList[i] = tempp[i];
 	}
 }
@@ -700,7 +723,7 @@ int main(int argc, char const* argv[])
 
 	fvec3 camerap(0.0, 15.0, 20.0);
 
-	ClothMesh CM0(30, 8.0, fvec3(0.0, 0.0, 0.0));
+	ClothMesh CM0(64, 8.0, fvec3(0.0, 0.0, 0.0));
 
 	//init
 
@@ -714,12 +737,14 @@ int main(int argc, char const* argv[])
 	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
 	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
 	renderlist.emplace_back(Renderer3D::drawobject { CM0.tva, nullptr, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { CM0.lva, nullptr, nullptr, nullptr });
+	//renderlist.emplace_back(Renderer3D::drawobject { CM0.lva, nullptr, nullptr, nullptr });
 
 	//rendering loop
 
 	double ctime = 0.0;
 	double vtime = 0.0;
+
+	double prevtime = 0.0;
 
 	while (!Visualizer::Is_Closed()) {
 		Renderer3D::Clear();
@@ -741,16 +766,7 @@ int main(int argc, char const* argv[])
 
 		static bool nextframe = false;
 
-		//physics
-		ctime = Visualizer::GetTime();
-		if (!is_stop || nextframe) {
-			Physics::timestep(CM0);
-			vtime += dt;
-			nextframe = false;
-
-			CM0.UpdataVertarray();
-			CM0.Setdata();
-		}
+		static double realdt = 0.1;
 
 		//imgui
 		{
@@ -758,6 +774,7 @@ int main(int argc, char const* argv[])
 			ImGui::Begin("Cloth");
 
 			ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
+			ImGui::Text("Simulation FPS : %.1f", 1.0 / realdt);
 
 			ImGui::Checkbox("stop", &is_stop);
 			if (ImGui::Button("nextframe")) {
@@ -799,6 +816,8 @@ int main(int argc, char const* argv[])
 			ImGui::SliderFloat("lambda", &lambda, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 			ImGui::SliderFloat("Bending", &bendCof, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 
+			ImGui::SliderFloat("length", &edgedist, -6.0f, 6.0f);
+
 			ImGui::Text("realtime = %.1f", ctime);
 			ImGui::Text("virtualtime = %.1f", vtime);
 
@@ -808,13 +827,28 @@ int main(int argc, char const* argv[])
 
 				for (uint32_t i = 0; i < (CM0.N * CM0.N); i++) {
 					CM0.PositionList[i].x = CM0.RestPositionList[i].x;
-					CM0.PositionList[i].y = CM0.RestPositionList[i].y;
-					CM0.PositionList[i].z = CM0.RestPositionList[i].y + 0.5;
+					CM0.PositionList[i].y = 0.70710 * CM0.RestPositionList[i].y;
+					CM0.PositionList[i].z = -0.70710 * CM0.RestPositionList[i].y;
 					CM0.VelocityList[i]   = fvec3(0.0);
 				}
 			}
 
 			ImGui::End();
+		}
+
+		//physics
+		ctime = Visualizer::GetTime();
+		if ((!is_stop || nextframe) && ctime - prevtime > 0.8 * dt) {
+
+			realdt	 = ctime - prevtime;
+			prevtime = ctime;
+
+			Physics::timestep(CM0);
+			vtime += dt;
+			nextframe = false;
+
+			CM0.UpdataVertarray();
+			CM0.Setdata();
 		}
 
 		//renderer set

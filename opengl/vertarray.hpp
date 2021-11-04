@@ -12,6 +12,8 @@ struct vertex {
 	uint32_t type;
 };
 
+//todo unique_ptrで書き換える
+
 class vertarray {
     protected:
 	uint32_t size, isize;
