@@ -28,6 +28,10 @@ target_include_directories(Program PRIVATE
 	../..
 )
 
+target_compile_options(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
+)
+
 if (APPLE)
 	link_directories(Program
 		"/usr/local/lib"

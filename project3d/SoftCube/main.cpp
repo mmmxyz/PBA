@@ -223,7 +223,7 @@ class CubeMesh {
 	{
 
 		//z+
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v					  = PositionList[N * N * y + N * (N - 1) + x];
@@ -236,7 +236,7 @@ class CubeMesh {
 			}
 		}
 		//z-
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v					  = PositionList[N * N * y + N - 1 - x];
@@ -250,7 +250,7 @@ class CubeMesh {
 		}
 
 		//x+
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t z = 0; z < N; z++) {
 				fvec3 v					  = PositionList[N * N * y + N * N - 1 - N * z];
@@ -264,7 +264,7 @@ class CubeMesh {
 		}
 
 		//x-
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t z = 0; z < N; z++) {
 				fvec3 v					  = PositionList[N * N * y + N * z];
@@ -278,7 +278,7 @@ class CubeMesh {
 		}
 
 		//y+
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t z = 0; z < N; z++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v					  = PositionList[N * N * (N - 1) + N * z + (N - 1) - x];
@@ -292,7 +292,7 @@ class CubeMesh {
 		}
 
 		//y-
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t z = 0; z < N; z++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v					  = PositionList[N * N * 0 + N * z + x];
@@ -309,11 +309,11 @@ class CubeMesh {
 
 		std::vector<fvec3> NormalSet(6 * N * N);
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 12 * (N - 1) * (N - 1); i++) {
 			fvec3 v0 = fvec3(tvdata[tilist[3 * i + 0]].position);
 			fvec3 v1 = fvec3(tvdata[tilist[3 * i + 1]].position);
@@ -328,7 +328,7 @@ class CubeMesh {
 			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 6 * N * N; i++) {
 			tvdata[i].normal[0] = NormalSet[i].x;
 			tvdata[i].normal[1] = NormalSet[i].y;
@@ -344,7 +344,7 @@ class CubeMesh {
 
 	void ClearLamda()
 	{
-#pragma omp parallel
+#pragma omp parallel for
 		for (auto& x : Lamdalist) {
 			x = 0.0;
 		}
@@ -411,11 +411,11 @@ class CubeMesh {
 	void FemProjectJC(std::vector<fvec3>& TempPosition)
 	{
 
-		std::vector<fvec3> dx;
-		dx.resize(4 * 6 * (N - 1) * (N - 1) * (N - 1));
+		std::vector<fvec3> dx(4 * 6 * (N - 1) * (N - 1) * (N - 1));
 
-#pragma omp parallel for shared(dx)
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 6 * (N - 1) * (N - 1) * (N - 1); i++) {
+
 			fvec3 X0 = RestPositionList[TetIndList[4 * i + 0]];
 			fvec3 X1 = RestPositionList[TetIndList[4 * i + 1]];
 			fvec3 X2 = RestPositionList[TetIndList[4 * i + 2]];
@@ -460,7 +460,7 @@ class CubeMesh {
 				fvec3 dC0 = -(dC1 + dC2 + dC3);
 
 				float dtdtdlambda = (-C - Lamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
-				dtdtdlambda *= 1.2;
+				dtdtdlambda *= 0.5;
 
 				dx[4 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
 				dx[4 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
@@ -476,6 +476,7 @@ class CubeMesh {
 			}
 		}
 
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 4 * 6 * (N - 1) * (N - 1) * (N - 1); i++) {
 			TempPosition[TetIndList[i]] = TempPosition[TetIndList[i]] + dx[i];
 		}
@@ -488,7 +489,7 @@ class CubeMesh {
 		//	TempPosition[i] = RestPositionList[i];
 		//}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < N * N * N; i++) {
 			if (TempPosition[i].y < -12.0)
 				TempPosition[i].y = -12.0;
@@ -496,7 +497,7 @@ class CubeMesh {
 
 		if (rightwall) {
 
-#pragma omp parallel
+#pragma omp parallel for
 			for (uint32_t y = 0; y < N; y++) {
 				for (uint32_t z = 0; z < N; z++) {
 					uint32_t Ind	    = N * N * y + N * z + N - 1;
@@ -505,7 +506,7 @@ class CubeMesh {
 				}
 			}
 
-#pragma omp parallel
+#pragma omp parallel for
 			for (uint32_t y = 0; y < N; y++) {
 				for (uint32_t z = 0; z < N; z++) {
 					uint32_t Ind	  = N * N * y + N * z;
@@ -528,7 +529,7 @@ void timestep(CubeMesh& CM)
 	uint32_t NodeSize = CM.N * CM.N * CM.N;
 	std::vector<fvec3> tempp(NodeSize);
 
-#pragma omp parallel
+#pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		fvec3 velocity = CM.VelocityList[i] + dt * fvec3(0.0, -9.8, 0.0);
 		tempp[i]       = CM.PositionList[i] + dt * velocity;
@@ -545,7 +546,7 @@ void timestep(CubeMesh& CM)
 			CM.FixedProjection(tempp);
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
 		CM.VelocityList[i] = (1.0 - 0.7 * dt) * CM.VelocityList[i];
@@ -573,7 +574,7 @@ int main(int argc, char const* argv[])
 
 	Renderer3D::Init();
 
-	omp_set_num_threads(8);
+	omp_set_num_threads(20);
 
 	uint32_t cagelist[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
 		6, 7, 7, 4, 0, 4, 3, 7, 1, 5, 2, 6 };

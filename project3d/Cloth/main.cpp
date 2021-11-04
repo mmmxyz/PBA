@@ -259,7 +259,7 @@ class ClothMesh {
 	UpdataVertarray()
 	{
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec3 v				      = PositionList[N * y + x];
@@ -278,10 +278,11 @@ class ClothMesh {
 		//normal
 
 		std::vector<fvec3> NormalSet(2 * N * N);
+#pragma omp parallel for
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 4 * (N - 1) * (N - 1); i++) {
 			fvec3 v0 = fvec3(tvdata[tilist[3 * i + 0]].position);
 			fvec3 v1 = fvec3(tvdata[tilist[3 * i + 1]].position);
@@ -296,7 +297,7 @@ class ClothMesh {
 			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 2 * N * N; i++) {
 			tvdata[i].normal[0] = NormalSet[i].x;
 			tvdata[i].normal[1] = NormalSet[i].y;
@@ -306,7 +307,7 @@ class ClothMesh {
 			tvdata[i].position[2] += 0.005 * NormalSet[i].z;
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < N * N; i++) {
 			lvdata[i].position[0] += 0.005 * NormalSet[i].x;
 			lvdata[i].position[1] += 0.005 * NormalSet[i].y;
@@ -322,11 +323,11 @@ class ClothMesh {
 
 	void ClearLamda()
 	{
-#pragma omp parallel
+#pragma omp parallel for
 		for (auto& x : ElasticLamdalist) {
 			x = 0.0;
 		}
-#pragma omp parallel
+#pragma omp parallel for
 		for (auto& x : BendLamdalist) {
 			x = 0.0;
 		}
@@ -389,11 +390,11 @@ class ClothMesh {
 
 	void FemElasticProjectJC(std::vector<fvec3>& TempPosition)
 	{
-		std::vector<fvec3> dx;
-		dx.resize(3 * 2 * (N - 1) * (N - 1));
+		std::vector<fvec3> dx(3 * 2 * (N - 1) * (N - 1));
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 2 * (N - 1) * (N - 1); i++) {
+
 			fvec2 X0 = RestPositionList[TriIndList[3 * i + 0]];
 			fvec2 X1 = RestPositionList[TriIndList[3 * i + 1]];
 			fvec2 X2 = RestPositionList[TriIndList[3 * i + 2]];
@@ -449,7 +450,7 @@ class ClothMesh {
 			}
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 3 * 2 * (N - 1) * (N - 1); i++) {
 			TempPosition[TriIndList[i]] = TempPosition[TriIndList[i]] + dx[i];
 		}
@@ -513,7 +514,7 @@ class ClothMesh {
 		std::vector<fvec3> dx;
 		dx.resize(4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)));
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < (N - 1) * (N - 1) + 2 * (N - 2) * (N - 2); i++) {
 			fvec3 x0 = TempPosition[InnerEdgeIndList[4 * i + 0]];
 			fvec3 x1 = TempPosition[InnerEdgeIndList[4 * i + 1]];
@@ -552,6 +553,7 @@ class ClothMesh {
 				    XCot.z * Cot.w);
 
 				float dtdtdlambda = (-C - BendLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
+				dtdtdlambda *= 0.5;
 
 				dx[4 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
 				dx[4 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
@@ -567,7 +569,7 @@ class ClothMesh {
 			}
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 		for (uint32_t i = 0; i < 4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)); i++) {
 			TempPosition[InnerEdgeIndList[i]] = TempPosition[InnerEdgeIndList[i]] + dx[i];
 		}
@@ -608,7 +610,7 @@ void timestep(ClothMesh& CM)
 	uint32_t NodeSize = CM.N * CM.N;
 	std::vector<fvec3> tempp(NodeSize);
 
-#pragma omp parallel
+#pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		fvec3 velocity = CM.VelocityList[i] + dt * fvec3(0.0, -9.8, 0.0);
 		tempp[i]       = CM.PositionList[i] + dt * velocity;
@@ -627,7 +629,7 @@ void timestep(ClothMesh& CM)
 			CM.FemBendProjectionJC(tempp);
 		}
 
-#pragma omp parallel
+#pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
 		CM.VelocityList[i] = (1.0 - 0.7 * dt) * CM.VelocityList[i];
@@ -655,7 +657,7 @@ int main(int argc, char const* argv[])
 
 	Renderer3D::Init();
 
-	omp_set_num_threads(8);
+	omp_set_num_threads(20);
 
 	uint32_t cagelist[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
 		6, 7, 7, 4, 0, 4, 3, 7, 1, 5, 2, 6 };

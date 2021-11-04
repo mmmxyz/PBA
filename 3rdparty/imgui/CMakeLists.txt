@@ -15,5 +15,3 @@ target_include_directories(imguiLib PUBLIC
 	.
 	./backend
 )
-
-
