@@ -18,15 +18,15 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-constexpr uint32_t FPS = 30;
+constexpr uint32_t FPS = 60;
 constexpr float dt     = 1.0 / FPS;
 //glfwSwapInterval(1); なので60FPS以下になる。
 //これはモニタやGPUに依るかもしれない。
 
-float mu      = 80;
-float lambda  = 60;
-float bendCof = 0.10;
-float rho     = 0.0025;
+float mu      = 50;
+float lambda  = 40;
+float bendCof = 0.20;
+float rho     = 0.003;
 
 float edgedist = 2.5;
 
@@ -378,6 +378,7 @@ class ClothMesh {
 				//std::cout << dC1 << std::endl;
 
 				float dtdtdlambda = (-C - ElasticLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
+				dtdtdlambda *= 1.0;
 
 				TempPosition[TriIndList[3 * i + 0]] = TempPosition[TriIndList[3 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
 				TempPosition[TriIndList[3 * i + 1]] = TempPosition[TriIndList[3 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
@@ -388,7 +389,7 @@ class ClothMesh {
 		}
 	}
 
-	void FemElasticProjectJC(std::vector<fvec3>& TempPosition)
+	void FemElasticProjectJC(std::vector<fvec3>& TempPosition, const uint32_t X)
 	{
 		std::vector<fvec3> dx(3 * 2 * (N - 1) * (N - 1));
 
@@ -437,6 +438,7 @@ class ClothMesh {
 				//std::cout << dC1 << std::endl;
 
 				float dtdtdlambda = (-C - ElasticLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
+				dtdtdlambda *= (X) / 40.0;
 
 				dx[3 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
 				dx[3 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
@@ -511,8 +513,7 @@ class ClothMesh {
 	void FemBendProjectionJC(std::vector<fvec3>& TempPosition)
 	{
 
-		std::vector<fvec3> dx;
-		dx.resize(4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)));
+		std::vector<fvec3> dx(4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2)));
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < (N - 1) * (N - 1) + 2 * (N - 2) * (N - 2); i++) {
@@ -553,7 +554,7 @@ class ClothMesh {
 				    XCot.z * Cot.w);
 
 				float dtdtdlambda = (-C - BendLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
-				dtdtdlambda *= 0.5;
+				dtdtdlambda *= 0.8;
 
 				dx[4 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
 				dx[4 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
@@ -617,17 +618,18 @@ void timestep(ClothMesh& CM)
 	}
 
 	if (solver == 0)
-		for (uint32_t x = 0; x < 40; x++) {
-			CM.FixedProjection(tempp);
+		for (uint32_t x = 0; x < 20; x++) {
 			CM.FemElasticProjectGS(tempp);
 			CM.FemBendProjectionGS(tempp);
-		}
-	else
-		for (uint32_t x = 0; x < 40; x++) {
 			CM.FixedProjection(tempp);
-			CM.FemElasticProjectJC(tempp);
-			CM.FemBendProjectionJC(tempp);
 		}
+	else {
+		for (uint32_t x = 0; x < 20; x++) {
+			CM.FemElasticProjectJC(tempp, x + 10);
+			CM.FemBendProjectionJC(tempp);
+			CM.FixedProjection(tempp);
+		}
+	}
 
 #pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
@@ -725,7 +727,7 @@ int main(int argc, char const* argv[])
 
 	fvec3 camerap(0.0, 15.0, 20.0);
 
-	ClothMesh CM0(64, 8.0, fvec3(0.0, 0.0, 0.0));
+	ClothMesh CM0(50, 8.0, fvec3(0.0, 0.0, 0.0));
 
 	//init
 

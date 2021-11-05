@@ -23,7 +23,7 @@ constexpr float dt     = 1.0 / FPS;
 //glfwSwapInterval(1); なので60FPS以下になる。
 //これはモニタやGPUに依るかもしれない。
 
-float mu     = 40;
+float mu     = 80;
 float lambda = 80;
 float rho    = 0.1;
 
@@ -460,7 +460,7 @@ class CubeMesh {
 				fvec3 dC0 = -(dC1 + dC2 + dC3);
 
 				float dtdtdlambda = (-C - Lamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
-				dtdtdlambda *= 0.5;
+				dtdtdlambda *= 0.15;
 
 				dx[4 * i + 0] = dtdtdlambda * (1.0 / mass) * dC0;
 				dx[4 * i + 1] = dtdtdlambda * (1.0 / mass) * dC1;
@@ -541,7 +541,7 @@ void timestep(CubeMesh& CM)
 			CM.FixedProjection(tempp);
 		}
 	else
-		for (uint32_t x = 0; x < 5; x++) {
+		for (uint32_t x = 0; x < 8; x++) {
 			CM.FemProjectJC(tempp);
 			CM.FixedProjection(tempp);
 		}
