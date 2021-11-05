@@ -5,6 +5,7 @@
 #include <deque>
 #include <algorithm>
 #include <random>
+#include <omp.h>
 
 #include "opengl/visualizer.hpp"
 #include "opengl/vertarray.hpp"
@@ -24,10 +25,10 @@ constexpr float dt     = 1.0 / FPS;
 
 float mu     = 40;
 float lambda = 80;
-float mass   = 1.0;
+float rho    = 0.001;
 
-static float rightedge;
 bool rightwall = false;
+float trans;
 
 class ClothMesh {
     public:
@@ -58,6 +59,8 @@ class ClothMesh {
 
 	int32_t MaterialInd = 0;
 
+	float mass;
+
 	ClothMesh(uint32_t N, uint32_t M, float lengthx, float lengthy, const fvec2& bias)
 	    : N(N)
 	    , M(M)
@@ -85,7 +88,7 @@ class ClothMesh {
 			}
 		}
 
-		rightedge = 0.5 * lengthx;
+		mass = rho * lengthx * lengthy / (M * N);
 
 		for (uint32_t y = 0; y < M - 1; y++) {
 			for (uint32_t x = 0; x < N - 1; x++) {
@@ -182,6 +185,7 @@ class ClothMesh {
 	UpdataVertarray()
 	{
 
+#pragma omp parallel
 		for (uint32_t y = 0; y < M; y++) {
 			for (uint32_t x = 0; x < N; x++) {
 				fvec2 v			      = PositionList[N * y + x];
@@ -197,12 +201,13 @@ class ClothMesh {
 
 	void Setdata()
 	{
-		tva.setdata(tvdata);
-		lva.setdata(lvdata);
+		tva.vboupdate();
+		lva.vboupdate();
 	}
 
 	void ClearLamda()
 	{
+#pragma omp parallel
 		for (auto& x : ElasticLamdalist) {
 			x = 0.0;
 		}
@@ -225,7 +230,7 @@ class ClothMesh {
 			fmat2 E = 0.5 * (F.transpose() * F - fmat2::identity());
 
 			float V = VList[i];
-			V *= 200.0f;
+			V *= 1.0f;
 
 			float W;
 			fmat2 B;
@@ -269,15 +274,15 @@ class ClothMesh {
 	void FixedProjection(std::vector<fvec2>& TempPosition)
 	{
 
-		for (uint32_t i = 0; i <= N * (M - 1); i += N) {
-			TempPosition[i].x = RestPositionList[i].x;
-			TempPosition[i].y = RestPositionList[i].y;
-		}
+#pragma omp parallel
+		for (uint32_t i = 0; i <= N * (M - 1); i += N)
+			TempPosition[i] = RestPositionList[i];
 
 		if (rightwall) {
-			for (uint32_t i = N - 1; i < N * M; i += N) {
-				TempPosition[i].y = RestPositionList[i].y;
-				TempPosition[i].x = rightedge;
+#pragma omp parallel
+			for (uint32_t y = 0; y < M; y++) {
+				TempPosition[N * y + N - 1].x = RestPositionList[N * y + N - 1].x + trans;
+				TempPosition[N * y + N - 1].y = RestPositionList[N * y + N - 1].y;
 			}
 		}
 	}
@@ -293,16 +298,18 @@ void timestep(ClothMesh& CM)
 	uint32_t NodeSize = CM.N * CM.M;
 	std::vector<fvec2> tempp(NodeSize);
 
+#pragma omp parallel
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		fvec2 velocity = CM.VelocityList[i] + dt * fvec2(0.0, -9.8);
 		tempp[i]       = CM.PositionList[i] + dt * velocity;
 	}
 
 	for (uint32_t x = 0; x < 200; x++) {
-		CM.FixedProjection(tempp);
 		CM.FemElasticProject(tempp);
+		CM.FixedProjection(tempp);
 	}
 
+#pragma omp parallel
 	for (uint32_t i = 0; i < NodeSize; i++) {
 		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
 		CM.VelocityList[i] = 0.99 * CM.VelocityList[i];
@@ -329,6 +336,8 @@ int main(int argc, char const* argv[])
 	ImGui_ImplGlfw_InitForOpenGL(Visualizer::GetWindowPtr(), true);
 
 	Renderer2D::Init();
+
+	omp_set_num_threads(1);
 
 	//init
 
@@ -408,7 +417,7 @@ int main(int argc, char const* argv[])
 			ImGui::SliderFloat("lambda", &lambda, 0.0f, 500.0f, "%.lf", ImGuiSliderFlags_Logarithmic);
 
 			ImGui::Checkbox("rightwall", &rightwall);
-			ImGui::SliderFloat("rightwall x", &rightedge, 0.0f, 100.0f, "%.lf");
+			ImGui::SliderFloat("trans", &trans, -50.0f, 50.0f);
 
 			ImGui::Text("realtime = %.1f", ctime);
 			ImGui::Text("virtualtime = %.1f", vtime);

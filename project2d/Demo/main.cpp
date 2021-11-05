@@ -77,14 +77,6 @@ int main(int argc, char const* argv[])
 
 		static bool nextframe = false;
 
-		//physics
-		ctime = Visualizer::GetTime();
-		if (!is_stop || nextframe) {
-			vtime += dt;
-
-			nextframe = false;
-		}
-
 		//imgui
 		{
 
@@ -127,10 +119,12 @@ int main(int argc, char const* argv[])
 			ImGui::End();
 		}
 
-		//renderer set
+		ctime = Visualizer::GetTime();
+		if (!is_stop || nextframe) {
+			vtime += dt;
 
-		//Renderer3D::setcposi(camerap);
-		//Renderer3D::updateUniformobj();
+			nextframe = false;
+		}
 
 		Renderer2D::setcenter(center);
 		Renderer2D::setWH(width, height);
