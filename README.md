@@ -11,7 +11,7 @@ $ mkdir build
 $ cd build
 $ cmake ..
 $ make
-& ./Program
+$ ./Program
 ```
 
 ## サードパーティについて
