@@ -161,6 +161,10 @@ int main(int argc, char const* argv[])
 
 		//physics
 		ctime = Visualizer::GetTime();
+
+		if (ctime >= 10.0)
+			return 0;
+
 		if (!is_stop || nextframe) {
 			vtime += dt;
 

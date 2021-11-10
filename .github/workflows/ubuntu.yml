@@ -1,0 +1,32 @@
+name: ubuntu
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    build:
+        run-on: ubuntu-latest
+        steps:
+        - name: install glfw openmp
+          working-directory: .
+          run: sudo apt-get install libglfw3 libglfw3-dev
+          run: sudo apt-get install libomp-dev
+
+        - name: build Demo
+          working-directory: ./project3d/Demo
+          run: |
+              mkdir build
+              cd build
+              cmake ..
+              make
+
+
+    test:
+        run-on: ubuntu-latest
+        needs: [build]
+        steps:
+        - name: execute Demo
+          working-directory: ./project3d/Demo/build
+          run: ./Program
+
