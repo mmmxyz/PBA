@@ -24,3 +24,15 @@ jobs:
               cmake ..
               make
           working-directory: ./project3d/Demo
+
+        - name: build test
+          run: |
+              mkdir build
+              cd build
+              cmake ..
+              make
+          working-directory: ./test/math
+
+        - name: exec test
+          run: ./Program
+          working-directory: ./test/math
