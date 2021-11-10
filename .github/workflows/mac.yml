@@ -35,4 +35,4 @@ jobs:
 
         - name: exec test
           run: ./Program
-          working-directory: ./test/math
+          working-directory: ./test/math/build
