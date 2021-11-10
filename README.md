@@ -1,6 +1,6 @@
 # PBA
 
-![リナックス](https://github.com/poly-bear/PBA/actions/workflows/linux.yml/badge.svg)
+![ウブンツ](https://github.com/poly-bear/PBA/actions/workflows/ubuntu.yml/badge.svg)
 ![マック](https://github.com/poly-bear/PBA/actions/workflows/mac.yml/badge.svg)
 
 requirements
