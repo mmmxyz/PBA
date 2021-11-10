@@ -95,6 +95,11 @@ void setAffine(void)
 	Affinevec = fvec3(0.0, 0.0, 0.0);
 }
 
+void setLightint(const float& x)
+{
+	Lint = x;
+}
+
 bool Init()
 {
 

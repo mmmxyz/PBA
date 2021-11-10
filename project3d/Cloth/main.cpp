@@ -727,7 +727,10 @@ int main(int argc, char const* argv[])
 
 	fvec3 camerap(0.0, 15.0, 20.0);
 
-	ClothMesh CM0(50, 8.0, fvec3(0.0, 0.0, 0.0));
+	Renderer3D::setclookat(fvec3(0.0, 2.0, 0.0));
+	Renderer3D::setLightint(400.0);
+
+	ClothMesh CM0(50, 8.0, fvec3(0.0, 3.0, 0.0));
 
 	//init
 

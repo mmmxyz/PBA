@@ -31,6 +31,7 @@ void setcposi(const fvec3& x);
 void setclookat(const fvec3& x);
 void setAffine(const fmat3& mat, const fvec3 vec);
 void setAffine(void);
+void setLightint(const float& x);
 
 //void useshadowshader();
 //void userenderershader();
