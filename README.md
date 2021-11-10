@@ -1,5 +1,8 @@
 # PBA
 
+![リナックス](https://github.com/poly-bear/PBA/actions/workflows/linux.yml/badge.svg)
+![マック](https://github.com/poly-bear/PBA/actions/workflows/mac.yml/badge.svg)
+
 requirements
 - GLFW
 - OpenMP
