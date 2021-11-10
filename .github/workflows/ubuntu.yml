@@ -6,7 +6,7 @@ on:
 
 jobs:
     build:
-        run-on: ubuntu-latest
+        runs-on: ubuntu-latest
         steps:
         - name: install glfw openmp
           working-directory: .
@@ -23,7 +23,7 @@ jobs:
 
 
     test:
-        run-on: ubuntu-latest
+        runs-on: ubuntu-latest
         needs: [build]
         steps:
         - name: execute Demo
