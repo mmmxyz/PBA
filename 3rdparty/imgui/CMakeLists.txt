@@ -11,7 +11,10 @@ add_library(imguiLib
 	backend/imgui_impl_opengl3.cpp
 )
 
+find_package(glfw3 REQUIRED)
+
 target_include_directories(imguiLib PUBLIC
 	.
 	./backend
+	${glfw3_INCLUDE_DIRS}
 )
