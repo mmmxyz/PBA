@@ -13,7 +13,12 @@ add_library(imguiLib
 
 find_package(glfw3 REQUIRED)
 
-target_include_directories(imguiLib PUBLIC
+set(EX_INC "")
+if(APPLE)
+	set(EX_INC "/usr/local/include")
+endif()
+
+target_include_directories(imguiLib PRIVATE
 	.
 	./backend
 	${glfw3_INCLUDE_DIRS}
