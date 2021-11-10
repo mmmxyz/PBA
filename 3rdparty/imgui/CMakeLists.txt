@@ -18,8 +18,12 @@ if(APPLE)
 	set(EX_INC "/usr/local/include")
 endif()
 
-target_include_directories(imguiLib PRIVATE
+target_include_directories(imguiLib PUBLIC
 	.
 	./backend
+)
+
+target_include_directories(imguiLib PRIVATE
 	${glfw3_INCLUDE_DIRS}
+	${EX_INC}
 )
