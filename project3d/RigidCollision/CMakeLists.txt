@@ -11,6 +11,7 @@ if(POLICY CMP0072)
 endif()
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(OpenMP REQUIRED)
 
 
 add_subdirectory(../../opengl ../../../opengl/build)
@@ -25,6 +26,10 @@ add_executable(Program main.cpp)
 
 target_include_directories(Program PRIVATE
 	../..
+)
+
+target_compile_options(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
 )
 
 if (APPLE)
@@ -50,4 +55,5 @@ target_link_libraries(Program PRIVATE
 	glfw
 	gladLib
 	${CMAKE_DL_LIBS}
+	${OpenMP_CXX_FLAGS}
 )

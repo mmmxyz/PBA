@@ -22,6 +22,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <omp.h>
+
 constexpr uint32_t FPS = 60;
 constexpr float dt     = 1.0 / FPS;
 //glfwSwapInterval(1); なので60FPS以下になる。
@@ -501,6 +503,7 @@ void timestep()
 
 	std::vector<std::deque<Staticcontact>> Scontactlist(rsize);
 
+#pragma omp parallel for
 	for (uint32_t i = 0; i < rsize; i++) {
 		for (uint32_t j = 0; j < rbodyvec[i].PMeshVertSize; j++) {
 
@@ -535,6 +538,7 @@ void timestep()
 
 	std::vector<std::deque<TriangleInd>> PCList(PairSize);
 
+#pragma omp parallel for
 	for (uint32_t i = 0; i < PairSize; i++) {
 		uint32_t Ind0 = ContactPair[i].x;
 		uint32_t Ind1 = ContactPair[i].y;
@@ -576,6 +580,7 @@ void timestep()
 
 		if (i % 5 == 0) {
 
+#pragma omp parallel for
 			for (uint32_t j = 0; j < PairSize; j++) {
 				std::move(CurrentDcontactlist[j].begin(), CurrentDcontactlist[j].end(), std::back_inserter(Dcontactlist[j]));
 				CurrentDcontactlist[j].clear();
@@ -717,6 +722,8 @@ int main(int argc, char const* argv[])
 
 	ImGui_ImplOpenGL3_Init("#version 460 core");
 	ImGui_ImplGlfw_InitForOpenGL(Visualizer::GetWindowPtr(), true);
+
+	omp_set_num_threads(20);
 
 	Renderer3D::Init();
 
@@ -868,7 +875,7 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[2].tva.settype(2);
 	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(-2.0, 7.8, 0.5), 5.00, 7.00);
+	Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(0.0, 8.2, 0.5), 8.00, 7.00);
 	Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
 	Physics::rbodyvec[3].omega    = fvec3(0.0, 0.0, 0.0);
 	Physics::rbodyvec[3].velocity = fvec3(0.0, 0.0, 1.0);
@@ -876,10 +883,10 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[3].tva.settype(1);
 	Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(0.5, 7.0, -0.5), 2.00, 6.00);
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(8.5, 6.0, -0.5), 2.00, 6.00);
 	Physics::rbodyvec[4].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0));
-	Physics::rbodyvec[4].omega    = fvec3(0.0, 0.0, 0.0);
-	Physics::rbodyvec[4].velocity = fvec3(0.0, 0.0, 1.0);
+	Physics::rbodyvec[4].omega    = fvec3(4.0, 4.0, 5.0);
+	Physics::rbodyvec[4].velocity = fvec3(-12.0, 3.0, 1.0);
 	Physics::rbodyvec[4].tva.setcolor(0.8, 0.3, 0.3, 1.0);
 	Physics::rbodyvec[4].tva.settype(1);
 	Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
@@ -968,6 +975,44 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[4].tva.setcolor(0.3, 0.3, 0.3, 1.0);
 	Physics::rbodyvec[4].tva.settype(1);
 	Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+	*/
+
+	////////////////////////////////////
+
+	//衝突するBunny
+	/*
+	uint32_t objectsize = 4;
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(0.0, -11.0, 0.0), 6.00, 5.00);
+	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
+	Physics::rbodyvec[0].omega    = fvec3(0.0, 4.0, 0.0);
+	Physics::rbodyvec[0].velocity = fvec3(0.0, 4.0, 0.0);
+	Physics::rbodyvec[0].tva.setcolor(0.8, 0.4, 0.3, 1.0);
+	Physics::rbodyvec[0].tva.settype(2);
+	Physics::rbodyvec[0].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(2.0, 2.0, 0.0), 3.00, 3.00);
+	Physics::rbodyvec[1].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0 * 3.1415));
+	Physics::rbodyvec[1].omega    = fvec3(0.0, 0.0, 0.0);
+	Physics::rbodyvec[1].velocity = fvec3(0.0, 0.0, 0.0);
+	Physics::rbodyvec[1].tva.setcolor(0.6, 0.1, 0.7, 1.0);
+	Physics::rbodyvec[1].tva.settype(2);
+	Physics::rbodyvec[1].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(-2.0, 4.0, 2.0), 3.00, 3.00);
+	Physics::rbodyvec[2].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0 * 3.1415));
+	Physics::rbodyvec[2].omega    = fvec3(2.0, 0.0, 2.0);
+	Physics::rbodyvec[2].velocity = fvec3(2.0, 0.0, -2.0);
+	Physics::rbodyvec[2].tva.setcolor(0.6, 0.1, 0.7, 1.0);
+	Physics::rbodyvec[2].tva.settype(2);
+	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(-2.0, 6.0, 2.0), 2.00, 3.00);
+	Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0 * 3.1415));
+	Physics::rbodyvec[3].omega    = fvec3(2.0, 4.0, 0.0);
+	Physics::rbodyvec[3].velocity = fvec3(2.0, -4.0, 0.0);
+	Physics::rbodyvec[3].tva.setcolor(0.6, 0.1, 0.7, 1.0);
+	Physics::rbodyvec[3].tva.settype(2);
+	Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 	*/
 
 	//init
