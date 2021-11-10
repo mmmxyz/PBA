@@ -1,9 +1,10 @@
-# PBA
+# 物理ベースアニメーション
 
 ![ウブンツ](https://github.com/poly-bear/PBA/actions/workflows/ubuntu.yml/badge.svg)
 ![マック](https://github.com/poly-bear/PBA/actions/workflows/mac.yml/badge.svg)
 
-requirements
+## ビルド・実行に必要なもの
+
 - GLFW
 - OpenMP
 
