@@ -1,4 +1,4 @@
-name: ubuntu
+name: mac
 
 on:
     push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest
+        runs-on: macos-11
         steps:
         - name: checkout repo
           uses: actions/checkout@v2
@@ -14,9 +14,8 @@ jobs:
         - name: install glfw openmp
           working-directory: .
           run: |
-              sudo apt-get update
-              sudo apt-get install libglfw3 libglfw3-dev
-              sudo apt-get install libomp-dev
+              brew install glfw
+              brew install libomp
 
         - name: build Demo
           run: |
