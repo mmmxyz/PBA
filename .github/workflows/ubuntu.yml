@@ -25,10 +25,6 @@ jobs:
               make
           working-directory: ./project3d/Demo
 
-    test:
-        runs-on: ubuntu-latest
-        needs: [build]
-        steps:
         - name: execute Demo
           run: ./Program
           working-directory: ./project3d/Demo/build
