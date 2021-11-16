@@ -1042,8 +1042,10 @@ int main(int argc, char const* argv[])
 
 	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
 	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
-	for (uint32_t i = 0; i < objectsize; i++)
+	for (uint32_t i = 0; i < objectsize; i++) {
 		renderlist.emplace_back(Renderer3D::drawobject { Physics::rbodyvec[i].tva, &simasima1, &(Physics::rbodyvec[i].rotq), &(Physics::rbodyvec[i].cm) });
+		renderlist.emplace_back(Renderer3D::drawobject { Physics::rbodyvec[i].lva, nullptr, &(Physics::rbodyvec[i].rotq), &(Physics::rbodyvec[i].cm) });
+	}
 
 	//rendering loop
 

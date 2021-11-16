@@ -13,6 +13,7 @@
 #include "opengl/renderer3d.hpp"
 
 #include "utils/mathfunc/mathfunc.hpp"
+#include "utils/mathfunc/polardecompose.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -56,6 +57,7 @@ class CubeMesh {
 
 	std::vector<fmat3> AList;
 	std::vector<float> VList;
+	std::vector<fquaternion> qList;
 
 	const uint32_t N;
 
@@ -78,6 +80,7 @@ class CubeMesh {
 
 		AList.reserve(6 * (N - 1) * (N - 1) * (N - 1));
 		VList.reserve(6 * (N - 1) * (N - 1) * (N - 1));
+		qList.reserve(6 * (N - 1) * (N - 1) * (N - 1));
 
 		Lamdalist.resize(6 * (N - 1) * (N - 1) * (N - 1));
 
@@ -152,6 +155,7 @@ class CubeMesh {
 
 			AList.emplace_back(fmat3(X1 - X0, X2 - X0, X3 - X0).inverse());
 			VList.emplace_back(fvec3::STP(X1 - X0, X2 - X0, X3 - X0) / 6.0);
+			qList.emplace_back(fquaternion(0.0, 0.0, 0.0, 1.0));
 		}
 
 		tvsize = 6 * N * N;
@@ -375,13 +379,21 @@ class CubeMesh {
 			if (MaterialInd == 0) {
 				W = 5.0 * V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
 				B = 5.0 * V * (2 * mu * F * E + lambda * E.trace() * F);
-			} else {
+			} else if (MaterialInd == 1) {
 				float J	   = F.det();
 				float logJ = std::log(J);
 				if (J < 0.0)
 					logJ = 0.0;
 				W = V * (0.5 * mu * (F.sqlength() - 3) - mu * logJ + 0.5 * lambda * logJ * logJ);
 				B = V * (mu * F - mu * (F.inverse()).transpose() + lambda * logJ * (F.inverse()).transpose());
+			} else if (MaterialInd == 2) {
+				fquaternion q = ExtractRotation(F, 3, qList[i]);
+				qList[i]      = q;
+				fmat3 R	      = q.qtomat();
+				fmat3 S	      = R.transpose() * F;
+				float trS     = S.trace();
+				W	      = V * (0.5 * mu * (F.sqlength() - 2.0 * trS + 3) + 0.5 * lambda * (trS * trS - 6.0 * trS + 9.0));
+				B	      = V * (mu * (F - R) + lambda * (trS - 3) * R);
 			}
 
 			//std::cout << W << std::endl;
@@ -438,13 +450,21 @@ class CubeMesh {
 			if (MaterialInd == 0) {
 				W = 5.0 * V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
 				B = 5.0 * V * (2 * mu * F * E + lambda * E.trace() * F);
-			} else {
+			} else if (MaterialInd == 1) {
 				float J	   = F.det();
 				float logJ = std::log(J);
 				if (J < 0.0)
 					logJ = 0.0;
 				W = V * (0.5 * mu * (F.sqlength() - 3) - mu * logJ + 0.5 * lambda * logJ * logJ);
 				B = V * (mu * F - mu * (F.inverse()).transpose() + lambda * logJ * (F.inverse()).transpose());
+			} else if (MaterialInd == 2) {
+				fquaternion q = ExtractRotation(F, 3, qList[i]);
+				qList[i]      = q;
+				fmat3 R	      = q.qtomat();
+				fmat3 S	      = R.transpose() * F;
+				float trS     = S.trace();
+				W	      = V * (0.5 * mu * (F.sqlength() - 2.0 * trS + 3) + 0.5 * lambda * (trS * trS - 6.0 * trS + 9.0));
+				B	      = V * (mu * (F - R) + lambda * (trS - 3) * R);
 			}
 
 			//std::cout << W << std::endl;
@@ -734,7 +754,7 @@ int main(int argc, char const* argv[])
 
 			ImGui::Combo("Solver", &(Physics::solver), "Gauss-Seidel\0Jacobi\0\0");
 
-			ImGui::Combo("Material", &(CM0.MaterialInd), "Saint Venant-Kirchhoff\0Neo-Hookean\0\0");
+			ImGui::Combo("Material", &(CM0.MaterialInd), "Saint Venant-Kirchhoff\0Neo-Hookean\0Co-Rotational\0\0");
 			ImGui::SliderFloat("mu", &mu, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 			ImGui::SliderFloat("lambda", &lambda, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 
@@ -752,6 +772,9 @@ int main(int argc, char const* argv[])
 				for (uint32_t i = 0; i < (CM0.N * CM0.N * CM0.N); i++) {
 					CM0.PositionList[i] = CM0.RestPositionList[i];
 					CM0.VelocityList[i] = fvec3(0.0);
+
+					for (auto& q : CM0.qList)
+						q = fquaternion(0.0, 0.0, 0.0, 1.0);
 				}
 			}
 

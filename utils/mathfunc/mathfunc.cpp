@@ -29,7 +29,10 @@ T vec2<T>::length() const
 template <class T>
 vec2<T> vec2<T>::normalize() const
 {
-	return (*this) / this->length();
+	double length = this->length();
+	if (length < 0.000001)
+		return vec2<T>(0.0, 0.0);
+	return (*this) / length;
 }
 
 template <class T>
@@ -72,7 +75,10 @@ T vec3<T>::length() const
 template <class T>
 vec3<T> vec3<T>::normalize() const
 {
-	return (*this) / this->length();
+	double length = this->length();
+	if (length < 0.0000001)
+		return vec3<T>(0.0, 0.0, 0.0);
+	return (*this) / length;
 }
 
 //standard io
@@ -95,8 +101,10 @@ mat3<T> vec3<T>::rotation() const
 {
 	T omega	 = this->length();
 	T omega2 = this->sqlength();
-	T cos	 = std::cos(omega);
-	T sin	 = std::sin(omega);
+	if (omega2 < 0.0000001)
+		return mat3<T>::indentity();
+	T cos = std::cos(omega);
+	T sin = std::sin(omega);
 
 	return cos * mat3<T>::indentity() + ((1 - cos) / omega2) * this->tensorproduct(*this) + (sin / omega) * this->skew();
 }
@@ -282,7 +290,10 @@ T quaternion<T>::length() const
 template <class T>
 quaternion<T> quaternion<T>::normalize() const
 {
-	return (*this) / (this->length());
+	double length = this->length();
+	if (length < 0.00000000001)
+		return quaternion<T>(0.0, 0.0, 0.0, 1.0);
+	return (*this) / (length);
 }
 
 template <class T>
@@ -315,6 +326,11 @@ template quaternion<double> slerp(const quaternion<double>& q0, const quaternion
 template <class T>
 quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t)
 {
-	double x = std::acos(q0.dot(q1));
-	return (std::sin(t * x) / std::sin(x)) * q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
+	if (q0.dot(q1) < 0.0) {
+		double x = 0.5 * std::acos(-q0.dot(q1));
+		return (std::sin(t * x) / std::sin(x)) * -q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
+	} else {
+		double x = 0.5 * std::acos(q0.dot(q1));
+		return (std::sin(t * x) / std::sin(x)) * q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
+	}
 }

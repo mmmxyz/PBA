@@ -11,4 +11,5 @@ include_directories(
 
 add_library(mathLib STATIC
 	mathfunc.cpp
+	polardecompose.cpp
 )
