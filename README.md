@@ -20,10 +20,12 @@ $ ./Program
 
 ## サードパーティについて
 
+### ライブラリ
+
 * glad
 * imgui
 
-## resourceディレクトリ以下に配置されたメッシュファイルについて
+### 形状データ
 
 [README.md](/resource/README.md)
 
