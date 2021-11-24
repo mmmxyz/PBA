@@ -18,6 +18,7 @@ if(APPLE)
 	set(EX_INC "/usr/local/include")
 endif()
 
+#imguiの諸関数はproject/main.cppからも参照される
 target_include_directories(imguiLib PUBLIC
 	.
 	./backend
