@@ -3,6 +3,7 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utilscuda/mathfunc/mathfunc.cuh"
+#include "utilscuda/mathfunc/polardecompose.cuh"
 
 __global__ void detarray_kernel(const cudamat3* const array, float* const retptr, const uint32_t N)
 {

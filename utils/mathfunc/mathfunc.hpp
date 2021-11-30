@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+//TODO 宣言と定義を分離する(cudamathと同じ形式にする)
+
 template <class T>
 class vec2;
 template <class T>
@@ -285,11 +287,11 @@ inline vec3<T> operator/(const vec3<T>& v, const U& a)
 {
 	return vec3<T>(v.x / a, v.y / a, v.z / a);
 }
-template <class T, class U>
-inline vec3<T> operator/(const U& a, const vec3<T>& v)
-{
-	return vec3<T>(v.x / a, v.y / a, v.z / a);
-}
+//template <class T, class U>
+//inline vec3<T> operator/(const U& a, const vec3<T>& v)
+//{
+//	return vec3<T>(v.x / a, v.y / a, v.z / a);
+//}
 
 //alias
 
@@ -1107,6 +1109,8 @@ class quaternion {
 	{
 		return quaternion<T>(-x, -y, -z, w);
 	}
+
+	quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t);
 };
 
 //io operator
@@ -1190,9 +1194,6 @@ inline quaternion<T> operator*(const quaternion<T>& q0, const quaternion<T>& q1)
 
 	return quaternion<T>(v, w);
 }
-
-template <class T>
-quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t);
 
 //alias
 

@@ -320,11 +320,11 @@ std::ostream& operator<<(std::ostream& os, const quaternion<T>& q)
 
 //
 
-template quaternion<float> slerp(const quaternion<float>& q0, const quaternion<float>& q1, const float& t);
-template quaternion<double> slerp(const quaternion<double>& q0, const quaternion<double>& q1, const float& t);
+template quaternion<float> quaternion<float>::slerp(const quaternion<float>& q0, const quaternion<float>& q1, const float& t);
+template quaternion<double> quaternion<double>::slerp(const quaternion<double>& q0, const quaternion<double>& q1, const float& t);
 
 template <class T>
-quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t)
+quaternion<T> quaternion<T>::slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t)
 {
 	if (q0.dot(q1) < 0.0) {
 		double x = 0.5 * std::acos(-q0.dot(q1));
