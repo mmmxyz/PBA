@@ -1,43 +1,58 @@
 #include <cstdint>
 #include <cuda_runtime.h>
 
-#include "utils/mathfunc/mathfunc.hpp"
 #include "utilscuda/mathfunc/mathfunc.cuh"
-#include "utilscuda/mathfunc/polardecompose.cuh"
 
-__global__ void detarray_kernel(const cudamat3* const array, float* const retptr, const uint32_t N)
+//template <class T>
+//T func(T x)
+//{
+//	return x + 1;
+//}
+//
+//template <>
+//__host__ __device__ float func(float x)
+//{
+//	printf("hello");
+//	return x + 1;
+//}
+
+__global__ void detarray_kernel(const fmat3* const array0, const fmat3* const array1, fmat3* const retptr, const uint32_t N)
 {
 	uint32_t i = blockDim.x * blockIdx.x + threadIdx.x;
 	if (i < N)
-		retptr[i] = array[i].det();
+		retptr[i] = array0[i] * array1[i];
 }
 
-void detarray(fmat3* const matptr, float* const retptr, const uint32_t& N)
+void detarray(const fmat3* const mata, const fmat3* const matb, fmat3* const retptr, const uint32_t& N)
 {
 
-	cudamat3* d_cmatarray;
-	cudaMalloc(&d_cmatarray, N * sizeof(cudamat3));
+	//func(10.0f);
+
+	fmat3* d_cmatarray0;
+	cudaMalloc(&d_cmatarray0, N * sizeof(fmat3));
 	cudaDeviceSynchronize();
 
-	float* d_retptr;
-	cudaMalloc(&d_retptr, N * sizeof(float));
+	fmat3* d_cmatarray1;
+	cudaMalloc(&d_cmatarray1, N * sizeof(fmat3));
 	cudaDeviceSynchronize();
 
-	//cudamat3 cmatarray[N];
-	//for (uint32_t i = 0; i < N; i++)
-	//	for (uint32_t x = 0; x < 9; x++)
-	//		cmatarray[i].m[x] = matptr[i].m[x];
+	fmat3* d_retptr;
+	cudaMalloc(&d_retptr, N * sizeof(fmat3));
+	cudaDeviceSynchronize();
 
-	cudaMemcpy(d_cmatarray, matptr, N * sizeof(cudamat3), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_cmatarray0, mata, N * sizeof(fmat3), cudaMemcpyHostToDevice);
+	cudaDeviceSynchronize();
+	cudaMemcpy(d_cmatarray1, matb, N * sizeof(fmat3), cudaMemcpyHostToDevice);
 	cudaDeviceSynchronize();
 
 	uint32_t Ds = N / 320;
-	detarray_kernel<<<Ds + 1, 320>>>(d_cmatarray, d_retptr, N);
+	detarray_kernel<<<Ds + 1, 320>>>(d_cmatarray0, d_cmatarray1, d_retptr, N);
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(retptr, d_retptr, N * sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(retptr, d_retptr, N * sizeof(fmat3), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	cudaFree(d_cmatarray);
+	cudaFree(d_cmatarray0);
+	cudaFree(d_cmatarray1);
 	cudaFree(d_retptr);
 }

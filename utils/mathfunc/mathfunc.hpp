@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstdint>
 
 //TODO 宣言と定義を分離する(cudamathと同じ形式にする)
 
@@ -142,11 +143,13 @@ inline vec2<T> operator/(const vec2<T>& v, const U& a)
 {
 	return vec2<T>(v.x / a, v.y / a);
 }
+/*
 template <class T, class U>
 inline vec2<T> operator/(const U& a, const vec2<T>& v)
 {
 	return vec2<T>(v.x / a, v.y / a);
 }
+*/
 
 //alias
 
@@ -358,24 +361,24 @@ std::ostream& operator<<(std::ostream& os, const vec4<T>& vec);
 //operator
 
 template <class T>
-inline vec4<T> operator+(const vec4<T>& v, const vec4<T>& a)
+inline const vec4<T> operator+(const vec4<T>& v, const vec4<T>& a)
 {
 	return vec4<T>(v.x + a.x, v.y + a.y, v.z + a.z, v.w + a.w);
 }
 
 template <class T>
-inline vec4<T> operator-(const vec4<T>& v, const vec4<T>& a)
+inline const vec4<T> operator-(const vec4<T>& v, const vec4<T>& a)
 {
 	return vec4<T>(v.x - a.x, v.y - a.y, v.z - a.z, v.w - a.w);
 }
 
 template <class T, class U>
-inline vec4<T> operator*(const vec4<T>& v, const U& a)
+inline const vec4<T> operator*(const vec4<T>& v, const U& a)
 {
 	return vec4<T>(v.x * a, v.y * a, v.z * a, v.w * a);
 }
 template <class T, class U>
-inline vec4<T> operator*(const U& a, const vec4<T>& v)
+inline const vec4<T> operator*(const U& a, const vec4<T>& v)
 {
 	return vec4<T>(v.x * a, v.y * a, v.z * a, v.w * a);
 }
@@ -440,7 +443,7 @@ class mat2 {
 		return m[0] + m[3];
 	}
 
-	inline mat2<T> transpose()
+	inline mat2<T> transpose() const
 	{
 		T data[4];
 		data[0] = m[0];
