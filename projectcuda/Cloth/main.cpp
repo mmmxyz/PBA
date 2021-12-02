@@ -604,7 +604,7 @@ void timestep(ClothMesh& CM)
 		}
 	} else if (solver == 2) {
 		for (uint32_t x = 0; x < 20; x++) {
-			FemElasticProjectGPU(tempp.data(), CM.ElasticLamdalist.data(), CM.N, lambda, mu);
+			FemElasticProjectGPU(tempp.data(), CM.ElasticLamdalist.data(), CM.N, lambda, mu, CM.mass, dt);
 			//CM.FemBendProjectionJC(tempp);
 			CM.FixedProjection(tempp);
 		}
