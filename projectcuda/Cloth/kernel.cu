@@ -68,7 +68,7 @@ FemElasticProjectGPU_Kernel(fvec3* const tempp, float* const ELambdaList, fvec3*
 			fvec3 dC0 = -(dC1 + dC2);
 
 			float dtdtdlambda = (-C - ELambdaList[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
-			dtdtdlambda /= 2.0f;
+			dtdtdlambda /= 3.0f;
 
 			dx[3 * i + 0] = dtdtdlambda * (1.0f / mass) * dC0;
 			dx[3 * i + 1] = dtdtdlambda * (1.0f / mass) * dC1;
@@ -81,6 +81,15 @@ FemElasticProjectGPU_Kernel(fvec3* const tempp, float* const ELambdaList, fvec3*
 			dx[3 * i + 1] = fvec3(0.0);
 			dx[3 * i + 2] = fvec3(0.0);
 		}
+	}
+}
+
+__global__ void
+updatetempp_Kernel(fvec3* const tempp, const fvec3* const dx, const uint32_t* const TriIndList, const uint32_t N)
+{
+	uint32_t i = blockDim.x * blockIdx.x + threadIdx.x;
+	if (i < 3 * 2 * (N - 1) * (N - 1)) {
+		tempp[TriIndList[i]] = tempp[TriIndList[i]] + dx[i];
 	}
 }
 
@@ -121,10 +130,18 @@ void FemElasticProjectGPU(fvec3* const tempp, float* const ELambdaList, const ui
 	FemElasticProjectGPU_Kernel<<<Ds + 1, 320>>>(d_tempp, d_ELambdaList, d_dx, N, d_RestPositionList, d_TriIndList, d_InnerEdgeIndList, d_InnerEdgeCList, d_AList, d_VList, lambda, mu);
 	cudaDeviceSynchronize();
 
+	//Thsize = 3 * 2 * (N - 1) * (N - 2);
+	//Ds     = Thsize / 320;
+	//updatetempp_Kernel<<<Ds + 1, 320>>>(d_tempp, d_dx, d_TriIndList, N);
+	//cudaDeviceSynchronize();
+
 	cudaMemcpy(ELambdaList, d_ELambdaList, 3 * 2 * (N - 1) * (N - 1) * sizeof(float), cudaMemcpyDeviceToHost);
 	fvec3* dx = new fvec3[3 * 2 * (N - 1) * (N - 1)];
 	cudaMemcpy(dx, d_dx, 3 * 2 * (N - 1) * (N - 1) * sizeof(fvec3), cudaMemcpyDeviceToHost);
+	//cudaMemcpy(tempp, d_tempp, 3 * 2 * (N - 1) * (N - 1) * sizeof(fvec3), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
+
+	//std::cout << dx[0] << std::endl;
 
 	for (uint32_t i = 0; i < 3 * 2 * (N - 1) * (N - 1); i++) {
 		tempp[TriIndListptr[i]] = tempp[TriIndListptr[i]] + dx[i];
