@@ -30,7 +30,7 @@ float lambda  = 50;
 float bendCof = 0.00100;
 float rho     = 0.003;
 
-float edgedist = 0.3;
+float edgedist = 0.1;
 
 class ClothMesh {
     public:
@@ -574,7 +574,7 @@ class ClothMesh {
 
 namespace Physics {
 
-int32_t solver = 0;
+int32_t solver = 2;
 
 void timestep(ClothMesh& CM)
 {
