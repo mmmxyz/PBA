@@ -312,7 +312,7 @@ __host__ __device__ const fmat32 operator+(const fmat32& mat0, const fmat32& mat
 __host__ __device__ const fmat32 operator-(const fmat32& mat0, const fmat32& mat1);
 __host__ __device__ const fmat32 operator*(const fmat32& mat, const float& a);
 __host__ __device__ const fmat32 operator*(const float& a, const fmat32& mat);
-__host__ __device__ const fmat32 operator*(const fmat32& mat0, const fmat32& mat1);
+__host__ __device__ const fmat32 operator*(const fmat32& mat0, const fmat2& mat1);
 __host__ __device__ const fvec3 operator*(const fmat32& mat, const fvec2& vec);
 
 //////////////////////////////////
@@ -969,7 +969,7 @@ __host__ __device__ const fmat32 operator*(const float& a, const fmat32& mat)
 		p[i] = a * mat.m[i];
 	return fmat32(p);
 }
-__host__ __device__ const fmat32 operator*(const fmat32& mat0, const fmat32& mat1)
+__host__ __device__ const fmat32 operator*(const fmat32& mat0, const fmat2& mat1)
 {
 	float p[6];
 	for (uint32_t i = 0; i < 3; i++) {
