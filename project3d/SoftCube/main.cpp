@@ -377,8 +377,8 @@ class CubeMesh {
 			fmat3 B;
 
 			if (MaterialInd == 0) {
-				W = 5.0 * V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
-				B = 5.0 * V * (2 * mu * F * E + lambda * E.trace() * F);
+				W = V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
+				B = V * (2 * mu * F * E + lambda * E.trace() * F);
 			} else if (MaterialInd == 1) {
 				float J	   = F.det();
 				float logJ = std::log(J);
@@ -672,13 +672,13 @@ int main(int argc, char const* argv[])
 	std::vector<Renderer3D::drawobject> edgelist;
 	std::vector<Renderer3D::drawobject> renderlist;
 
-	shadowlist.emplace_back(Renderer3D::drawobject { floor, nullptr, nullptr, nullptr });
-	shadowlist.emplace_back(Renderer3D::drawobject { CM0.tva, nullptr, nullptr, nullptr });
+	shadowlist.emplace_back(floor);
+	shadowlist.emplace_back(CM0.tva);
 
-	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { CM0.tva, nullptr, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { CM0.lva, nullptr, nullptr, nullptr });
+	renderlist.emplace_back(floor, simasima0);
+	renderlist.emplace_back(cage);
+	renderlist.emplace_back(CM0.tva);
+	renderlist.emplace_back(CM0.lva);
 
 	//rendering loop
 

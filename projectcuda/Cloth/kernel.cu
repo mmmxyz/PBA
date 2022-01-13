@@ -19,7 +19,7 @@ static fvec3* d_tempp	    = nullptr;
 static uint32_t* TriIndListptr = nullptr;
 
 __global__ void
-FemElasticProjectGPU_Kernel(fvec3* const tempp, float* const ELambdaList, fvec3* const dx, const uint32_t N, const fvec2* const RestPositionList, const uint32_t* const TriIndList, const uint32_t* const InnerEdgeIndList, const fvec4* const InnerEdgeCList, const fmat2* const AList, const float* const VList, const float lambda, const float mu, const float mass, const float dt)
+FemElasticProjectGPU_Kernel(fvec3* const tempp, float* const ELambdaList, fvec3* const dx, const uint32_t N, const fvec2* const RestPositionList, const uint32_t* const TriIndList, const uint32_t* const InnerEdgeIndList, const fvec4* const InnerEdgeCList, const fmat2* const AList, const float* const VList, const float lambda, const float mu, const float mass, const float dt, const uint32_t X)
 {
 
 	uint32_t i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -65,7 +65,8 @@ FemElasticProjectGPU_Kernel(fvec3* const tempp, float* const ELambdaList, fvec3*
 			fvec3 dC0 = -(dC1 + dC2);
 
 			float dtdtdlambda = (-C - ELambdaList[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
-			dtdtdlambda *= 0.4f;
+			//dtdtdlambda *= min(0.5, (20 - X) / 20.0f);
+			dtdtdlambda *= 0.4;
 
 			dx[3 * i + 0] = dtdtdlambda * (1.0f / mass) * dC0;
 			dx[3 * i + 1] = dtdtdlambda * (1.0f / mass) * dC1;
@@ -116,7 +117,7 @@ void Init(const fvec2* const RestPositionList, uint32_t* const TriIndList, const
 	cudaDeviceSynchronize();
 }
 
-void FemElasticProjectGPU(fvec3* const tempp, float* const ELambdaList, const uint32_t N, const float lambda, const float mu, const float mass, const float dt)
+void FemElasticProjectGPU(fvec3* const tempp, float* const ELambdaList, const uint32_t N, const float lambda, const float mu, const float mass, const float dt, const uint32_t X)
 {
 	cudaMemcpy(d_ELambdaList, ELambdaList, 3 * 2 * (N - 1) * (N - 1) * sizeof(float), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_tempp, tempp, N * N * sizeof(fvec3), cudaMemcpyHostToDevice);
@@ -124,7 +125,7 @@ void FemElasticProjectGPU(fvec3* const tempp, float* const ELambdaList, const ui
 
 	uint32_t Thsize = 2 * (N - 1) * (N - 1);
 	uint32_t Ds	= Thsize / 320;
-	FemElasticProjectGPU_Kernel<<<Ds + 1, 320>>>(d_tempp, d_ELambdaList, d_dx, N, d_RestPositionList, d_TriIndList, d_InnerEdgeIndList, d_InnerEdgeCList, d_AList, d_VList, lambda, mu, mass, dt);
+	FemElasticProjectGPU_Kernel<<<Ds + 1, 320>>>(d_tempp, d_ELambdaList, d_dx, N, d_RestPositionList, d_TriIndList, d_InnerEdgeIndList, d_InnerEdgeCList, d_AList, d_VList, lambda, mu, mass, dt, X);
 	cudaDeviceSynchronize();
 
 	//Thsize = 3 * 2 * (N - 1) * (N - 2);

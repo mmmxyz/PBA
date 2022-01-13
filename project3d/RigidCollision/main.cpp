@@ -1031,18 +1031,15 @@ int main(int argc, char const* argv[])
 	std::vector<Renderer3D::drawobject> edgelist;
 	std::vector<Renderer3D::drawobject> renderlist;
 
-	shadowlist.emplace_back(Renderer3D::drawobject { floor, nullptr, nullptr, nullptr });
+	shadowlist.emplace_back(floor);
 	for (uint32_t i = 0; i < objectsize; i++)
-		shadowlist.emplace_back(Renderer3D::drawobject { Physics::rbodyvec[i].tva, nullptr, &(Physics::rbodyvec[i].rotq), &(Physics::rbodyvec[i].cm) });
+		shadowlist.emplace_back(Physics::rbodyvec[i].tva, Physics::rbodyvec[i].rotq, Physics::rbodyvec[i].cm);
 
-	//edgelist.emplace_back(Renderer3D::drawobject { r0.tva, nullptr, &r0.rotq, &r0.cm });
-	//edgelist.emplace_back(Renderer3D::drawobject { r0.lva, nullptr, &r0.rotq, &r0.cm });
-
-	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
+	renderlist.emplace_back(floor, simasima0);
+	renderlist.emplace_back(cage);
 	for (uint32_t i = 0; i < objectsize; i++) {
-		renderlist.emplace_back(Renderer3D::drawobject { Physics::rbodyvec[i].tva, &simasima1, &(Physics::rbodyvec[i].rotq), &(Physics::rbodyvec[i].cm) });
-		renderlist.emplace_back(Renderer3D::drawobject { Physics::rbodyvec[i].lva, nullptr, &(Physics::rbodyvec[i].rotq), &(Physics::rbodyvec[i].cm) });
+		renderlist.emplace_back(Physics::rbodyvec[i].tva, simasima1, Physics::rbodyvec[i].rotq, Physics::rbodyvec[i].cm);
+		renderlist.emplace_back(Physics::rbodyvec[i].lva, Physics::rbodyvec[i].rotq, Physics::rbodyvec[i].cm);
 	}
 
 	//rendering loop

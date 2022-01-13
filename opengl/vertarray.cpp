@@ -7,6 +7,9 @@
 
 static uint8_t RefCounter[1024] = {};
 
+//todo vboの更新とCPU側のメモリ(va)の更新を分離する
+//これはmain.cppの変更も必要
+
 vertarray::vertarray()
     : size(0)
     , va(nullptr)
@@ -289,6 +292,85 @@ void vertarray::setposition(uint32_t index, float x, float y, float z)
 void vertarray::setposition(uint32_t index, fvec3 V)
 {
 	this->setposition(index, V.x, V.y, V.z);
+}
+
+void vertarray::setposition(uint32_t index, fvec2 V)
+{
+	this->setposition(index, V.x, V.y, 0.0);
+}
+
+void vertarray::setallposition(const fvec3* PositionList, const uint32_t start, const uint32_t end)
+{
+	//end > sizeだとやばいことになる
+	for (uint32_t i = start; i < end; i++) {
+		va[i].position[0] = PositionList[i].x;
+		va[i].position[1] = PositionList[i].y;
+		va[i].position[2] = PositionList[i].z;
+	}
+}
+void vertarray::setallposition(const fvec3* PositionList)
+{
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = PositionList[i].x;
+		va[i].position[1] = PositionList[i].y;
+		va[i].position[2] = PositionList[i].z;
+	}
+}
+
+void vertarray::setallposition(const fvec3 Position, const uint32_t start, const uint32_t end)
+{
+	//end > sizeだとやばいことになる
+	for (uint32_t i = start; i < end; i++) {
+		va[i].position[0] = Position.x;
+		va[i].position[1] = Position.y;
+		va[i].position[2] = Position.z;
+	}
+}
+
+void vertarray::setallposition(const fvec3 Position)
+{
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = Position.x;
+		va[i].position[1] = Position.y;
+		va[i].position[2] = Position.z;
+	}
+}
+
+void vertarray::setallposition(const fvec2* PositionList, const uint32_t start, const uint32_t end)
+{
+	//end > sizeだとやばいことになる
+	for (uint32_t i = start; i < end; i++) {
+		va[i].position[0] = PositionList[i].x;
+		va[i].position[1] = PositionList[i].y;
+		va[i].position[2] = 0.0;
+	}
+}
+void vertarray::setallposition(const fvec2* PositionList)
+{
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = PositionList[i].x;
+		va[i].position[1] = PositionList[i].y;
+		va[i].position[2] = 0.0;
+	}
+}
+
+void vertarray::setallposition(const fvec2 Position, const uint32_t start, const uint32_t end)
+{
+	//end > sizeだとやばいことになる
+	for (uint32_t i = start; i < end; i++) {
+		va[i].position[0] = Position.x;
+		va[i].position[1] = Position.y;
+		va[i].position[2] = 0.0;
+	}
+}
+
+void vertarray::setallposition(const fvec2 Position)
+{
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = Position.x;
+		va[i].position[1] = Position.y;
+		va[i].position[2] = 0.0;
+	}
 }
 
 void vertarray::setuv(uint32_t index, float u, float v)

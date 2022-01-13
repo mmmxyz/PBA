@@ -56,15 +56,15 @@ RigidObbBvhNode::RigidObbBvhNode(const RigidObbBvh& ROB, const fvec3* const Vdat
 	this->Lengthz = std::max(maxZ - minZ, Epsilon);
 
 	uint32_t IBase = LVdata.size();
-	LVdata.emplace_back(fvec3(minX, minY, maxZ));
-	LVdata.emplace_back(fvec3(maxX, minY, maxZ));
-	LVdata.emplace_back(fvec3(maxX, maxY, maxZ));
-	LVdata.emplace_back(fvec3(minX, maxY, maxZ));
+	LVdata.emplace_back(minX, minY, maxZ);
+	LVdata.emplace_back(maxX, minY, maxZ);
+	LVdata.emplace_back(maxX, maxY, maxZ);
+	LVdata.emplace_back(minX, maxY, maxZ);
 
-	LVdata.emplace_back(fvec3(minX, minY, minZ));
-	LVdata.emplace_back(fvec3(maxX, minY, minZ));
-	LVdata.emplace_back(fvec3(maxX, maxY, minZ));
-	LVdata.emplace_back(fvec3(minX, maxY, minZ));
+	LVdata.emplace_back(minX, minY, minZ);
+	LVdata.emplace_back(maxX, minY, minZ);
+	LVdata.emplace_back(maxX, maxY, minZ);
+	LVdata.emplace_back(minX, maxY, minZ);
 
 	LIData.emplace_back(IBase + 0);
 	LIData.emplace_back(IBase + 1);

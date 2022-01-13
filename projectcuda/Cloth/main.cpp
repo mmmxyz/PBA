@@ -604,7 +604,7 @@ void timestep(ClothMesh& CM)
 		}
 	} else if (solver == 2) {
 		for (uint32_t x = 0; x < 20; x++) {
-			FemElasticProjectGPU(tempp.data(), CM.ElasticLamdalist.data(), CM.N, lambda, mu, CM.mass, dt);
+			FemElasticProjectGPU(tempp.data(), CM.ElasticLamdalist.data(), CM.N, lambda, mu, CM.mass, dt, x);
 			//CM.FemBendProjectionJC(tempp);
 			CM.FixedProjection(tempp);
 		}
@@ -719,13 +719,13 @@ int main(int argc, char const* argv[])
 	std::vector<Renderer3D::drawobject> edgelist;
 	std::vector<Renderer3D::drawobject> renderlist;
 
-	shadowlist.emplace_back(Renderer3D::drawobject { floor, nullptr, nullptr, nullptr });
-	shadowlist.emplace_back(Renderer3D::drawobject { CM0.tva, nullptr, nullptr, nullptr });
+	shadowlist.emplace_back(floor);
+	shadowlist.emplace_back(CM0.tva);
 
-	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { CM0.tva, nullptr, nullptr, nullptr });
-	//renderlist.emplace_back(Renderer3D::drawobject { CM0.lva, nullptr, nullptr, nullptr });
+	renderlist.emplace_back(floor, simasima0);
+	renderlist.emplace_back(cage);
+	renderlist.emplace_back(CM0.tva);
+	//renderlist.emplace_back(CM0.lva);
 
 	//rendering loop
 

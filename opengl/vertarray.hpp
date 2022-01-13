@@ -36,8 +36,21 @@ class vertarray {
 	void vboupdate();
 	void setdata(vertex* data);
 	void setilist(uint32_t* ilist);
+
 	void setposition(uint32_t index, float x, float y, float z);
 	void setposition(uint32_t index, fvec3 V);
+	void setposition(uint32_t index, fvec2 V);
+
+	void setallposition(const fvec3* PositionList, const uint32_t start, const uint32_t end);
+	void setallposition(const fvec3* PositionList);
+	void setallposition(const fvec3 Position, const uint32_t start, const uint32_t end);
+	void setallposition(const fvec3 Position);
+
+	void setallposition(const fvec2* PositionList, const uint32_t start, const uint32_t end);
+	void setallposition(const fvec2* PositionList);
+	void setallposition(const fvec2 Position, const uint32_t start, const uint32_t end);
+	void setallposition(const fvec2 Position);
+
 	void setuv(uint32_t index, float u, float v);
 	void setnormal(uint32_t index, float nx, float ny, float nz);
 	void setcolor(uint32_t index, float r, float g, float b, float alpha);

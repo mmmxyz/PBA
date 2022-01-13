@@ -15,6 +15,19 @@ class linevertarray : public vertarray {
 	void draw() const;
 };
 
+class linestripvertarray : public vertarray {
+    public:
+	linestripvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)
+	    : vertarray(size, data, isize, ilist)
+	{
+	}
+	linestripvertarray()
+	    : vertarray()
+	{
+	}
+	void draw() const;
+};
+
 class pointvertarray : public vertarray {
     public:
 	pointvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)

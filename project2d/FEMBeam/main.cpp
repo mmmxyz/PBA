@@ -442,8 +442,8 @@ int main(int argc, char const* argv[])
 
 	std::vector<Renderer2D::drawobject> renderlist;
 
-	renderlist.emplace_back(Renderer2D::drawobject { CM0.tva });
-	renderlist.emplace_back(Renderer2D::drawobject { CM0.lva });
+	renderlist.emplace_back(CM0.tva);
+	renderlist.emplace_back(CM0.lva);
 
 	//rendering loop
 

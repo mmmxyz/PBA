@@ -73,7 +73,8 @@ int main(int argc, char const* argv[])
 	uint32_t* Bunnytilist;
 	uint32_t Bunnytisize;
 
-	LoadOBJtoRenderTriangleMesh("../../../resource/Bunny.obj", &Bunnytvdata, Bunnytvsize, &Bunnytilist, Bunnytisize, fvec3(0.0), 6.0);
+	//LoadOBJtoRenderTriangleMesh("../../../resource/Bunny.obj", &Bunnytvdata, Bunnytvsize, &Bunnytilist, Bunnytisize, fvec3(0.0), 6.0);
+	LoadOBJtoRenderTriangleMesh("../../../resource/Cube.obj", &Bunnytvdata, Bunnytvsize, &Bunnytilist, Bunnytisize, fvec3(0.0, -4.0, 0.0), 5.00);
 
 	trianglevertarray Bunnytva(Bunnytvsize, Bunnytvdata, Bunnytisize, Bunnytilist);
 	Bunnytva.settype(2);
@@ -125,12 +126,12 @@ int main(int argc, char const* argv[])
 	std::vector<Renderer3D::drawobject> edgelist;
 	std::vector<Renderer3D::drawobject> renderlist;
 
-	shadowlist.emplace_back(Renderer3D::drawobject { floor, nullptr, nullptr, nullptr });
-	shadowlist.emplace_back(Renderer3D::drawobject { Bunnytva, nullptr, &rotq, &cm });
+	shadowlist.emplace_back(floor);
+	shadowlist.emplace_back(Bunnytva, rotq, cm);
 
-	renderlist.emplace_back(Renderer3D::drawobject { floor, &simasima0, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { cage, nullptr, nullptr, nullptr });
-	renderlist.emplace_back(Renderer3D::drawobject { Bunnytva, &simasima1, &rotq, &cm });
+	renderlist.emplace_back(floor, simasima0);
+	renderlist.emplace_back(Bunnytva, simasima1, rotq, cm);
+	renderlist.emplace_back(cage);
 
 	//rendering loop
 
@@ -162,9 +163,6 @@ int main(int argc, char const* argv[])
 		//physics
 		ctime = Visualizer::GetTime();
 
-		if (ctime >= 10.0)
-			return 0;
-
 		if (!is_stop || nextframe) {
 			vtime += dt;
 
@@ -174,6 +172,17 @@ int main(int argc, char const* argv[])
 			cm.x = cmx;
 
 			rotq = fquaternion(fvec3(0.1, 0.01 * cmx, 0.1)) * rotq;
+
+			Renderer3D::DrawLine(fvec3(0.0), fvec3(0.1 * cmx, 10.0, 0.1 * cmx));
+			Renderer3D::DrawPoint(fvec3(0.1 * cmx, 10.0, 0.1 * cmx));
+
+			constexpr uint32_t hogesize = 256;
+			fvec3 hogef[hogesize];
+			for (uint32_t i = 0; i < hogesize; i++)
+				hogef[i] = fvec3(i * 0.001 - 9.0, 10 * sin(i * 0.005 * cmx), 0.0);
+			hogef[hogesize - 1] = fvec3(10.0, 10.0, 5.0);
+
+			Renderer3D::DrawPolyLine(hogef, hogesize);
 
 			nextframe = false;
 		}

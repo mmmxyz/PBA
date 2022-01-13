@@ -20,6 +20,19 @@ void linevertarray::draw() const
 	}
 }
 
+void linestripvertarray::draw() const
+{
+	if (ibo != 0) {
+		this->bind();
+		glDrawElements(GL_LINES, isize, GL_UNSIGNED_INT, (void*)0);
+		this->unbind();
+	} else {
+		this->bind();
+		glDrawArrays(GL_LINES, 0, size);
+		this->unbind();
+	}
+}
+
 void pointvertarray::draw() const
 {
 	if (ibo != 0) {

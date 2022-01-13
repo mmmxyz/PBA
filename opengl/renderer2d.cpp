@@ -8,6 +8,7 @@
 #include "opengl/shader.hpp"
 #include "opengl/texture.hpp"
 #include "opengl/renderer2d.hpp"
+#include "opengl/drawobject.hpp"
 
 namespace Renderer2D {
 
@@ -17,6 +18,10 @@ static fvec2 center;
 static float width, height;
 
 static shader rendershader;
+
+static linevertarray Line;
+static pointvertarray Point;
+static linestripvertarray PolyLine;
 
 fmat4 makeperspective()
 {
@@ -62,6 +67,12 @@ bool Init()
 	center = fvec2(0.0, 0.0);
 
 	updateUniformobj();
+
+	Line.resetvertarray(2, nullptr, 0, nullptr);
+	Point.resetvertarray(1, nullptr, 0, nullptr);
+	PolyLine.resetvertarray(1024, nullptr, 0, nullptr);
+
+	return true;
 }
 
 void setcenter(const fvec2& c)
@@ -94,6 +105,66 @@ void Clear()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void DrawLine(const fvec2& x0, const fvec2& x1, const float& r, const float& g, const float& b)
+{
+	Line.setposition(0, x0);
+	Line.setposition(1, x1);
+	Line.setcolor(r, g, b, 1.0);
+	Line.draw();
+}
+
+void DrawLine(const fvec2& x0, const fvec2& x1, const fvec3& color)
+{
+	DrawLine(x0, x1, color.x, color.y, color.z);
+}
+
+void DrawLine(const fvec2& x0, const fvec2& x1)
+{
+	DrawLine(x0, x1, 1.0, 1.0, 1.0);
+}
+
+void DrawPoint(const fvec2& x, const float& r, const float& g, const float& b)
+{
+	Point.setposition(0, x);
+	Point.setcolor(r, g, b, 1.0);
+	Point.draw();
+}
+
+void DrawPoint(const fvec2& x, const fvec3& color)
+{
+	DrawPoint(x, color.x, color.y, color.z);
+}
+
+void DrawPoint(const fvec2& x)
+{
+	DrawPoint(x, 1.0, 1.0, 1.0);
+}
+
+void DrawPolyLine(const fvec2* const X, const uint32_t size, const float& r, const float& g, const float& b)
+{
+
+	uint32_t cnt = 0;
+	for (; size - cnt > 1024; cnt += 1024) {
+		PolyLine.setallposition(X + cnt);
+		PolyLine.setcolor(r, g, b, 1.0);
+		PolyLine.draw();
+	}
+	PolyLine.setallposition(X + cnt, 0, size - cnt);
+	PolyLine.setallposition(X[size - 1], size - cnt, 1024);
+	PolyLine.setcolor(r, g, b, 1.0);
+	PolyLine.draw();
+}
+
+void DrawPolyLine(const fvec2* const X, const uint32_t size, const fvec3& color)
+{
+	DrawPolyLine(X, size, color.x, color.y, color.z);
+}
+
+void DrawPolyLine(const fvec2* const X, const uint32_t size)
+{
+	DrawPolyLine(X, size, 1.0, 1.0, 1.0);
 }
 
 }

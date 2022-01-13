@@ -8,6 +8,7 @@
 #include "opengl/shader.hpp"
 #include "opengl/texture.hpp"
 #include "opengl/renderer3d.hpp"
+#include "opengl/drawobject.hpp"
 
 namespace Renderer3D {
 
@@ -37,6 +38,12 @@ static uint32_t currentshadernum;
 static uint32_t counter;
 
 static uint32_t shadowwidth, shadowheight;
+
+//単純な描画関数のためのdrawobject
+static linevertarray Line;
+static pointvertarray Point;
+static linestripvertarray PolyLine;
+//初期のときはOpenGLの関数が使えないので，それらを呼び出さないデフォルトコンストラクタを呼ぶ
 
 fmat4 makeperspective(const float& near, const float& far, const float& right, const float& left, const float& top,
     const float& bottom)
@@ -230,6 +237,11 @@ bool Init()
 
 	updateUniformobj();
 
+	//setup drawobject
+	Line.resetvertarray(2, nullptr, 0, nullptr);
+	Point.resetvertarray(1, nullptr, 0, nullptr);
+	PolyLine.resetvertarray(1024, nullptr, 0, nullptr);
+
 	return true;
 }
 
@@ -386,8 +398,68 @@ void Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (currentshadernum != 0)
+	if (currentshadernum == 0)
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+void DrawLine(const fvec3& x0, const fvec3& x1, const float& r, const float& g, const float& b)
+{
+	Line.setposition(0, x0);
+	Line.setposition(1, x1);
+	Line.setcolor(r, g, b, 1.0);
+	Line.draw();
+}
+
+void DrawLine(const fvec3& x0, const fvec3& x1, const fvec3& color)
+{
+	DrawLine(x0, x1, color.x, color.y, color.z);
+}
+
+void DrawLine(const fvec3& x0, const fvec3& x1)
+{
+	DrawLine(x0, x1, 1.0, 1.0, 1.0);
+}
+
+void DrawPoint(const fvec3& x, const float& r, const float& g, const float& b)
+{
+	Point.setposition(0, x);
+	Point.setcolor(r, g, b, 1.0);
+	Point.draw();
+}
+
+void DrawPoint(const fvec3& x, const fvec3& color)
+{
+	DrawPoint(x, color.x, color.y, color.z);
+}
+
+void DrawPoint(const fvec3& x)
+{
+	DrawPoint(x, 1.0, 1.0, 1.0);
+}
+
+void DrawPolyLine(const fvec3* const X, const uint32_t size, const float& r, const float& g, const float& b)
+{
+
+	uint32_t cnt = 0;
+	for (; size - cnt > 1024; cnt += 1024) {
+		PolyLine.setallposition(X + cnt);
+		PolyLine.setcolor(r, g, b, 1.0);
+		PolyLine.draw();
+	}
+	PolyLine.setallposition(X + cnt, 0, size - cnt);
+	PolyLine.setallposition(X[size - 1], size - cnt, 1024);
+	PolyLine.setcolor(r, g, b, 1.0);
+	PolyLine.draw();
+}
+
+void DrawPolyLine(const fvec3* const X, const uint32_t size, const fvec3& color)
+{
+	DrawPolyLine(X, size, color.x, color.y, color.z);
+}
+
+void DrawPolyLine(const fvec3* const X, const uint32_t size)
+{
+	DrawPolyLine(X, size, 1.0, 1.0, 1.0);
 }
 
 }
