@@ -13,7 +13,7 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/fileloader/OBJLoader.hpp"
-#include "utils/collision/geometry.hpp"
+#include "utils/collision/primitive.hpp"
 #include "utils/collision/RigidObbBvh.hpp"
 #include "utils/meshprocessing/MeshConv.hpp"
 #include "utils/meshprocessing/IntOnMesh.hpp"

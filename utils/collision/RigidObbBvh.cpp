@@ -8,7 +8,7 @@
 #include "utils/collision/RigidObbBvh.hpp"
 
 #include "utils/mathfunc/mathfunc.hpp"
-#include "utils/collision/geometry.hpp"
+#include "utils/collision/primitive.hpp"
 
 constexpr float Epsilon = 0.000001;
 

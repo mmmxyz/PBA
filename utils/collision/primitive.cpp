@@ -2,7 +2,7 @@
 //#include <iostream>
 
 #include "utils/mathfunc/mathfunc.hpp"
-#include "utils/collision/geometry.hpp"
+#include "utils/collision/primitive.hpp"
 
 static float epsilon = 0.000001;
 

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_library(collisionLib STATIC
 	RigidObbBvh.cpp
-	geometry.cpp
+	primitive.cpp
 )
 
 target_include_directories(collisionLib PRIVATE

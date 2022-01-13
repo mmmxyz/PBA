@@ -2,6 +2,8 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 
+//todo ファイル名をprimitive collisionなどに変える
+
 struct ClosestDV {
 	float dist;
 	fvec3 v;
