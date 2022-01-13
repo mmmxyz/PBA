@@ -603,7 +603,7 @@ void timestep()
 					if (hogec == 1) {
 						fvec3 r0rel = (tempq[Ind0].qtomat().transpose()) * (CF1.r0rel - tempp[Ind0]);
 						fvec3 r1rel = (tempq[Ind1].qtomat().transpose()) * (CF1.r1rel - tempp[Ind1]);
-						CurrentDcontactlist[j].push_back(Dynamiccontact(r0rel, r1rel, CF1.normal, rbodyvec[Ind0], rbodyvec[Ind1], tempp[Ind0], tempp[Ind1], tempq[Ind0], tempq[Ind1]));
+						CurrentDcontactlist[j].emplace_back(r0rel, r1rel, CF1.normal, rbodyvec[Ind0], rbodyvec[Ind1], tempp[Ind0], tempp[Ind1], tempq[Ind0], tempq[Ind1]);
 					}
 				}
 			}
@@ -792,8 +792,6 @@ int main(int argc, char const* argv[])
 	texture simasima1(1024, 1024, images1);
 
 	fvec3 camerap(0.0, 15.0, 20.0);
-
-	Physics::rbodyvec.reserve(10);
 
 	//いろいろ
 	/*

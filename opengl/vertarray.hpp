@@ -12,7 +12,7 @@ struct vertex {
 	uint32_t type;
 };
 
-//todo unique_ptrで書き換える
+//vaが同じ iff vaoが同じ iff vboが
 
 class vertarray {
     protected:
@@ -26,10 +26,15 @@ class vertarray {
 	vertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
 	~vertarray();
 
+	vertarray(const vertarray& v);
+	vertarray(vertarray&& v);
+
+	vertarray& operator=(const vertarray& v);
+	vertarray& operator=(vertarray&& v);
+
 	void resetvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
 	void vboupdate();
 	void setdata(vertex* data);
-	void deletedata();
 	void setilist(uint32_t* ilist);
 	void setposition(uint32_t index, float x, float y, float z);
 	void setposition(uint32_t index, fvec3 V);

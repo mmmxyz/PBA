@@ -5,6 +5,8 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 
+static uint8_t RefCounter[1024] = {};
+
 vertarray::vertarray()
     : size(0)
     , va(nullptr)
@@ -39,6 +41,7 @@ vertarray::vertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilis
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	RefCounter[vao] = 1;
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -65,22 +68,95 @@ vertarray::vertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilis
 		glGenBuffers(1, &ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, isize * sizeof(GLuint), ilist, GL_DYNAMIC_DRAW);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+vertarray::vertarray(const vertarray& v)
+    : size(v.size)
+    , isize(v.isize)
+    , va(v.va)
+    , vao(v.vao)
+    , vbo(v.vbo)
+    , ibo(v.ibo)
+{
+	RefCounter[vao]++;
+}
+
+vertarray::vertarray(vertarray&& v)
+    : size(v.size)
+    , isize(v.isize)
+    , va(v.va)
+    , vao(v.vao)
+    , vbo(v.vbo)
+    , ibo(v.ibo)
+{
+	v.va = nullptr;
+
+	v.vao = 0;
+	v.vbo = 0;
+	v.ibo = 0;
+}
+
+vertarray& vertarray::operator=(const vertarray& v)
+{
+
+	if (vao == v.vao)
+		return *this;
+
+	size  = v.size;
+	isize = v.isize;
+
+	va = v.va;
+
+	vao = v.vao;
+	vbo = v.vbo;
+	ibo = v.ibo;
+
+	RefCounter[vao]++;
+
+	return *this;
+}
+
+vertarray& vertarray::operator=(vertarray&& v)
+{
+	if (vao == v.vao)
+		return *this;
+
+	size  = v.size;
+	isize = v.isize;
+
+	va   = v.va;
+	v.va = nullptr;
+
+	vao = v.vao;
+	vbo = v.vbo;
+	ibo = v.ibo;
+
+	v.vao = 0;
+	v.vbo = 0;
+	v.ibo = 0;
+
+	return *this;
+}
+
 void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilist)
 {
 	//格納しているvao,vboの解放、vaの解放
 	//glDeleteBuffersは0を入力に取ると何もしない。
-	if (va != nullptr)
-		delete[] va;
-	glDeleteBuffers(1, &vao);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ibo);
+
+	if (vao != 0)
+		RefCounter[vao]--;
+
+	if (vao != 0 && RefCounter[vao] == 0) {
+		if (va != nullptr)
+			delete[] va;
+		glDeleteBuffers(1, &vao);
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ibo);
+	}
 
 	this->size  = size;
 	this->isize = isize;
@@ -106,6 +182,7 @@ void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	RefCounter[vao] = 1;
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -132,7 +209,6 @@ void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint
 		glGenBuffers(1, &ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, isize * sizeof(GLuint), ilist, GL_DYNAMIC_DRAW);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	glBindVertexArray(0);
@@ -186,7 +262,8 @@ void vertarray::setdata(vertex* data)
 void vertarray::setilist(uint32_t* ilist)
 {
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindVertexArray(vao);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, isize * sizeof(GLuint), ilist, GL_DYNAMIC_DRAW);
 	glBindVertexArray(0);
@@ -298,20 +375,16 @@ void vertarray::settype(uint32_t type)
 
 vertarray::~vertarray()
 {
-	if (va != nullptr)
-		delete[] va;
-	glDeleteBuffers(1, &vao);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ibo);
-}
+	if (vao != 0)
+		RefCounter[vao]--;
 
-void vertarray::deletedata()
-{
-	if (va != nullptr)
-		delete[] va;
-	glDeleteBuffers(1, &vao);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ibo);
+	if (vao != 0 && RefCounter[vao] == 0) {
+		if (va != nullptr)
+			delete[] va;
+		glDeleteBuffers(1, &vao);
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ibo);
+	}
 }
 
 void vertarray::bind() const
