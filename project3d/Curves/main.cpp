@@ -212,8 +212,8 @@ int main(int argc, char const* argv[])
 					hoge = N - 1;
 				bsplinedegree = hoge;
 				bs.setdegree(bsplinedegree, nullptr);
-				diffbs1.setdegree(bsplinedegree - 1, nullptr);
-				diffbs2.setdegree(bsplinedegree - 2, nullptr);
+				diffbs1 = bs.diff();
+				diffbs2 = diffbs1.diff();
 			} else if (curvetype == 2) {
 			}
 
