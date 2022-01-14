@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(Demo CXX)
+project(Curves CXX)
 
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(CMAKE_CXX_STANDARD 17)
@@ -11,6 +11,7 @@ if(POLICY CMP0072)
 endif()
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(OpenMP REQUIRED)
 
 
 add_subdirectory(../../opengl ../../../opengl/build)
@@ -28,6 +29,10 @@ target_include_directories(Program PRIVATE
 	../..
 )
 
+target_compile_options(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
+)
+
 if (APPLE)
 	link_directories(Program
 		"/usr/local/lib"
@@ -40,6 +45,7 @@ if (APPLE)
 endif()
 
 target_link_libraries(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
 	glLib
 	imguiLib
 	collisionLib

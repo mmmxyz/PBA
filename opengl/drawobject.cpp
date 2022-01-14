@@ -24,11 +24,11 @@ void linestripvertarray::draw() const
 {
 	if (ibo != 0) {
 		this->bind();
-		glDrawElements(GL_LINES, isize, GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(GL_LINE_STRIP, isize, GL_UNSIGNED_INT, (void*)0);
 		this->unbind();
 	} else {
 		this->bind();
-		glDrawArrays(GL_LINES, 0, size);
+		glDrawArrays(GL_LINE_STRIP, 0, size);
 		this->unbind();
 	}
 }
