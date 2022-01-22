@@ -9,16 +9,13 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 
-#include "opengl/vertarray.hpp"
+#include "opengl/drawobject.hpp"
 
 #include "utils/fileloader/OBJLoader.hpp"
 
 bool LoadOBJtoRenderTriangleMesh(
     const char* filename,
-    vertex** const vertdata,
-    uint32_t& vertsize,
-    uint32_t** const ilistdata,
-    uint32_t& ilistsize,
+    trianglevertarray& varray,
     const fvec3& meshoffset,
     const float& meshscale)
 {
@@ -254,21 +251,26 @@ bool LoadOBJtoRenderTriangleMesh(
 		}
 	}
 
-	*vertdata = new vertex[VertIndexList.size()];
-	vertsize  = VertIndexList.size();
+	uint32_t* ilist = new uint32_t[FaceSize * 3];
+	for (uint32_t i = 0; i < FaceSize * 3; i++)
+		ilist[i] = FaceIndexList[i];
+
+	varray.resetvertarray(VertIndexList.size(), nullptr, FaceSize * 3, ilist);
+
+	delete[] ilist;
 
 	for (uint32_t i = 0; i < VertIndexList.size(); i++) {
-		(*vertdata)[i].position[0] = PositionSet[VertIndexList[i].x].x;
-		(*vertdata)[i].position[1] = PositionSet[VertIndexList[i].x].y;
-		(*vertdata)[i].position[2] = PositionSet[VertIndexList[i].x].z;
+		varray[i].position[0] = PositionSet[VertIndexList[i].x].x;
+		varray[i].position[1] = PositionSet[VertIndexList[i].x].y;
+		varray[i].position[2] = PositionSet[VertIndexList[i].x].z;
 
-		(*vertdata)[i].color[0] = 1.0f;
-		(*vertdata)[i].color[1] = 1.0f;
-		(*vertdata)[i].color[2] = 1.0f;
-		(*vertdata)[i].color[3] = 1.0f;
+		varray[i].color[0] = 1.0f;
+		varray[i].color[1] = 1.0f;
+		varray[i].color[2] = 1.0f;
+		varray[i].color[3] = 1.0f;
 
-		(*vertdata)[i].uv[0] = UVSet[VertIndexList[i].y].x;
-		(*vertdata)[i].uv[1] = UVSet[VertIndexList[i].y].y;
+		varray[i].uv[0] = UVSet[VertIndexList[i].y].x;
+		varray[i].uv[1] = UVSet[VertIndexList[i].y].y;
 
 		fvec3 normal(
 		    NormalSet[VertIndexList[i].z].x,
@@ -276,28 +278,19 @@ bool LoadOBJtoRenderTriangleMesh(
 		    NormalSet[VertIndexList[i].z].z);
 		normal = normal.normalize();
 
-		(*vertdata)[i].normal[0] = normal.x;
-		(*vertdata)[i].normal[1] = normal.y;
-		(*vertdata)[i].normal[2] = normal.z;
+		varray[i].normal[0] = normal.x;
+		varray[i].normal[1] = normal.y;
+		varray[i].normal[2] = normal.z;
 
-		(*vertdata)[i].type = 0;
+		varray[i].type = 0;
 	}
-
-	*ilistdata = new uint32_t[FaceSize * 3];
-	ilistsize  = FaceSize * 3;
-
-	for (uint32_t i = 0; i < FaceSize * 3; i++)
-		(*ilistdata)[i] = FaceIndexList[i];
 
 	return true;
 }
 
 bool LoadOBJtoRenderEdgeMesh(
     const char* filename,
-    vertex** const vertdata,
-    uint32_t& vertsize,
-    uint32_t** const ilistdata,
-    uint32_t& ilistsize,
+    linevertarray& varray,
     const fvec3& meshoffset,
     const float& meshscale)
 {
@@ -411,42 +404,43 @@ bool LoadOBJtoRenderEdgeMesh(
 		}
 	}
 
-	*vertdata = new vertex[VertSize + 1];
-	vertsize  = VertSize + 1;
-
-	for (uint32_t i = 0; i < VertSize + 1; i++) {
-		(*vertdata)[i].position[0] = PositionSet[i].x;
-		(*vertdata)[i].position[1] = PositionSet[i].y;
-		(*vertdata)[i].position[2] = PositionSet[i].z;
-
-		(*vertdata)[i].color[0] = 1.0f;
-		(*vertdata)[i].color[1] = 1.0f;
-		(*vertdata)[i].color[2] = 1.0f;
-		(*vertdata)[i].color[3] = 1.0f;
-
-		(*vertdata)[i].normal[0] = 0.0;
-		(*vertdata)[i].normal[1] = 0.0;
-		(*vertdata)[i].normal[2] = 0.0;
-
-		(*vertdata)[i].type = 0;
-	}
-
-	ilistsize = 0;
+	uint32_t ilistsize = 0;
 	for (auto x : AdjacencyList) {
 		ilistsize += 2 * x.size();
 	}
 
-	*ilistdata = new uint32_t[ilistsize];
+	uint32_t* ilistdata = new uint32_t[ilistsize];
 
 	uint32_t counter = 0;
 	for (uint32_t i = 1; i < AdjacencyList.size(); i++) {
 		uint32_t counterinlist = 0;
 		for (const auto& x : AdjacencyList[i]) {
-			(*ilistdata)[counter + 2 * counterinlist]     = i;
-			(*ilistdata)[counter + 2 * counterinlist + 1] = x;
+			ilistdata[counter + 2 * counterinlist]	   = i;
+			ilistdata[counter + 2 * counterinlist + 1] = x;
 			counterinlist++;
 		}
 		counter += 2 * AdjacencyList[i].size();
+	}
+
+	varray.resetvertarray(VertSize + 1, nullptr, ilistsize, ilistdata);
+
+	delete[] ilistdata;
+
+	for (uint32_t i = 0; i < VertSize + 1; i++) {
+		varray[i].position[0] = PositionSet[i].x;
+		varray[i].position[1] = PositionSet[i].y;
+		varray[i].position[2] = PositionSet[i].z;
+
+		varray[i].color[0] = 1.0f;
+		varray[i].color[1] = 1.0f;
+		varray[i].color[2] = 1.0f;
+		varray[i].color[3] = 1.0f;
+
+		varray[i].normal[0] = 0.0;
+		varray[i].normal[1] = 0.0;
+		varray[i].normal[2] = 0.0;
+
+		varray[i].type = 0;
 	}
 
 	return true;

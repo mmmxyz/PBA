@@ -2,34 +2,17 @@
 #include <vector>
 #include <set>
 
-#include "utils/meshprocessing/MeshConv.hpp"
+#include "opengl/drawobject.hpp"
 
 void ConvertPTMtoREM(
     const fvec3* const Pvdata,
     const uint32_t& Pvsize,
     const uint32_t* const Pidata,
     const uint32_t& Pisize,
-    vertex** const Rvdata,
-    uint32_t& Rvsize,
-    uint32_t** const Ridata,
-    uint32_t& Risize)
+    linevertarray& varray)
 {
 
-	Rvsize	= Pvsize;
-	*Rvdata = new vertex[Rvsize];
-
-	for (uint32_t i = 0; i < Rvsize; i++) {
-		(*Rvdata)[i].position[0] = Pvdata[i].x;
-		(*Rvdata)[i].position[1] = Pvdata[i].y;
-		(*Rvdata)[i].position[2] = Pvdata[i].z;
-
-		(*Rvdata)[i].color[0] = 1.0;
-		(*Rvdata)[i].color[1] = 1.0;
-		(*Rvdata)[i].color[2] = 1.0;
-		(*Rvdata)[i].color[3] = 1.0;
-
-		(*Rvdata)[i].type = 0;
-	}
+	uint32_t Rvsize = Pvsize;
 
 	std::vector<std::set<uint32_t>> AdjacencyList(Pvsize);
 
@@ -54,21 +37,38 @@ void ConvertPTMtoREM(
 			AdjacencyList[VI0].insert(VI2);
 	}
 
-	Risize = 0;
+	uint32_t Risize = 0;
 	for (auto x : AdjacencyList) {
 		Risize += 2 * x.size();
 	}
 
-	*Ridata = new uint32_t[Risize];
+	uint32_t* Ridata = new uint32_t[Risize];
 
 	uint32_t counter = 0;
 	for (uint32_t i = 0; i < AdjacencyList.size(); i++) {
 		uint32_t counterinlist = 0;
 		for (const auto& x : AdjacencyList[i]) {
-			(*Ridata)[counter + 2 * counterinlist]	   = i;
-			(*Ridata)[counter + 2 * counterinlist + 1] = x;
+			Ridata[counter + 2 * counterinlist]	= i;
+			Ridata[counter + 2 * counterinlist + 1] = x;
 			counterinlist++;
 		}
 		counter += 2 * AdjacencyList[i].size();
 	}
+
+	varray.resetvertarray(Rvsize, nullptr, Risize, Ridata);
+
+	for (uint32_t i = 0; i < Rvsize; i++) {
+		varray[i].position[0] = Pvdata[i].x;
+		varray[i].position[1] = Pvdata[i].y;
+		varray[i].position[2] = Pvdata[i].z;
+
+		varray[i].color[0] = 1.0;
+		varray[i].color[1] = 1.0;
+		varray[i].color[2] = 1.0;
+		varray[i].color[3] = 1.0;
+
+		varray[i].type = 0;
+	}
+
+	delete[] Ridata;
 }

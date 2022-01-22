@@ -82,14 +82,10 @@ class rigidbody {
 		for (uint32_t i = 0; i < PMeshVertSize; i++)
 			PMeshVert[i] = PMeshVert[i] - cm;
 
-		ConvertPTMtoREM(PMeshVert, PMeshVertSize, PMeshIlist, PMeshIlistSize, &lvdata, lvsize, &lilist, lisize);
-		lva.resetvertarray(lvsize, lvdata, lisize, lilist);
+		ConvertPTMtoREM(PMeshVert, PMeshVertSize, PMeshIlist, PMeshIlistSize, lva);
 		lva.settype(0);
 
-		LoadOBJtoRenderTriangleMesh(
-		    Rfilename,
-		    &tvdata, tvsize, &tilist, tisize, offset - cm, scale);
-		tva.resetvertarray(tvsize, tvdata, tisize, tilist);
+		LoadOBJtoRenderTriangleMesh(Rfilename, tva, offset - cm, scale);
 		tva.settype(2);
 
 		Bvh.ConstructBvh(PMeshVert, PMeshVertSize, PMeshIlist, PMeshIlistSize);
