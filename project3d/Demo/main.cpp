@@ -70,15 +70,10 @@ int main(int argc, char const* argv[])
 	floor.settype(2);
 	floor.vboupdate();
 
-	vertex* Bunnytvdata;
-	uint32_t Bunnytvsize;
-	uint32_t* Bunnytilist;
-	uint32_t Bunnytisize;
+	trianglevertarray Bunnytva;
 
-	//LoadOBJtoRenderTriangleMesh("../../../resource/Bunny.obj", &Bunnytvdata, Bunnytvsize, &Bunnytilist, Bunnytisize, fvec3(0.0), 6.0);
-	LoadOBJtoRenderTriangleMesh("../../../resource/Cube.obj", &Bunnytvdata, Bunnytvsize, &Bunnytilist, Bunnytisize, fvec3(0.0, -4.0, 0.0), 5.00);
+	LoadOBJtoRenderTriangleMesh("../../../resource/Cube.obj", Bunnytva, fvec3(0.0, -4.0, 0.0), 5.00);
 
-	trianglevertarray Bunnytva(Bunnytvsize, Bunnytvdata, Bunnytisize, Bunnytilist);
 	Bunnytva.settype(2);
 	Bunnytva.vboupdate();
 
