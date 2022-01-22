@@ -86,4 +86,12 @@ void DrawPolyLine(const fvec3* const X, const uint32_t size, const float& r, con
 void DrawPolyLine(const fvec3* const X, const uint32_t size, const fvec3& color);
 void DrawPolyLine(const fvec3* const X, const uint32_t size);
 
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2, const float& r, const float& g, const float& b);
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& color);
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2);
+
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3, const float& r, const float& g, const float& b);
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3, const fvec3& color);
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3);
+
 }

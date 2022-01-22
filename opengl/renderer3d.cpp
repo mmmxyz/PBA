@@ -43,6 +43,10 @@ static uint32_t shadowwidth, shadowheight;
 static linevertarray Line;
 static pointvertarray Point;
 static linestripvertarray PolyLine;
+static trianglevertarray Triangle;
+
+static linevertarray TetraLine;
+static trianglevertarray TetraTri;
 //初期のときはOpenGLの関数が使えないので，それらを呼び出さないデフォルトコンストラクタを呼ぶ
 
 fmat4 makeperspective(const float& near, const float& far, const float& right, const float& left, const float& top,
@@ -241,6 +245,39 @@ bool Init()
 	Line.resetvertarray(2, nullptr, 0, nullptr);
 	Point.resetvertarray(1, nullptr, 0, nullptr);
 	PolyLine.resetvertarray(1024, nullptr, 0, nullptr);
+	Triangle.resetvertarray(3, nullptr, 0, nullptr);
+
+	uint32_t hoge[12];
+	hoge[0]	 = 0;
+	hoge[1]	 = 1;
+	hoge[2]	 = 0;
+	hoge[3]	 = 2;
+	hoge[4]	 = 0;
+	hoge[5]	 = 3;
+	hoge[6]	 = 1;
+	hoge[7]	 = 2;
+	hoge[8]	 = 1;
+	hoge[9]	 = 3;
+	hoge[10] = 2;
+	hoge[11] = 3;
+	TetraLine.resetvertarray(4, nullptr, 12, hoge);
+
+	hoge[0] = 0;
+	hoge[1] = 2;
+	hoge[2] = 1;
+
+	hoge[3] = 1;
+	hoge[4] = 2;
+	hoge[5] = 3;
+
+	hoge[6] = 0;
+	hoge[7] = 1;
+	hoge[8] = 3;
+
+	hoge[9]	 = 0;
+	hoge[10] = 3;
+	hoge[11] = 2;
+	TetraTri.resetvertarray(4, nullptr, 12, hoge);
 
 	return true;
 }
@@ -460,6 +497,53 @@ void DrawPolyLine(const fvec3* const X, const uint32_t size, const fvec3& color)
 void DrawPolyLine(const fvec3* const X, const uint32_t size)
 {
 	DrawPolyLine(X, size, 1.0, 1.0, 1.0);
+}
+
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2, const float& r, const float& g, const float& b)
+{
+
+	Triangle.setposition(0, x0);
+	Triangle.setposition(1, x1);
+	Triangle.setposition(2, x2);
+	Triangle.setcolor(r, g, b, 1.0);
+	Triangle.draw();
+}
+
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& color)
+{
+	DrawTriangle(x0, x1, x2, color.x, color.y, color.z);
+}
+void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2)
+{
+
+	DrawTriangle(x0, x1, x2, 1.0, 1.0, 1.0);
+}
+
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3, const float& r, const float& g, const float& b)
+{
+	TetraTri.setposition(0, x0);
+	TetraTri.setposition(1, x1);
+	TetraTri.setposition(2, x2);
+	TetraTri.setposition(3, x3);
+	TetraTri.setcolor(r, g, b, 1.0);
+	TetraTri.draw();
+
+	TetraLine.setposition(0, x0);
+	TetraLine.setposition(1, x1);
+	TetraLine.setposition(2, x2);
+	TetraLine.setposition(3, x3);
+	TetraLine.setcolor(r * 0.3, g * 0.3, b * 0.3, 1.0);
+	TetraLine.draw();
+}
+
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3, const fvec3& color)
+{
+	DrawTetrahedron(x0, x1, x2, x3, color.x, color.y, color.z);
+}
+
+void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fvec3& x3)
+{
+	DrawTetrahedron(x0, x1, x2, x3, 1.0, 1.0, 1.0);
 }
 
 }
