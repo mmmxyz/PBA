@@ -725,7 +725,7 @@ int main(int argc, char const* argv[])
 
 	uint32_t cagelist[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
 		6, 7, 7, 4, 0, 4, 3, 7, 1, 5, 2, 6 };
-	linevertarray cage(8, nullptr, 24, cagelist);
+	linevertarray cage(8, 24, cagelist);
 	cage.setposition(0, -15.0f, -15.0f, -15.0f);
 	cage.setposition(1, 15.0f, -15.0f, -15.0f);
 	cage.setposition(2, 15.0f, 15.0f, -15.0f);
@@ -738,7 +738,7 @@ int main(int argc, char const* argv[])
 	cage.vboupdate();
 
 	uint32_t floorlist[6] = { 0, 1, 2, 0, 2, 3 };
-	trianglevertarray floor(6, nullptr, 6, floorlist);
+	trianglevertarray floor(6, 6, floorlist);
 	floor.setposition(0, -12.0f, -12.0f, -12.0f);
 	floor.setposition(1, -12.0f, -12.0f, 12.0f);
 	floor.setposition(2, 12.0f, -12.0f, 12.0f);

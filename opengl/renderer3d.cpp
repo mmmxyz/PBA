@@ -242,10 +242,10 @@ bool Init()
 	updateUniformobj();
 
 	//setup drawobject
-	Line.resetvertarray(2, nullptr, 0, nullptr);
-	Point.resetvertarray(1, nullptr, 0, nullptr);
-	PolyLine.resetvertarray(1024, nullptr, 0, nullptr);
-	Triangle.resetvertarray(3, nullptr, 0, nullptr);
+	Line.resetvertarray(2);
+	Point.resetvertarray(1);
+	PolyLine.resetvertarray(1024);
+	Triangle.resetvertarray(3);
 
 	uint32_t hoge[12];
 	hoge[0]	 = 0;
@@ -260,7 +260,7 @@ bool Init()
 	hoge[9]	 = 3;
 	hoge[10] = 2;
 	hoge[11] = 3;
-	TetraLine.resetvertarray(4, nullptr, 12, hoge);
+	TetraLine.resetvertarray(4, 12, hoge);
 
 	hoge[0] = 0;
 	hoge[1] = 2;
@@ -277,7 +277,7 @@ bool Init()
 	hoge[9]	 = 0;
 	hoge[10] = 3;
 	hoge[11] = 2;
-	TetraTri.resetvertarray(4, nullptr, 12, hoge);
+	TetraTri.resetvertarray(4, 12, hoge);
 
 	return true;
 }

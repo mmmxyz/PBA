@@ -245,29 +245,30 @@ RigidObbBvh::RigidObbBvh(const fquaternion& rotq, const fvec3& cm, const fvec3* 
 
 	RootNode = new RigidObbBvhNode((*this), vertdata, vertsize, listdata, listsize, LineVertData, LineIndexData);
 
-	vertex* RVdata	 = new vertex[LineVertData.size()];
 	uint32_t* RIdata = new uint32_t[LineIndexData.size()];
-
-	//todo iteratorで回すほうが早そう
-	for (uint32_t i = 0; i < LineVertData.size(); i++) {
-		RVdata[i].position[0] = LineVertData[i].x;
-		RVdata[i].position[1] = LineVertData[i].y;
-		RVdata[i].position[2] = LineVertData[i].z;
-
-		RVdata[i].color[0] = 1.0;
-		RVdata[i].color[1] = 1.0;
-		RVdata[i].color[2] = 1.0;
-		RVdata[i].color[3] = 1.0;
-
-		RVdata[i].type = 0;
-	}
 
 	//todo iteratorで回すほうが早そう
 	for (uint32_t i = 0; i < LineIndexData.size(); i++) {
 		RIdata[i] = LineIndexData[i];
 	}
 
-	lva.resetvertarray(LineVertData.size(), RVdata, LineIndexData.size(), RIdata);
+	lva.resetvertarray(LineVertData.size(), LineIndexData.size(), RIdata);
+
+	//todo iteratorで回すほうが早そう
+	for (uint32_t i = 0; i < LineVertData.size(); i++) {
+		lva[i].position[0] = LineVertData[i].x;
+		lva[i].position[1] = LineVertData[i].y;
+		lva[i].position[2] = LineVertData[i].z;
+
+		lva[i].color[0] = 1.0;
+		lva[i].color[1] = 1.0;
+		lva[i].color[2] = 1.0;
+		lva[i].color[3] = 1.0;
+
+		lva[i].type = 0;
+	}
+
+	delete[] RIdata;
 }
 
 RigidObbBvh::RigidObbBvh(const fquaternion& rotq, const fvec3& cm)
@@ -290,32 +291,34 @@ void RigidObbBvh::ConstructBvh(const fvec3* const Vdata, const uint32_t& Vsize, 
 
 	RootNode = new RigidObbBvhNode((*this), vertdata, vertsize, listdata, listsize, LineVertData, LineIndexData);
 
-	vertex* RVdata	 = new vertex[LineVertData.size()];
 	uint32_t* RIdata = new uint32_t[LineIndexData.size()];
 
 	//std::cout << LineVertData.size() << std::endl;
 	//std::cout << LineIndexData.size() << std::endl;
 
 	//todo iteratorで回すほうが早そう
-	for (uint32_t i = 0; i < LineVertData.size(); i++) {
-		RVdata[i].position[0] = LineVertData[i].x;
-		RVdata[i].position[1] = LineVertData[i].y;
-		RVdata[i].position[2] = LineVertData[i].z;
-
-		RVdata[i].color[0] = 1.0;
-		RVdata[i].color[1] = 1.0;
-		RVdata[i].color[2] = 1.0;
-		RVdata[i].color[3] = 1.0;
-
-		RVdata[i].type = 0;
-	}
 
 	//todo iteratorで回すほうが早そう
 	for (uint32_t i = 0; i < LineIndexData.size(); i++) {
 		RIdata[i] = LineIndexData[i];
 	}
 
-	lva.resetvertarray(LineVertData.size(), RVdata, LineIndexData.size(), RIdata);
+	lva.resetvertarray(LineVertData.size(), LineIndexData.size(), RIdata);
+
+	for (uint32_t i = 0; i < LineVertData.size(); i++) {
+		lva[i].position[0] = LineVertData[i].x;
+		lva[i].position[1] = LineVertData[i].y;
+		lva[i].position[2] = LineVertData[i].z;
+
+		lva[i].color[0] = 1.0;
+		lva[i].color[1] = 1.0;
+		lva[i].color[2] = 1.0;
+		lva[i].color[3] = 1.0;
+
+		lva[i].type = 0;
+	}
+
+	delete[] RIdata;
 }
 
 bool Is_CollideRigidObbBvhNode(const RigidObbBvhNode* const ROBNode0, const RigidObbBvhNode* const ROBNode1, const fvec3& r0cm, const fvec3& r1cm, const fmat3& R0, const fmat3& R1, const float extend = 1.0)

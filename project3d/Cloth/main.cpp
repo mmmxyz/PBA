@@ -40,14 +40,10 @@ class ClothMesh {
 	std::vector<fvec4> InnerEdgeCList;
 
 	linevertarray lva;
-	vertex* lvdata;
-	uint32_t lvsize;
 	uint32_t* lilist;
 	uint32_t lisize;
 
 	trianglevertarray tva;
-	vertex* tvdata;
-	uint32_t tvsize;
 	uint32_t* tilist;
 	uint32_t tisize;
 
@@ -177,8 +173,8 @@ class ClothMesh {
 			VList.emplace_back((X1 - X0).cross(X2 - X0) / 2.0);
 		}
 
-		tvsize = 2 * N * N;
-		tvdata = new vertex[tvsize];
+		uint32_t tvsize = 2 * N * N;
+
 		tisize = 2 * 2 * 3 * (N - 1) * (N - 1);
 		tilist = new uint32_t[tisize];
 
@@ -208,16 +204,18 @@ class ClothMesh {
 			}
 		}
 
+		tva.resetvertarray(tvsize, tisize, tilist);
+
 		for (uint32_t i = 0; i < 2 * N * N; i++) {
-			tvdata[i].color[0] = 0.8;
-			tvdata[i].color[1] = 0.8;
-			tvdata[i].color[2] = 0.8;
-			tvdata[i].color[3] = 1.0;
-			tvdata[i].type	   = 1;
+			tva[i].color[0] = 0.8;
+			tva[i].color[1] = 0.8;
+			tva[i].color[2] = 0.8;
+			tva[i].color[3] = 1.0;
+			tva[i].type	= 1;
 		}
 
-		lvsize = N * N;
-		lvdata = new vertex[lvsize];
+		uint32_t lvsize = N * N;
+
 		lisize = (6 * (N - 1) + 2) * (N - 1) + 2 * (N - 1);
 		lilist = new uint32_t[lisize];
 
@@ -241,18 +239,18 @@ class ClothMesh {
 			lilist[(6 * (N - 1) + 2) * (N - 1) + 2 * x + 1] = N * (N - 1) + x + 1;
 		}
 
+		lva.resetvertarray(lvsize, lisize, lilist);
+
 		for (uint32_t i = 0; i < N * N; i++) {
-			lvdata[i].color[0] = 0.0;
-			lvdata[i].color[1] = 0.0;
-			lvdata[i].color[2] = 0.0;
-			lvdata[i].color[3] = 1.0;
-			lvdata[i].type	   = 0;
+			lva[i].color[0] = 0.0;
+			lva[i].color[1] = 0.0;
+			lva[i].color[2] = 0.0;
+			lva[i].color[3] = 1.0;
+			lva[i].type	= 0;
 		}
 
 		this->UpdataVertarray();
-
-		tva.resetvertarray(tvsize, tvdata, tisize, tilist);
-		lva.resetvertarray(lvsize, lvdata, lisize, lilist);
+		this->Setdata();
 	}
 
 	void
@@ -262,16 +260,16 @@ class ClothMesh {
 #pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec3 v				      = PositionList[N * y + x];
-				tvdata[N * y + x].position[0]	      = v.x;
-				tvdata[N * y + x].position[1]	      = v.y;
-				tvdata[N * y + x].position[2]	      = v.z;
-				tvdata[N * N + N * y + x].position[0] = v.x;
-				tvdata[N * N + N * y + x].position[1] = v.y;
-				tvdata[N * N + N * y + x].position[2] = v.z;
-				lvdata[N * y + x].position[0]	      = v.x;
-				lvdata[N * y + x].position[1]	      = v.y;
-				lvdata[N * y + x].position[2]	      = v.z;
+				fvec3 v				   = PositionList[N * y + x];
+				tva[N * y + x].position[0]	   = v.x;
+				tva[N * y + x].position[1]	   = v.y;
+				tva[N * y + x].position[2]	   = v.z;
+				tva[N * N + N * y + x].position[0] = v.x;
+				tva[N * N + N * y + x].position[1] = v.y;
+				tva[N * N + N * y + x].position[2] = v.z;
+				lva[N * y + x].position[0]	   = v.x;
+				lva[N * y + x].position[1]	   = v.y;
+				lva[N * y + x].position[2]	   = v.z;
 			}
 		}
 
@@ -283,9 +281,9 @@ class ClothMesh {
 			x = fvec3(0.0);
 
 		for (uint32_t i = 0; i < 4 * (N - 1) * (N - 1); i++) {
-			fvec3 v0 = fvec3(tvdata[tilist[3 * i + 0]].position);
-			fvec3 v1 = fvec3(tvdata[tilist[3 * i + 1]].position);
-			fvec3 v2 = fvec3(tvdata[tilist[3 * i + 2]].position);
+			fvec3 v0 = fvec3(tva[tilist[3 * i + 0]].position);
+			fvec3 v1 = fvec3(tva[tilist[3 * i + 1]].position);
+			fvec3 v2 = fvec3(tva[tilist[3 * i + 2]].position);
 
 			fvec3 normal = (v1 - v0).cross(v2 - v0);
 			if (normal.sqlength() > 0.000001)
@@ -298,19 +296,19 @@ class ClothMesh {
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < 2 * N * N; i++) {
-			tvdata[i].normal[0] = NormalSet[i].x;
-			tvdata[i].normal[1] = NormalSet[i].y;
-			tvdata[i].normal[2] = NormalSet[i].z;
-			tvdata[i].position[0] += 0.005 * NormalSet[i].x;
-			tvdata[i].position[1] += 0.005 * NormalSet[i].y;
-			tvdata[i].position[2] += 0.005 * NormalSet[i].z;
+			tva[i].normal[0] = NormalSet[i].x;
+			tva[i].normal[1] = NormalSet[i].y;
+			tva[i].normal[2] = NormalSet[i].z;
+			tva[i].position[0] += 0.005 * NormalSet[i].x;
+			tva[i].position[1] += 0.005 * NormalSet[i].y;
+			tva[i].position[2] += 0.005 * NormalSet[i].z;
 		}
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < N * N; i++) {
-			lvdata[i].position[0] += 0.005 * NormalSet[i].x;
-			lvdata[i].position[1] += 0.005 * NormalSet[i].y;
-			lvdata[i].position[2] += 0.005 * NormalSet[i].z;
+			lva[i].position[0] += 0.005 * NormalSet[i].x;
+			lva[i].position[1] += 0.005 * NormalSet[i].y;
+			lva[i].position[2] += 0.005 * NormalSet[i].z;
 		}
 	}
 
@@ -634,7 +632,7 @@ int main(int argc, char const* argv[])
 
 	uint32_t cagelist[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
 		6, 7, 7, 4, 0, 4, 3, 7, 1, 5, 2, 6 };
-	linevertarray cage(8, nullptr, 24, cagelist);
+	linevertarray cage(8, 24, cagelist);
 	cage.setposition(0, -15.0f, -15.0f, -15.0f);
 	cage.setposition(1, 15.0f, -15.0f, -15.0f);
 	cage.setposition(2, 15.0f, 15.0f, -15.0f);
@@ -647,7 +645,7 @@ int main(int argc, char const* argv[])
 	cage.vboupdate();
 
 	uint32_t floorlist[6] = { 0, 1, 2, 0, 2, 3 };
-	trianglevertarray floor(6, nullptr, 6, floorlist);
+	trianglevertarray floor(6, 6, floorlist);
 	floor.setposition(0, -12.0f, -12.0f, -12.0f);
 	floor.setposition(1, -12.0f, -12.0f, 12.0f);
 	floor.setposition(2, 12.0f, -12.0f, 12.0f);

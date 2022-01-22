@@ -255,7 +255,7 @@ bool LoadOBJtoRenderTriangleMesh(
 	for (uint32_t i = 0; i < FaceSize * 3; i++)
 		ilist[i] = FaceIndexList[i];
 
-	varray.resetvertarray(VertIndexList.size(), nullptr, FaceSize * 3, ilist);
+	varray.resetvertarray(VertIndexList.size(), FaceSize * 3, ilist);
 
 	delete[] ilist;
 
@@ -422,7 +422,7 @@ bool LoadOBJtoRenderEdgeMesh(
 		counter += 2 * AdjacencyList[i].size();
 	}
 
-	varray.resetvertarray(VertSize + 1, nullptr, ilistsize, ilistdata);
+	varray.resetvertarray(VertSize + 1, ilistsize, ilistdata);
 
 	delete[] ilistdata;
 

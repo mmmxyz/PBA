@@ -29,7 +29,12 @@ class vertarray {
 	{
 	}
 
-	vertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
+	vertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr);
+	vertarray(uint32_t size)
+	    : vertarray(size, 0, nullptr)
+	{
+	}
+
 	~vertarray();
 
 	vertarray(const vertarray& v);
@@ -85,30 +90,129 @@ class vertarray {
 		return va[index];
 	}
 
-	void resetvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
+	void resetvertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr);
 	void vboupdate();
-	void setdata(vertex* data);
 	void setilist(uint32_t* ilist);
 
-	void setposition(uint32_t index, float x, float y, float z);
-	void setposition(uint32_t index, fvec3 V);
-	void setposition(uint32_t index, fvec2 V);
+	void setposition(uint32_t index, float x, float y, float z)
+	{
+		va[index].position[0] = x;
+		va[index].position[1] = y;
+		va[index].position[2] = z;
+	}
+	void setposition(uint32_t index, fvec3 V)
+	{
+		this->setposition(index, V.x, V.y, V.z);
+	}
+	void setposition(uint32_t index, fvec2 V)
+	{
+		this->setposition(index, V.x, V.y, 0.0);
+	}
 
-	void setallposition(const fvec3* PositionList, const uint32_t start, const uint32_t end);
-	void setallposition(const fvec3* PositionList);
-	void setallposition(const fvec3 Position, const uint32_t start, const uint32_t end);
-	void setallposition(const fvec3 Position);
+	void setallposition(const fvec3* PositionList, const uint32_t start, const uint32_t end)
+	{
+		//end > sizeだとやばいことになる
+		for (uint32_t i = start; i < end; i++) {
+			va[i].position[0] = PositionList[i].x;
+			va[i].position[1] = PositionList[i].y;
+			va[i].position[2] = PositionList[i].z;
+		}
+	}
+	void setallposition(const fvec3* PositionList)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].position[0] = PositionList[i].x;
+			va[i].position[1] = PositionList[i].y;
+			va[i].position[2] = PositionList[i].z;
+		}
+	}
+	void setallposition(const fvec3 Position, const uint32_t start, const uint32_t end)
+	{
+		//end > sizeだとやばいことになる
+		for (uint32_t i = start; i < end; i++) {
+			va[i].position[0] = Position.x;
+			va[i].position[1] = Position.y;
+			va[i].position[2] = Position.z;
+		}
+	}
+	void setallposition(const fvec3 Position)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].position[0] = Position.x;
+			va[i].position[1] = Position.y;
+			va[i].position[2] = Position.z;
+		}
+	}
 
-	void setallposition(const fvec2* PositionList, const uint32_t start, const uint32_t end);
-	void setallposition(const fvec2* PositionList);
-	void setallposition(const fvec2 Position, const uint32_t start, const uint32_t end);
-	void setallposition(const fvec2 Position);
+	void setallposition(const fvec2* PositionList, const uint32_t start, const uint32_t end)
+	{
+		//end > sizeだとやばいことになる
+		for (uint32_t i = start; i < end; i++) {
+			va[i].position[0] = PositionList[i].x;
+			va[i].position[1] = PositionList[i].y;
+			va[i].position[2] = 0.0;
+		}
+	}
+	void setallposition(const fvec2* PositionList)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].position[0] = PositionList[i].x;
+			va[i].position[1] = PositionList[i].y;
+			va[i].position[2] = 0.0;
+		}
+	}
+	void setallposition(const fvec2 Position, const uint32_t start, const uint32_t end)
+	{
+		//end > sizeだとやばいことになる
+		for (uint32_t i = start; i < end; i++) {
+			va[i].position[0] = Position.x;
+			va[i].position[1] = Position.y;
+			va[i].position[2] = 0.0;
+		}
+	}
+	void setallposition(const fvec2 Position)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].position[0] = Position.x;
+			va[i].position[1] = Position.y;
+			va[i].position[2] = 0.0;
+		}
+	}
 
-	void setuv(uint32_t index, float u, float v);
-	void setnormal(uint32_t index, float nx, float ny, float nz);
-	void setcolor(uint32_t index, float r, float g, float b, float alpha);
-	void setcolor(float r, float g, float b, float alpha);
-	void settype(uint32_t type);
+	void setuv(uint32_t index, float u, float v)
+	{
+		va[index].uv[0] = u;
+		va[index].uv[1] = v;
+	}
+	void setnormal(uint32_t index, float nx, float ny, float nz)
+	{
+		va[index].normal[0] = nx;
+		va[index].normal[1] = ny;
+		va[index].normal[2] = nz;
+	}
+	void setcolor(uint32_t index, float r, float g, float b, float alpha)
+	{
+		va[index].color[0] = r;
+		va[index].color[1] = g;
+		va[index].color[2] = b;
+		va[index].color[3] = alpha;
+	}
+	void setcolor(float r, float g, float b, float alpha)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].color[0] = r;
+			va[i].color[1] = g;
+			va[i].color[2] = b;
+			va[i].color[3] = alpha;
+		}
+	}
+	void settype(uint32_t type)
+	{
+		for (uint32_t i = 0; i < size; i++) {
+			va[i].type = type;
+		}
+	}
+
 	void bind() const;
 	virtual void draw() const = 0;
 	void unbind() const;

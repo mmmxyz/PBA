@@ -39,19 +39,16 @@ class CubeMesh {
 	std::vector<fvec3> VelocityList;
 	std::vector<uint32_t> TetIndList;
 
-	const fvec3 bias;
-
-	linevertarray lva;
-	vertex* lvdata;
-	uint32_t lvsize;
+	uint32_t* tilist;
+	uint32_t tisize;
 	uint32_t* lilist;
 	uint32_t lisize;
 
+	const fvec3 bias;
+
+	linevertarray lva;
+
 	trianglevertarray tva;
-	vertex* tvdata;
-	uint32_t tvsize;
-	uint32_t* tilist;
-	uint32_t tisize;
 
 	std::vector<float> Lamdalist;
 
@@ -158,12 +155,10 @@ class CubeMesh {
 			qList.emplace_back(fquaternion(0.0, 0.0, 0.0, 1.0));
 		}
 
-		tvsize = 6 * N * N;
-		tvdata = new vertex[tvsize];
+		uint32_t tvsize = 6 * N * N;
+
 		tisize = 6 * 6 * (N - 1) * (N - 1);
 		tilist = new uint32_t[tisize];
-
-		//face counter [0,6(N-1)^2]
 
 		for (uint32_t i = 0; i < 6; i++) {
 			for (uint32_t x = 0; x < N - 1; x++) {
@@ -180,16 +175,8 @@ class CubeMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < 6 * N * N; i++) {
-			tvdata[i].color[0] = 1.0;
-			tvdata[i].color[1] = 1.0;
-			tvdata[i].color[2] = 1.0;
-			tvdata[i].color[3] = 1.0;
-			tvdata[i].type	   = 1;
-		}
+		uint32_t lvsize = 6 * N * N;
 
-		lvsize = 6 * N * N;
-		lvdata = new vertex[lvsize];
 		lisize = 6 * (6 * (N - 1) + 4) * (N - 1);
 		lilist = new uint32_t[lisize];
 
@@ -209,18 +196,27 @@ class CubeMesh {
 			}
 		}
 
+		tva.resetvertarray(tvsize, tisize, tilist);
+		lva.resetvertarray(lvsize, lisize, lilist);
+
 		for (uint32_t i = 0; i < 6 * N * N; i++) {
-			lvdata[i].color[0] = 0.0;
-			lvdata[i].color[1] = 0.0;
-			lvdata[i].color[2] = 0.0;
-			lvdata[i].color[3] = 1.0;
-			lvdata[i].type	   = 0;
+			tva[i].color[0] = 1.0;
+			tva[i].color[1] = 1.0;
+			tva[i].color[2] = 1.0;
+			tva[i].color[3] = 1.0;
+			tva[i].type	= 1;
+		}
+
+		for (uint32_t i = 0; i < 6 * N * N; i++) {
+			lva[i].color[0] = 0.0;
+			lva[i].color[1] = 0.0;
+			lva[i].color[2] = 0.0;
+			lva[i].color[3] = 1.0;
+			lva[i].type	= 0;
 		}
 
 		this->UpdataVertarray();
-
-		tva.resetvertarray(tvsize, tvdata, tisize, tilist);
-		lva.resetvertarray(lvsize, lvdata, lisize, lilist);
+		this->Setdata();
 	}
 
 	void UpdataVertarray()
@@ -230,26 +226,26 @@ class CubeMesh {
 #pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec3 v					  = PositionList[N * N * y + N * (N - 1) + x];
-				tvdata[0 * N * N + N * y + x].position[0] = v.x;
-				tvdata[0 * N * N + N * y + x].position[1] = v.y;
-				tvdata[0 * N * N + N * y + x].position[2] = v.z;
-				lvdata[0 * N * N + N * y + x].position[0] = v.x;
-				lvdata[0 * N * N + N * y + x].position[1] = v.y;
-				lvdata[0 * N * N + N * y + x].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * y + N * (N - 1) + x];
+				tva[0 * N * N + N * y + x].position[0] = v.x;
+				tva[0 * N * N + N * y + x].position[1] = v.y;
+				tva[0 * N * N + N * y + x].position[2] = v.z;
+				lva[0 * N * N + N * y + x].position[0] = v.x;
+				lva[0 * N * N + N * y + x].position[1] = v.y;
+				lva[0 * N * N + N * y + x].position[2] = v.z;
 			}
 		}
 		//z-
 #pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec3 v					  = PositionList[N * N * y + N - 1 - x];
-				tvdata[1 * N * N + N * y + x].position[0] = v.x;
-				tvdata[1 * N * N + N * y + x].position[1] = v.y;
-				tvdata[1 * N * N + N * y + x].position[2] = v.z;
-				lvdata[1 * N * N + N * y + x].position[0] = v.x;
-				lvdata[1 * N * N + N * y + x].position[1] = v.y;
-				lvdata[1 * N * N + N * y + x].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * y + N - 1 - x];
+				tva[1 * N * N + N * y + x].position[0] = v.x;
+				tva[1 * N * N + N * y + x].position[1] = v.y;
+				tva[1 * N * N + N * y + x].position[2] = v.z;
+				lva[1 * N * N + N * y + x].position[0] = v.x;
+				lva[1 * N * N + N * y + x].position[1] = v.y;
+				lva[1 * N * N + N * y + x].position[2] = v.z;
 			}
 		}
 
@@ -257,13 +253,13 @@ class CubeMesh {
 #pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t z = 0; z < N; z++) {
-				fvec3 v					  = PositionList[N * N * y + N * N - 1 - N * z];
-				tvdata[2 * N * N + N * y + z].position[0] = v.x;
-				tvdata[2 * N * N + N * y + z].position[1] = v.y;
-				tvdata[2 * N * N + N * y + z].position[2] = v.z;
-				lvdata[2 * N * N + N * y + z].position[0] = v.x;
-				lvdata[2 * N * N + N * y + z].position[1] = v.y;
-				lvdata[2 * N * N + N * y + z].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * y + N * N - 1 - N * z];
+				tva[2 * N * N + N * y + z].position[0] = v.x;
+				tva[2 * N * N + N * y + z].position[1] = v.y;
+				tva[2 * N * N + N * y + z].position[2] = v.z;
+				lva[2 * N * N + N * y + z].position[0] = v.x;
+				lva[2 * N * N + N * y + z].position[1] = v.y;
+				lva[2 * N * N + N * y + z].position[2] = v.z;
 			}
 		}
 
@@ -271,13 +267,13 @@ class CubeMesh {
 #pragma omp parallel for
 		for (uint32_t y = 0; y < N; y++) {
 			for (uint32_t z = 0; z < N; z++) {
-				fvec3 v					  = PositionList[N * N * y + N * z];
-				tvdata[3 * N * N + N * y + z].position[0] = v.x;
-				tvdata[3 * N * N + N * y + z].position[1] = v.y;
-				tvdata[3 * N * N + N * y + z].position[2] = v.z;
-				lvdata[3 * N * N + N * y + z].position[0] = v.x;
-				lvdata[3 * N * N + N * y + z].position[1] = v.y;
-				lvdata[3 * N * N + N * y + z].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * y + N * z];
+				tva[3 * N * N + N * y + z].position[0] = v.x;
+				tva[3 * N * N + N * y + z].position[1] = v.y;
+				tva[3 * N * N + N * y + z].position[2] = v.z;
+				lva[3 * N * N + N * y + z].position[0] = v.x;
+				lva[3 * N * N + N * y + z].position[1] = v.y;
+				lva[3 * N * N + N * y + z].position[2] = v.z;
 			}
 		}
 
@@ -285,13 +281,13 @@ class CubeMesh {
 #pragma omp parallel for
 		for (uint32_t z = 0; z < N; z++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec3 v					  = PositionList[N * N * (N - 1) + N * z + (N - 1) - x];
-				tvdata[4 * N * N + N * z + x].position[0] = v.x;
-				tvdata[4 * N * N + N * z + x].position[1] = v.y;
-				tvdata[4 * N * N + N * z + x].position[2] = v.z;
-				lvdata[4 * N * N + N * z + x].position[0] = v.x;
-				lvdata[4 * N * N + N * z + x].position[1] = v.y;
-				lvdata[4 * N * N + N * z + x].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * (N - 1) + N * z + (N - 1) - x];
+				tva[4 * N * N + N * z + x].position[0] = v.x;
+				tva[4 * N * N + N * z + x].position[1] = v.y;
+				tva[4 * N * N + N * z + x].position[2] = v.z;
+				lva[4 * N * N + N * z + x].position[0] = v.x;
+				lva[4 * N * N + N * z + x].position[1] = v.y;
+				lva[4 * N * N + N * z + x].position[2] = v.z;
 			}
 		}
 
@@ -299,13 +295,13 @@ class CubeMesh {
 #pragma omp parallel for
 		for (uint32_t z = 0; z < N; z++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec3 v					  = PositionList[N * N * 0 + N * z + x];
-				tvdata[5 * N * N + N * z + x].position[0] = v.x;
-				tvdata[5 * N * N + N * z + x].position[1] = v.y;
-				tvdata[5 * N * N + N * z + x].position[2] = v.z;
-				lvdata[5 * N * N + N * z + x].position[0] = v.x;
-				lvdata[5 * N * N + N * z + x].position[1] = v.y;
-				lvdata[5 * N * N + N * z + x].position[2] = v.z;
+				fvec3 v				       = PositionList[N * N * 0 + N * z + x];
+				tva[5 * N * N + N * z + x].position[0] = v.x;
+				tva[5 * N * N + N * z + x].position[1] = v.y;
+				tva[5 * N * N + N * z + x].position[2] = v.z;
+				lva[5 * N * N + N * z + x].position[0] = v.x;
+				lva[5 * N * N + N * z + x].position[1] = v.y;
+				lva[5 * N * N + N * z + x].position[2] = v.z;
 			}
 		}
 
@@ -319,9 +315,9 @@ class CubeMesh {
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < 12 * (N - 1) * (N - 1); i++) {
-			fvec3 v0 = fvec3(tvdata[tilist[3 * i + 0]].position);
-			fvec3 v1 = fvec3(tvdata[tilist[3 * i + 1]].position);
-			fvec3 v2 = fvec3(tvdata[tilist[3 * i + 2]].position);
+			fvec3 v0 = fvec3(tva[tilist[3 * i + 0]].position);
+			fvec3 v1 = fvec3(tva[tilist[3 * i + 1]].position);
+			fvec3 v2 = fvec3(tva[tilist[3 * i + 2]].position);
 
 			fvec3 normal = (v1 - v0).cross(v2 - v0);
 			if (normal.sqlength() > 0.000001)
@@ -334,9 +330,9 @@ class CubeMesh {
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < 6 * N * N; i++) {
-			tvdata[i].normal[0] = NormalSet[i].x;
-			tvdata[i].normal[1] = NormalSet[i].y;
-			tvdata[i].normal[2] = NormalSet[i].z;
+			tva[i].normal[0] = NormalSet[i].x;
+			tva[i].normal[1] = NormalSet[i].y;
+			tva[i].normal[2] = NormalSet[i].z;
 		}
 	}
 
@@ -598,7 +594,7 @@ int main(int argc, char const* argv[])
 
 	uint32_t cagelist[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
 		6, 7, 7, 4, 0, 4, 3, 7, 1, 5, 2, 6 };
-	linevertarray cage(8, nullptr, 24, cagelist);
+	linevertarray cage(8, 24, cagelist);
 	cage.setposition(0, -15.0f, -15.0f, -15.0f);
 	cage.setposition(1, 15.0f, -15.0f, -15.0f);
 	cage.setposition(2, 15.0f, 15.0f, -15.0f);
@@ -611,7 +607,7 @@ int main(int argc, char const* argv[])
 	cage.vboupdate();
 
 	uint32_t floorlist[6] = { 0, 1, 2, 0, 2, 3 };
-	trianglevertarray floor(6, nullptr, 6, floorlist);
+	trianglevertarray floor(6, 6, floorlist);
 	floor.setposition(0, -12.0f, -12.0f, -12.0f);
 	floor.setposition(1, -12.0f, -12.0f, 12.0f);
 	floor.setposition(2, 12.0f, -12.0f, 12.0f);

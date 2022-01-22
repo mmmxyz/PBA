@@ -7,32 +7,23 @@
 
 static uint8_t RefCounter[1024] = {};
 
-//todo vboの更新とCPU側のメモリ(va)の更新を分離する
-//これはmain.cppの変更も必要
-
-vertarray::vertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilist)
+vertarray::vertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
     : size(size)
-    , va(nullptr)
+    , va(new vertex[size])
     , isize(isize)
 {
-
-	if (data != nullptr) {
-		va = data;
-	} else {
-		va = new vertex[size];
-		for (uint32_t i = 0; i < size; i++) {
-			va[i].position[0] = 0.0f;
-			va[i].position[1] = 0.0f;
-			va[i].position[2] = 0.0f;
-			va[i].color[0]	  = 1.0f;
-			va[i].color[1]	  = 1.0f;
-			va[i].color[2]	  = 1.0f;
-			va[i].color[3]	  = 1.0f;
-			va[i].normal[0]	  = 0.0f;
-			va[i].normal[1]	  = 0.0f;
-			va[i].normal[2]	  = 0.0f;
-			va[i].type	  = 0;
-		}
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = 0.0f;
+		va[i].position[1] = 0.0f;
+		va[i].position[2] = 0.0f;
+		va[i].color[0]	  = 1.0f;
+		va[i].color[1]	  = 1.0f;
+		va[i].color[2]	  = 1.0f;
+		va[i].color[3]	  = 1.0f;
+		va[i].normal[0]	  = 0.0f;
+		va[i].normal[1]	  = 0.0f;
+		va[i].normal[2]	  = 0.0f;
+		va[i].type	  = 0;
 	}
 
 	glGenVertexArrays(1, &vao);
@@ -101,7 +92,7 @@ vertarray& vertarray::operator=(const vertarray& v)
 	return *this;
 }
 
-void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilist)
+void vertarray::resetvertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
 {
 	//格納しているvao,vboの解放、vaの解放
 	//glDeleteBuffersは0を入力に取ると何もしない。
@@ -120,23 +111,19 @@ void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint
 	this->size  = size;
 	this->isize = isize;
 
-	if (data != nullptr) {
-		va = data;
-	} else {
-		va = new vertex[size];
-		for (uint32_t i = 0; i < size; i++) {
-			va[i].position[0] = 0.0f;
-			va[i].position[1] = 0.0f;
-			va[i].position[2] = 0.0f;
-			va[i].color[0]	  = 1.0f;
-			va[i].color[1]	  = 1.0f;
-			va[i].color[2]	  = 1.0f;
-			va[i].color[3]	  = 1.0f;
-			va[i].normal[0]	  = 0.0f;
-			va[i].normal[1]	  = 0.0f;
-			va[i].normal[2]	  = 0.0f;
-			va[i].type	  = 0;
-		}
+	va = new vertex[size];
+	for (uint32_t i = 0; i < size; i++) {
+		va[i].position[0] = 0.0f;
+		va[i].position[1] = 0.0f;
+		va[i].position[2] = 0.0f;
+		va[i].color[0]	  = 1.0f;
+		va[i].color[1]	  = 1.0f;
+		va[i].color[2]	  = 1.0f;
+		va[i].color[3]	  = 1.0f;
+		va[i].normal[0]	  = 0.0f;
+		va[i].normal[1]	  = 0.0f;
+		va[i].normal[2]	  = 0.0f;
+		va[i].type	  = 0;
 	}
 
 	glGenVertexArrays(1, &vao);
@@ -185,39 +172,6 @@ void vertarray::vboupdate()
 	//glBindVertexArray(0);
 }
 
-void vertarray::setdata(vertex* data)
-{
-	if (va != nullptr)
-		delete[] va;
-
-	if (data != nullptr) {
-		va = data;
-	} else {
-		va = new vertex[size];
-		for (uint32_t i = 0; i < size; i++) {
-			va[i].position[0] = 0.0f;
-			va[i].position[1] = 0.0f;
-			va[i].position[2] = 0.0f;
-			va[i].color[0]	  = 1.0f;
-			va[i].color[1]	  = 1.0f;
-			va[i].color[2]	  = 1.0f;
-			va[i].color[3]	  = 1.0f;
-			va[i].normal[0]	  = 0.0f;
-			va[i].normal[1]	  = 0.0f;
-			va[i].normal[2]	  = 0.0f;
-			va[i].type	  = 0;
-		}
-	}
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
 void vertarray::setilist(uint32_t* ilist)
 {
 
@@ -227,188 +181,6 @@ void vertarray::setilist(uint32_t* ilist)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, isize * sizeof(GLuint), ilist, GL_DYNAMIC_DRAW);
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void vertarray::setposition(uint32_t index, float x, float y, float z)
-{
-
-	va[index].position[0] = x;
-	va[index].position[1] = y;
-	va[index].position[2] = z;
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
-void vertarray::setposition(uint32_t index, fvec3 V)
-{
-	this->setposition(index, V.x, V.y, V.z);
-}
-
-void vertarray::setposition(uint32_t index, fvec2 V)
-{
-	this->setposition(index, V.x, V.y, 0.0);
-}
-
-void vertarray::setallposition(const fvec3* PositionList, const uint32_t start, const uint32_t end)
-{
-	//end > sizeだとやばいことになる
-	for (uint32_t i = start; i < end; i++) {
-		va[i].position[0] = PositionList[i].x;
-		va[i].position[1] = PositionList[i].y;
-		va[i].position[2] = PositionList[i].z;
-	}
-}
-void vertarray::setallposition(const fvec3* PositionList)
-{
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].position[0] = PositionList[i].x;
-		va[i].position[1] = PositionList[i].y;
-		va[i].position[2] = PositionList[i].z;
-	}
-}
-
-void vertarray::setallposition(const fvec3 Position, const uint32_t start, const uint32_t end)
-{
-	//end > sizeだとやばいことになる
-	for (uint32_t i = start; i < end; i++) {
-		va[i].position[0] = Position.x;
-		va[i].position[1] = Position.y;
-		va[i].position[2] = Position.z;
-	}
-}
-
-void vertarray::setallposition(const fvec3 Position)
-{
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].position[0] = Position.x;
-		va[i].position[1] = Position.y;
-		va[i].position[2] = Position.z;
-	}
-}
-
-void vertarray::setallposition(const fvec2* PositionList, const uint32_t start, const uint32_t end)
-{
-	//end > sizeだとやばいことになる
-	for (uint32_t i = start; i < end; i++) {
-		va[i].position[0] = PositionList[i].x;
-		va[i].position[1] = PositionList[i].y;
-		va[i].position[2] = 0.0;
-	}
-}
-void vertarray::setallposition(const fvec2* PositionList)
-{
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].position[0] = PositionList[i].x;
-		va[i].position[1] = PositionList[i].y;
-		va[i].position[2] = 0.0;
-	}
-}
-
-void vertarray::setallposition(const fvec2 Position, const uint32_t start, const uint32_t end)
-{
-	//end > sizeだとやばいことになる
-	for (uint32_t i = start; i < end; i++) {
-		va[i].position[0] = Position.x;
-		va[i].position[1] = Position.y;
-		va[i].position[2] = 0.0;
-	}
-}
-
-void vertarray::setallposition(const fvec2 Position)
-{
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].position[0] = Position.x;
-		va[i].position[1] = Position.y;
-		va[i].position[2] = 0.0;
-	}
-}
-
-void vertarray::setuv(uint32_t index, float u, float v)
-{
-	va[index].uv[0] = u;
-	va[index].uv[1] = v;
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
-void vertarray::setnormal(uint32_t index, float nx, float ny, float nz)
-{
-
-	va[index].normal[0] = nx;
-	va[index].normal[1] = ny;
-	va[index].normal[2] = nz;
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
-void vertarray::setcolor(uint32_t index, float r, float g, float b, float alpha)
-{
-
-	va[index].color[0] = r;
-	va[index].color[1] = g;
-	va[index].color[2] = b;
-	va[index].color[3] = alpha;
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
-void vertarray::setcolor(float r, float g, float b, float alpha)
-{
-
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].color[0] = r;
-		va[i].color[1] = g;
-		va[i].color[2] = b;
-		va[i].color[3] = alpha;
-	}
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
-}
-
-void vertarray::settype(uint32_t type)
-{
-
-	for (uint32_t i = 0; i < size; i++) {
-		va[i].type = type;
-	}
-
-	//glBindVertexArray(vao);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//glBindVertexArray(0);
 }
 
 vertarray::~vertarray()

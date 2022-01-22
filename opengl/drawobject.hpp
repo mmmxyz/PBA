@@ -4,8 +4,8 @@
 
 class linevertarray : public vertarray {
     public:
-	linevertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)
-	    : vertarray(size, data, isize, ilist)
+	linevertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr)
+	    : vertarray(size, isize, ilist)
 	{
 	}
 	linevertarray()
@@ -17,8 +17,8 @@ class linevertarray : public vertarray {
 
 class linestripvertarray : public vertarray {
     public:
-	linestripvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)
-	    : vertarray(size, data, isize, ilist)
+	linestripvertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr)
+	    : vertarray(size, isize, ilist)
 	{
 	}
 	linestripvertarray()
@@ -30,8 +30,8 @@ class linestripvertarray : public vertarray {
 
 class pointvertarray : public vertarray {
     public:
-	pointvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)
-	    : vertarray(size, data, isize, ilist)
+	pointvertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr)
+	    : vertarray(size, isize, ilist)
 	{
 	}
 	pointvertarray()
@@ -43,8 +43,8 @@ class pointvertarray : public vertarray {
 
 class trianglevertarray : public vertarray {
     public:
-	trianglevertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr)
-	    : vertarray(size, data, isize, ilist)
+	trianglevertarray(uint32_t size, uint32_t isize = 0, uint32_t* ilist = nullptr)
+	    : vertarray(size, isize, ilist)
 	{
 	}
 	trianglevertarray()

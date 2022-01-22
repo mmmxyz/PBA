@@ -68,9 +68,9 @@ bool Init()
 
 	updateUniformobj();
 
-	Line.resetvertarray(2, nullptr, 0, nullptr);
-	Point.resetvertarray(1, nullptr, 0, nullptr);
-	PolyLine.resetvertarray(1024, nullptr, 0, nullptr);
+	Line.resetvertarray(2);
+	Point.resetvertarray(1);
+	PolyLine.resetvertarray(1024);
 
 	return true;
 }

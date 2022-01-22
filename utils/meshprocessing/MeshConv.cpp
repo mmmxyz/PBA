@@ -55,7 +55,9 @@ void ConvertPTMtoREM(
 		counter += 2 * AdjacencyList[i].size();
 	}
 
-	varray.resetvertarray(Rvsize, nullptr, Risize, Ridata);
+	varray.resetvertarray(Rvsize, Risize, Ridata);
+
+	delete[] Ridata;
 
 	for (uint32_t i = 0; i < Rvsize; i++) {
 		varray[i].position[0] = Pvdata[i].x;
@@ -69,6 +71,4 @@ void ConvertPTMtoREM(
 
 		varray[i].type = 0;
 	}
-
-	delete[] Ridata;
 }
