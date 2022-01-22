@@ -444,6 +444,7 @@ void DrawLine(const fvec3& x0, const fvec3& x1, const float& r, const float& g, 
 	Line.setposition(0, x0);
 	Line.setposition(1, x1);
 	Line.setcolor(r, g, b, 1.0);
+	Line.vboupdate();
 	Line.draw();
 }
 
@@ -461,6 +462,7 @@ void DrawPoint(const fvec3& x, const float& r, const float& g, const float& b)
 {
 	Point.setposition(0, x);
 	Point.setcolor(r, g, b, 1.0);
+	Point.vboupdate();
 	Point.draw();
 }
 
@@ -486,6 +488,7 @@ void DrawPolyLine(const fvec3* const X, const uint32_t size, const float& r, con
 	PolyLine.setallposition(X + cnt, 0, size - cnt);
 	PolyLine.setallposition(X[size - 1], size - cnt, 1024);
 	PolyLine.setcolor(r, g, b, 1.0);
+	PolyLine.vboupdate();
 	PolyLine.draw();
 }
 
@@ -506,6 +509,7 @@ void DrawTriangle(const fvec3& x0, const fvec3& x1, const fvec3& x2, const float
 	Triangle.setposition(1, x1);
 	Triangle.setposition(2, x2);
 	Triangle.setcolor(r, g, b, 1.0);
+	Triangle.vboupdate();
 	Triangle.draw();
 }
 
@@ -526,6 +530,7 @@ void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fv
 	TetraTri.setposition(2, x2);
 	TetraTri.setposition(3, x3);
 	TetraTri.setcolor(r, g, b, 1.0);
+	TetraTri.vboupdate();
 	TetraTri.draw();
 
 	TetraLine.setposition(0, x0);
@@ -533,6 +538,7 @@ void DrawTetrahedron(const fvec3& x0, const fvec3& x1, const fvec3& x2, const fv
 	TetraLine.setposition(2, x2);
 	TetraLine.setposition(3, x3);
 	TetraLine.setcolor(r * 0.3, g * 0.3, b * 0.3, 1.0);
+	TetraLine.vboupdate();
 	TetraLine.draw();
 }
 

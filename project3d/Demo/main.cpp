@@ -52,6 +52,7 @@ int main(int argc, char const* argv[])
 	cage.setposition(6, 15.0f, 15.0f, 15.0f);
 	cage.setposition(7, -15.0f, 15.0f, 15.0f);
 	cage.settype(0);
+	cage.vboupdate();
 
 	uint32_t floorlist[6] = { 0, 1, 2, 0, 2, 3 };
 	trianglevertarray floor(6, nullptr, 6, floorlist);
@@ -67,6 +68,7 @@ int main(int argc, char const* argv[])
 	floor.setuv(2, 1.0f, 0.0f);
 	floor.setuv(3, 1.0f, 1.0f);
 	floor.settype(2);
+	floor.vboupdate();
 
 	vertex* Bunnytvdata;
 	uint32_t Bunnytvsize;
@@ -78,6 +80,7 @@ int main(int argc, char const* argv[])
 
 	trianglevertarray Bunnytva(Bunnytvsize, Bunnytvdata, Bunnytisize, Bunnytilist);
 	Bunnytva.settype(2);
+	Bunnytva.vboupdate();
 
 	fvec3 cm = fvec3(0.0);
 	fquaternion rotq(fvec3(0.0, 2.0 * 3.1415, 0.0));

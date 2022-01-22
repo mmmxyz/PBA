@@ -112,6 +112,7 @@ void DrawLine(const fvec2& x0, const fvec2& x1, const float& r, const float& g, 
 	Line.setposition(0, x0);
 	Line.setposition(1, x1);
 	Line.setcolor(r, g, b, 1.0);
+	Line.vboupdate();
 	Line.draw();
 }
 
@@ -129,6 +130,7 @@ void DrawPoint(const fvec2& x, const float& r, const float& g, const float& b)
 {
 	Point.setposition(0, x);
 	Point.setcolor(r, g, b, 1.0);
+	Point.vboupdate();
 	Point.draw();
 }
 
@@ -154,6 +156,7 @@ void DrawPolyLine(const fvec2* const X, const uint32_t size, const float& r, con
 	PolyLine.setallposition(X + cnt, 0, size - cnt);
 	PolyLine.setallposition(X[size - 1], size - cnt, 1024);
 	PolyLine.setcolor(r, g, b, 1.0);
+	PolyLine.vboupdate();
 	PolyLine.draw();
 }
 

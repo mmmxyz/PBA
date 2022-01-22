@@ -48,6 +48,7 @@ int main(int argc, char const* argv[])
 	tritva.setcolor(0, 1.0, 0.0, 0.0, 1.0);
 	tritva.setcolor(1, 0.0, 1.0, 0.0, 1.0);
 	tritva.setcolor(2, 0.0, 0.0, 1.0, 1.0);
+	tritva.vboupdate();
 
 	//init
 

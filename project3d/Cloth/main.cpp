@@ -644,6 +644,7 @@ int main(int argc, char const* argv[])
 	cage.setposition(6, 15.0f, 15.0f, 15.0f);
 	cage.setposition(7, -15.0f, 15.0f, 15.0f);
 	cage.settype(0);
+	cage.vboupdate();
 
 	uint32_t floorlist[6] = { 0, 1, 2, 0, 2, 3 };
 	trianglevertarray floor(6, nullptr, 6, floorlist);
@@ -659,6 +660,7 @@ int main(int argc, char const* argv[])
 	floor.setuv(2, 1.0f, 0.0f);
 	floor.setuv(3, 1.0f, 1.0f);
 	floor.settype(2);
+	floor.vboupdate();
 
 	uint8_t* images0 = new uint8_t[1024 * 4 * 1024];
 	for (uint32_t i = 0; i < 1024; i++) {

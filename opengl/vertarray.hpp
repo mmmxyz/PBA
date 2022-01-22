@@ -22,15 +22,68 @@ class vertarray {
 	uint32_t vao = 0, vbo = 0, ibo = 0;
 
     public:
-	vertarray();
+	vertarray()
+	    : size(0)
+	    , va(nullptr)
+	    , isize(0)
+	{
+	}
+
 	vertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
 	~vertarray();
 
 	vertarray(const vertarray& v);
-	vertarray(vertarray&& v);
+	vertarray(vertarray&& v)
+	    : size(v.size)
+	    , isize(v.isize)
+	    , va(v.va)
+	    , vao(v.vao)
+	    , vbo(v.vbo)
+	    , ibo(v.ibo)
+	{
+		v.va = nullptr;
+
+		v.size	= 0;
+		v.isize = 0;
+		v.vao	= 0;
+		v.vbo	= 0;
+		v.ibo	= 0;
+	}
 
 	vertarray& operator=(const vertarray& v);
-	vertarray& operator=(vertarray&& v);
+	vertarray& operator=(vertarray&& v)
+	{
+		if (vao == v.vao)
+			return *this;
+
+		size	= v.size;
+		isize	= v.isize;
+		v.size	= 0;
+		v.isize = 0;
+
+		va   = v.va;
+		v.va = nullptr;
+
+		vao = v.vao;
+		vbo = v.vbo;
+		ibo = v.ibo;
+
+		v.vao = 0;
+		v.vbo = 0;
+		v.ibo = 0;
+
+		return *this;
+	}
+
+	vertex& operator[](const uint32_t& index)
+	{
+		return va[index];
+	}
+
+	const vertex& operator[](const uint32_t& index) const
+	{
+		return va[index];
+	}
 
 	void resetvertarray(uint32_t size, vertex* data, uint32_t isize = 0, uint32_t* ilist = nullptr);
 	void vboupdate();

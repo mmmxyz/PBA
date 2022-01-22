@@ -10,13 +10,6 @@ static uint8_t RefCounter[1024] = {};
 //todo vboの更新とCPU側のメモリ(va)の更新を分離する
 //これはmain.cppの変更も必要
 
-vertarray::vertarray()
-    : size(0)
-    , va(nullptr)
-    , isize(0)
-{
-}
-
 vertarray::vertarray(uint32_t size, vertex* data, uint32_t isize, uint32_t* ilist)
     : size(size)
     , va(nullptr)
@@ -88,21 +81,6 @@ vertarray::vertarray(const vertarray& v)
 	RefCounter[vao]++;
 }
 
-vertarray::vertarray(vertarray&& v)
-    : size(v.size)
-    , isize(v.isize)
-    , va(v.va)
-    , vao(v.vao)
-    , vbo(v.vbo)
-    , ibo(v.ibo)
-{
-	v.va = nullptr;
-
-	v.vao = 0;
-	v.vbo = 0;
-	v.ibo = 0;
-}
-
 vertarray& vertarray::operator=(const vertarray& v)
 {
 
@@ -119,28 +97,6 @@ vertarray& vertarray::operator=(const vertarray& v)
 	ibo = v.ibo;
 
 	RefCounter[vao]++;
-
-	return *this;
-}
-
-vertarray& vertarray::operator=(vertarray&& v)
-{
-	if (vao == v.vao)
-		return *this;
-
-	size  = v.size;
-	isize = v.isize;
-
-	va   = v.va;
-	v.va = nullptr;
-
-	vao = v.vao;
-	vbo = v.vbo;
-	ibo = v.ibo;
-
-	v.vao = 0;
-	v.vbo = 0;
-	v.ibo = 0;
 
 	return *this;
 }
@@ -220,13 +176,13 @@ void vertarray::resetvertarray(uint32_t size, vertex* data, uint32_t isize, uint
 
 void vertarray::vboupdate()
 {
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setdata(vertex* data)
@@ -253,13 +209,13 @@ void vertarray::setdata(vertex* data)
 		}
 	}
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setilist(uint32_t* ilist)
@@ -280,13 +236,13 @@ void vertarray::setposition(uint32_t index, float x, float y, float z)
 	va[index].position[1] = y;
 	va[index].position[2] = z;
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setposition(uint32_t index, fvec3 V)
@@ -378,13 +334,13 @@ void vertarray::setuv(uint32_t index, float u, float v)
 	va[index].uv[0] = u;
 	va[index].uv[1] = v;
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setnormal(uint32_t index, float nx, float ny, float nz)
@@ -394,13 +350,13 @@ void vertarray::setnormal(uint32_t index, float nx, float ny, float nz)
 	va[index].normal[1] = ny;
 	va[index].normal[2] = nz;
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setcolor(uint32_t index, float r, float g, float b, float alpha)
@@ -411,13 +367,13 @@ void vertarray::setcolor(uint32_t index, float r, float g, float b, float alpha)
 	va[index].color[2] = b;
 	va[index].color[3] = alpha;
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(vertex), sizeof(vertex), va + index);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::setcolor(float r, float g, float b, float alpha)
@@ -430,13 +386,13 @@ void vertarray::setcolor(float r, float g, float b, float alpha)
 		va[i].color[3] = alpha;
 	}
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 void vertarray::settype(uint32_t type)
@@ -446,13 +402,13 @@ void vertarray::settype(uint32_t type)
 		va[i].type = type;
 	}
 
-	glBindVertexArray(vao);
+	//glBindVertexArray(vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex), va, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 }
 
 vertarray::~vertarray()
