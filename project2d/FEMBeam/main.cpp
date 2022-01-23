@@ -40,14 +40,10 @@ class ClothMesh {
 	std::vector<uint32_t> InnerEdgeIndList;
 
 	linevertarray lva;
-	vertex* lvdata;
-	uint32_t lvsize;
 	uint32_t* lilist;
 	uint32_t lisize;
 
 	trianglevertarray tva;
-	vertex* tvdata;
-	uint32_t tvsize;
 	uint32_t* tilist;
 	uint32_t tisize;
 
@@ -119,8 +115,8 @@ class ClothMesh {
 			oList.emplace_back(0.0);
 		}
 
-		tvsize = N * M;
-		tvdata = new vertex[tvsize];
+		uint32_t tvsize = N * M;
+
 		tisize = 3 * 2 * (N - 1) * (M - 1);
 		tilist = new uint32_t[tisize];
 
@@ -137,16 +133,18 @@ class ClothMesh {
 			}
 		}
 
+		tva.resetvertarray(tvsize, tisize, tilist);
+
 		for (uint32_t i = 0; i < M * N; i++) {
-			tvdata[i].color[0] = 0.8;
-			tvdata[i].color[1] = 0.8;
-			tvdata[i].color[2] = 0.8;
-			tvdata[i].color[3] = 1.0;
-			tvdata[i].type	   = 1;
+			tva[i].color[0] = 0.8;
+			tva[i].color[1] = 0.8;
+			tva[i].color[2] = 0.8;
+			tva[i].color[3] = 1.0;
+			tva[i].type	= 1;
 		}
 
-		lvsize = N * M;
-		lvdata = new vertex[lvsize];
+		uint32_t lvsize = N * M;
+
 		lisize = (6 * (N - 1) + 2) * (M - 1) + 2 * (N - 1);
 		lilist = new uint32_t[lisize];
 
@@ -170,18 +168,19 @@ class ClothMesh {
 			lilist[(6 * (N - 1) + 2) * (M - 1) + 2 * x + 1] = (M - 1) * N + x + 1;
 		}
 
+		lva.resetvertarray(lvsize, lisize, lilist);
+
 		for (uint32_t i = 0; i < M * N; i++) {
-			lvdata[i].color[0] = 0.0;
-			lvdata[i].color[1] = 0.0;
-			lvdata[i].color[2] = 0.0;
-			lvdata[i].color[3] = 1.0;
-			lvdata[i].type	   = 0;
+			lva[i].color[0] = 0.0;
+			lva[i].color[1] = 0.0;
+			lva[i].color[2] = 0.0;
+			lva[i].color[3] = 1.0;
+			lva[i].type	= 0;
 		}
 
 		this->UpdataVertarray();
 
-		tva.resetvertarray(tvsize, tvdata, tisize, tilist);
-		lva.resetvertarray(lvsize, lvdata, lisize, lilist);
+		this->Setdata();
 	}
 
 	void
@@ -191,13 +190,13 @@ class ClothMesh {
 #pragma omp parallel
 		for (uint32_t y = 0; y < M; y++) {
 			for (uint32_t x = 0; x < N; x++) {
-				fvec2 v			      = PositionList[N * y + x];
-				tvdata[N * y + x].position[0] = v.x;
-				tvdata[N * y + x].position[1] = v.y;
-				tvdata[N * y + x].position[2] = 0.0;
-				lvdata[N * y + x].position[0] = v.x;
-				lvdata[N * y + x].position[1] = v.y;
-				lvdata[N * y + x].position[2] = -0.1;
+				fvec2 v			   = PositionList[N * y + x];
+				tva[N * y + x].position[0] = v.x;
+				tva[N * y + x].position[1] = v.y;
+				tva[N * y + x].position[2] = 0.0;
+				lva[N * y + x].position[0] = v.x;
+				lva[N * y + x].position[1] = v.y;
+				lva[N * y + x].position[2] = -0.1;
 			}
 		}
 	}
