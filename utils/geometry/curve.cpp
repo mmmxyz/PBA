@@ -106,7 +106,11 @@ b_spline b_spline::diff()
 		}
 	}
 
-	return b_spline(p - 1, n - 1, Q, knots + 1);
+	b_spline diff(p - 1, n - 1, Q, knots + 1);
+
+	delete[] Q;
+
+	return diff;
 }
 
 fvec3 piecewise_cubic_hermite::operator()(const float& t)
