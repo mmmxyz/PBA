@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_library(fileloaderLib STATIC
 	OBJLoader.cpp
+	VTKLoader.cpp
+	TetGenLoader.cpp
 )
 
 include_directories(fileloaderLib PRIVATE

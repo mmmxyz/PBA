@@ -19,7 +19,7 @@ bool LoadOBJtoRenderTriangleMesh(
     const fvec3& meshoffset,
     const float& meshscale)
 {
-	std::ifstream file(filename, std::ios::binary);
+	std::ifstream file(filename);
 	if (file.fail()) {
 		std::cout << "fail to open file: " << filename << std::endl;
 		return false;
@@ -294,7 +294,7 @@ bool LoadOBJtoRenderEdgeMesh(
     const fvec3& meshoffset,
     const float& meshscale)
 {
-	std::ifstream file(filename, std::ios::binary);
+	std::ifstream file(filename);
 	if (file.fail()) {
 		std::cout << "fail to open file: " << filename << std::endl;
 		return false;
@@ -455,7 +455,7 @@ bool LoadOBJtoPhysicsTriangleMesh(
     const fvec3& meshoffset,
     const float& meshscale)
 {
-	std::ifstream file(filename, std::ios::binary);
+	std::ifstream file(filename);
 	if (file.fail()) {
 		std::cout << "fail to open file: " << filename << std::endl;
 		return false;
