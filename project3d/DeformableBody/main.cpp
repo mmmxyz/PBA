@@ -466,7 +466,7 @@ void timestep(DeformableMesh& CM)
 			CM.FemProjectGS(tempp);
 			CM.FixedProjection(tempp);
 		}
-	else
+	else if (solver == 1)
 		for (uint32_t x = 0; x < 15; x++) {
 			CM.FemProjectJC(tempp);
 			CM.FixedProjection(tempp);
