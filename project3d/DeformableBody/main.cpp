@@ -68,8 +68,8 @@ class DeformableMesh {
 
 		fvec3* vertdata;
 
-		//LoadTetGentoTetrahedraMesh("../../../resource/Bunny", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 6.0);
-		LoadTetGentoTetrahedraMesh("../../../resource/Dragon", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 18.0);
+		LoadTetGentoTetrahedraMesh("../../../resource/Bunny", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 6.0);
+		//LoadTetGentoTetrahedraMesh("../../../resource/Dragon", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 18.0);
 
 		tva.resetvertarray(vertsize, tisize, tilist);
 		lva.resetvertarray(vertsize, lisize, lilist);
@@ -102,7 +102,7 @@ class DeformableMesh {
 			qList[i] = fquaternion(0.0, 0.0, 0.0, 1.0);
 		}
 
-		mass = 0.000001;
+		mass = 0.00001;
 
 		this->UpdataVertarray();
 
