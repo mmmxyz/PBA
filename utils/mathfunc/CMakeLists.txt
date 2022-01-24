@@ -10,6 +10,6 @@ add_library(mathLib STATIC
 	polardecompose.cpp
 )
 
-include_directories(mathLib PRIVATE
+target_include_directories(mathLib PRIVATE
 	../..
 )

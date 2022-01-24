@@ -9,6 +9,6 @@ add_library(meshgeneratorLib STATIC
 	meshgenerator.cpp
 )
 
-include_directories(meshgeneratorLib PRIVATE
+target_include_directories(meshgeneratorLib PRIVATE
 	../..
 )

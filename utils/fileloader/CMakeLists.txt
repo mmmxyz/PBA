@@ -11,6 +11,6 @@ add_library(fileloaderLib STATIC
 	TetGenLoader.cpp
 )
 
-include_directories(fileloaderLib PRIVATE
+target_include_directories(fileloaderLib PRIVATE
 	../..
 )

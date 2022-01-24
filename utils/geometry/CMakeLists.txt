@@ -9,6 +9,6 @@ add_library(geoLib STATIC
 	curve.cpp
 )
 
-include_directories(geoLib PRIVATE
+target_include_directories(geoLib PRIVATE
 	../..
 )

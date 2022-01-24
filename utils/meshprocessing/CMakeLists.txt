@@ -10,6 +10,6 @@ add_library(meshprosLib STATIC
 	MeshConv.cpp
 )
 
-include_directories(meshprosLib PRIVATE
+target_include_directories(meshprosLib PRIVATE
 	../..
 )
