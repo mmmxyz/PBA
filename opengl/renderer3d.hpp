@@ -16,12 +16,14 @@ struct drawobject {
 	const texture* const pTex;
 	const fquaternion* const pAmat;
 	const fvec3* const pAvec;
+	bool renderswitch;
 
 	drawobject(const vertarray& va, const texture& Tex, const fquaternion& Amat, const fvec3& Avec)
 	    : Va(va)
 	    , pTex(&Tex)
 	    , pAmat(&Amat)
 	    , pAvec(&Avec)
+	    , renderswitch(true)
 	{
 	}
 	drawobject(const vertarray& va, const fquaternion& Amat, const fvec3& Avec)
@@ -29,6 +31,7 @@ struct drawobject {
 	    , pTex(nullptr)
 	    , pAmat(&Amat)
 	    , pAvec(&Avec)
+	    , renderswitch(true)
 	{
 	}
 	drawobject(const vertarray& va, const texture& Tex)
@@ -36,6 +39,7 @@ struct drawobject {
 	    , pTex(&Tex)
 	    , pAmat(nullptr)
 	    , pAvec(nullptr)
+	    , renderswitch(true)
 	{
 	}
 	drawobject(const vertarray& va)
@@ -43,6 +47,7 @@ struct drawobject {
 	    , pTex(nullptr)
 	    , pAmat(nullptr)
 	    , pAvec(nullptr)
+	    , renderswitch(true)
 	{
 	}
 };

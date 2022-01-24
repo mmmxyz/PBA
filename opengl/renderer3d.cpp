@@ -363,6 +363,10 @@ void drawshadow(
 	useshadowshader();
 
 	for (const auto& d : shadowlist) {
+
+		if (!d.renderswitch)
+			continue;
+
 		if (d.pAmat != nullptr && d.pAvec != nullptr) {
 			setAffine((*d.pAmat).qtomat(), (*d.pAvec));
 		} else
@@ -383,6 +387,9 @@ void drawedge(
 	counter++;
 	if (counter >= 7) {
 		for (const auto& d : edgelist) {
+			if (!d.renderswitch)
+				continue;
+
 			if (d.pAmat != nullptr && d.pAvec != nullptr) {
 				setAffine((*d.pAmat).qtomat(), (*d.pAvec));
 			} else
@@ -402,6 +409,9 @@ void drawrender(
 {
 	userenderershader();
 	for (const auto& d : renderlist) {
+		if (!d.renderswitch)
+			continue;
+
 		if (d.pTex != nullptr) {
 			d.pTex->activate(2);
 		} else
