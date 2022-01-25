@@ -1,8 +1,8 @@
 # resource
 
-* Bunny.obj
-* Dragon.obj
-* TeaPot.obj
+* Bunny
+* Dragon
+* TeaPot
 
 について
 
