@@ -357,7 +357,7 @@ class DeformableMesh {
 				dx[4 * i + 3] = fvec3(0.0);
 			}
 
-			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001 && MaterialInd != 2) {
+			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001) {
 				fquaternion q = ExtractRotation(F, 1, qList[i]);
 				qList[i]      = q;
 				fmat3 R	      = q.qtomat();
