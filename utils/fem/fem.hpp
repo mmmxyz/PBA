@@ -258,3 +258,83 @@ void FemElasticDDxNeoHookean(
 	ddx3 = (H3 + 0.001 * fmat3::indentity()).inverse() * dx3;
 }
 */
+
+void FemElasticDxNeoHookean(
+    const fmat2& F,
+    const fmat2& E,
+    const fmat2& A,
+    const float& Volume,
+    const float& lambda,
+    const float& mu, float& W,
+    fvec2& dx0,
+    fvec2& dx1,
+    fvec2& dx2)
+{
+
+	float J	   = F.det();
+	float logJ = std::log(J);
+	if (J < 0.00001)
+		logJ = 0.0;
+	W = Volume * (0.5 * mu * (F.sqlength() - 2) - mu * logJ + 0.5 * lambda * logJ * logJ);
+
+	if (std::abs(F.det()) < 0.00001)
+		W = 0.0;
+	fmat2 P = Volume * (mu * F - mu * (F.inverse()).transpose() + lambda * logJ * (F.inverse()).transpose());
+
+	fmat2 PAt = P * A.transpose();
+
+	dx1 = fvec3(PAt.m[0], PAt.m[2]);
+	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx0 = -(dx1 + dx2);
+}
+
+void FemElasticDxStVenant(
+    const fmat2& F,
+    const fmat2& E,
+    const fmat2& A,
+    const float& Volume,
+    const float& lambda,
+    const float& mu,
+    float& W,
+    fvec2& dx0,
+    fvec2& dx1,
+    fvec2& dx2)
+{
+
+	W	= Volume * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
+	fmat2 P = Volume * (2 * mu * F * E + lambda * E.trace() * F);
+
+	fmat2 PAt = P * A.transpose();
+
+	dx1 = fvec3(PAt.m[0], PAt.m[2]);
+	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx0 = -(dx1 + dx2);
+}
+
+void FemElasticDxCoRotational(
+    const fmat2& F,
+    const fmat2& E,
+    const fmat2& A,
+    float& omega,
+    const float& Volume,
+    const float& lambda,
+    const float& mu,
+    float& W,
+    fvec2& dx0,
+    fvec2& dx1,
+    fvec2& dx2,
+{
+	omega = ExtractRotation(F, 3, omega);
+
+	fmat2 R(omega);
+	fmat2 S	  = R.transpose() * F;
+	float trS = S.trace();
+	W	  = Volume * (0.5 * mu * ((F - R).sqlength()) + 0.5 * lambda * (trS * trS - 4 * trS + 4));
+	fmat2 P	  = Volume * (mu * (F - R) + lambda * (trS - 2) * R);
+
+	fmat2 PAt = P * A.transpose();
+
+	dx1 = fvec3(PAt.m[0], PAt.m[2]);
+	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx0 = -(dx1 + dx2);
+}
