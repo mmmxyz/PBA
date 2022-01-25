@@ -331,3 +331,65 @@ void CubeTetrahedra(
 	}
 	*/
 }
+
+void RectTriangle(
+    const uint32_t N,
+    const uint32_t M,
+    const float Lx,
+    const float Ly,
+    fvec2** const vertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgelistdata,
+    uint32_t& edgelistsize,
+    const fvec2& bias)
+{
+	vertsize  = N * M;
+	*vertdata = new fvec2[vertsize];
+
+	ilistsize  = 2 * 3 * (N - 1) * (M - 1);
+	*ilistdata = new uint32_t[ilistsize];
+
+	edgelistsize  = 6 * (N - 1) * (M - 1);
+	*edgelistdata = new uint32_t[edgelistsize];
+
+	for (uint32_t y = 0; y < M; y++) {
+		float vy = -0.5 * Ly + Ly * (y / float(M - 1));
+		for (uint32_t x = 0; x < N; x++) {
+			float vx	       = -0.5 * Lx + Lx * (x / float(N - 1));
+			(*vertdata)[N * y + x] = fvec2(vx, vy) + bias;
+		}
+	}
+
+	for (uint32_t y = 0; y < M - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + 1;
+			uint32_t Ind2 = Ind0 + N;
+			uint32_t Ind3 = Ind0 + N + 1;
+
+			(*ilistdata)[6 * ((N - 1) * y + x) + 0] = Ind0;
+			(*ilistdata)[6 * ((N - 1) * y + x) + 1] = Ind1;
+			(*ilistdata)[6 * ((N - 1) * y + x) + 2] = Ind2;
+
+			(*ilistdata)[6 * ((N - 1) * y + x) + 3] = Ind2;
+			(*ilistdata)[6 * ((N - 1) * y + x) + 4] = Ind1;
+			(*ilistdata)[6 * ((N - 1) * y + x) + 5] = Ind3;
+		}
+	}
+
+	for (uint32_t y = 0; y < M - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0				   = N * y + x;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 0] = Ind0;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 1] = Ind0 + 1;
+
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 2] = Ind0 + 1;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 3] = Ind0 + N;
+
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 4] = Ind0 + N;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 5] = Ind0;
+		}
+	}
+}

@@ -15,6 +15,10 @@
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/mathfunc/polardecompose.hpp"
 
+#include "utils/meshgenerator/meshgenerator.hpp"
+
+#include "utils/fem/fem.hpp"
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -36,16 +40,16 @@ class ClothMesh {
 	std::vector<fvec2> PositionList;
 	std::vector<fvec2> RestPositionList;
 	std::vector<fvec2> VelocityList;
-	std::vector<uint32_t> TriIndList;
-	std::vector<uint32_t> InnerEdgeIndList;
+
+	uint32_t vertsize;
+	fvec2* vertdata;
+	uint32_t* tridata;
+	uint32_t trisize;
+	uint32_t* edgedata;
+	uint32_t edgesize;
 
 	linevertarray lva;
-	uint32_t* lilist;
-	uint32_t lisize;
-
 	trianglevertarray tva;
-	uint32_t* tilist;
-	uint32_t tisize;
 
 	std::vector<float> ElasticLamdalist;
 
@@ -66,120 +70,43 @@ class ClothMesh {
 	    , tva()
 	{
 
-		PositionList.reserve(N * M);
-		RestPositionList.reserve(N * M);
-		VelocityList.reserve(N * M);
-		TriIndList.reserve(3 * 2 * (N - 1) * (M - 1));
+		RectTriangle(N, M, lengthx, lengthy, &vertdata, vertsize, &tridata, trisize, &edgedata, edgesize, bias);
 
-		AList.reserve(2 * (N - 1) * (M - 1));
-		VList.reserve(2 * (N - 1) * (M - 1));
+		PositionList.resize(vertsize);
+		RestPositionList.resize(vertsize);
+		VelocityList.resize(vertsize);
 
-		ElasticLamdalist.resize(3 * 2 * (N - 1) * (M - 1));
+		AList.resize(trisize / 3);
+		VList.resize(trisize / 3);
+		ElasticLamdalist.resize(trisize / 3);
+		oList.resize(trisize / 3);
 
-		for (uint32_t y = 0; y < M; y++) {
-			float vy = -0.5 * lengthy + lengthy * (y / float(M - 1));
-			for (uint32_t x = 0; x < N; x++) {
-				float vx = -0.5 * lengthx + lengthx * (x / float(N - 1));
-				PositionList.emplace_back(fvec2(vx, vy) + bias);
-				RestPositionList.emplace_back(fvec2(vx, vy) + bias);
-				VelocityList.emplace_back(fvec2(0.0));
-			}
+		mass = 0.001;
+
+		for (uint32_t i = 0; i < vertsize; i++) {
+			PositionList[i]	    = vertdata[i];
+			RestPositionList[i] = vertdata[i];
+			VelocityList[i]	    = fvec2(0.0);
 		}
 
-		mass = rho * lengthx * lengthy / (M * N);
+		for (uint32_t i = 0; i < trisize / 3; i++) {
+			fvec2 X0 = RestPositionList[tridata[3 * i + 0]];
+			fvec2 X1 = RestPositionList[tridata[3 * i + 1]];
+			fvec2 X2 = RestPositionList[tridata[3 * i + 2]];
 
-		for (uint32_t y = 0; y < M - 1; y++) {
-			for (uint32_t x = 0; x < N - 1; x++) {
-				uint32_t Ind0 = N * y + x;
-				uint32_t Ind1 = Ind0 + 1;
-				uint32_t Ind2 = Ind0 + N;
-				uint32_t Ind3 = Ind0 + N + 1;
-
-				TriIndList.emplace_back(Ind0);
-				TriIndList.emplace_back(Ind1);
-				TriIndList.emplace_back(Ind2);
-
-				TriIndList.emplace_back(Ind2);
-				TriIndList.emplace_back(Ind1);
-				TriIndList.emplace_back(Ind3);
-			}
+			AList[i] = fmat2(X1 - X0, X2 - X0).inverse();
+			VList[i] = (X1 - X0).cross(X2 - X0) / 2.0;
+			oList[i] = 0.0;
 		}
 
-		for (uint32_t i = 0; i < 2 * (M - 1) * (N - 1); i++) {
-			fvec2 X0 = RestPositionList[TriIndList[3 * i + 0]];
-			fvec2 X1 = RestPositionList[TriIndList[3 * i + 1]];
-			fvec2 X2 = RestPositionList[TriIndList[3 * i + 2]];
+		tva.resetvertarray(vertsize, trisize, tridata);
+		tva.setcolor(0.8, 0.8, 0.8, 1.0);
+		tva.settype(1);
 
-			AList.emplace_back(fmat2(X1 - X0, X2 - X0).inverse());
-			VList.emplace_back((X1 - X0).cross(X2 - X0) / 2.0);
-			oList.emplace_back(0.0);
-		}
-
-		uint32_t tvsize = N * M;
-
-		tisize = 3 * 2 * (N - 1) * (M - 1);
-		tilist = new uint32_t[tisize];
-
-		for (uint32_t y = 0; y < M - 1; y++) {
-			for (uint32_t x = 0; x < N - 1; x++) {
-				uint32_t Ind0			  = N * y + x;
-				tilist[6 * ((N - 1) * y + x) + 0] = Ind0;
-				tilist[6 * ((N - 1) * y + x) + 1] = Ind0 + 1;
-				tilist[6 * ((N - 1) * y + x) + 2] = Ind0 + N;
-
-				tilist[6 * ((N - 1) * y + x) + 3] = Ind0 + N;
-				tilist[6 * ((N - 1) * y + x) + 4] = Ind0 + 1;
-				tilist[6 * ((N - 1) * y + x) + 5] = Ind0 + N + 1;
-			}
-		}
-
-		tva.resetvertarray(tvsize, tisize, tilist);
-
-		for (uint32_t i = 0; i < M * N; i++) {
-			tva[i].color[0] = 0.8;
-			tva[i].color[1] = 0.8;
-			tva[i].color[2] = 0.8;
-			tva[i].color[3] = 1.0;
-			tva[i].type	= 1;
-		}
-
-		uint32_t lvsize = N * M;
-
-		lisize = (6 * (N - 1) + 2) * (M - 1) + 2 * (N - 1);
-		lilist = new uint32_t[lisize];
-
-		for (uint32_t y = 0; y < M - 1; y++) {
-			for (uint32_t x = 0; x < N - 1; x++) {
-				uint32_t Ind0				  = N * y + x;
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 0] = Ind0;
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 1] = Ind0 + 1;
-
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 2] = Ind0 + 1;
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 3] = Ind0 + N;
-
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 4] = Ind0 + N;
-				lilist[(6 * (N - 1) + 2) * y + 6 * x + 5] = Ind0;
-			}
-			lilist[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 0] = N * y + N - 1;
-			lilist[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 1] = N * y + 2 * N - 1;
-		}
-		for (uint32_t x = 0; x < N - 1; x++) {
-			lilist[(6 * (N - 1) + 2) * (M - 1) + 2 * x + 0] = (M - 1) * N + x;
-			lilist[(6 * (N - 1) + 2) * (M - 1) + 2 * x + 1] = (M - 1) * N + x + 1;
-		}
-
-		lva.resetvertarray(lvsize, lisize, lilist);
-
-		for (uint32_t i = 0; i < M * N; i++) {
-			lva[i].color[0] = 0.0;
-			lva[i].color[1] = 0.0;
-			lva[i].color[2] = 0.0;
-			lva[i].color[3] = 1.0;
-			lva[i].type	= 0;
-		}
+		lva.resetvertarray(vertsize, edgesize, edgedata);
+		lva.setcolor(0.0, 0.0, 0.0, 1.0);
 
 		this->UpdataVertarray();
-
 		this->Setdata();
 	}
 
@@ -188,20 +115,19 @@ class ClothMesh {
 	{
 
 #pragma omp parallel
-		for (uint32_t y = 0; y < M; y++) {
-			for (uint32_t x = 0; x < N; x++) {
-				fvec2 v			   = PositionList[N * y + x];
-				tva[N * y + x].position[0] = v.x;
-				tva[N * y + x].position[1] = v.y;
-				tva[N * y + x].position[2] = 0.0;
-				lva[N * y + x].position[0] = v.x;
-				lva[N * y + x].position[1] = v.y;
-				lva[N * y + x].position[2] = -0.1;
-			}
+		for (uint32_t i = 0; i < vertsize; i++) {
+			const fvec2& v	   = PositionList[i];
+			tva[i].position[0] = v.x;
+			tva[i].position[1] = v.y;
+			tva[i].position[2] = 0.0;
+			lva[i].position[0] = v.x;
+			lva[i].position[1] = v.y;
+			lva[i].position[2] = -0.1;
 		}
 	}
 
-	void Setdata()
+	void
+	Setdata()
 	{
 		tva.vboupdate();
 		lva.vboupdate();
@@ -217,66 +143,79 @@ class ClothMesh {
 
 	void FemElasticProjectGS(std::vector<fvec2>& TempPosition)
 	{
-		for (uint32_t i = 0; i < 2 * (M - 1) * (N - 1); i++) {
-			fvec2 X0 = RestPositionList[TriIndList[3 * i + 0]];
-			fvec2 X1 = RestPositionList[TriIndList[3 * i + 1]];
-			fvec2 X2 = RestPositionList[TriIndList[3 * i + 2]];
+		for (uint32_t i = 0; i < trisize / 3; i++) {
+			const fvec2& X0 = RestPositionList[tridata[3 * i + 0]];
+			const fvec2& X1 = RestPositionList[tridata[3 * i + 1]];
+			const fvec2& X2 = RestPositionList[tridata[3 * i + 2]];
 
-			fvec2 x0 = TempPosition[TriIndList[3 * i + 0]];
-			fvec2 x1 = TempPosition[TriIndList[3 * i + 1]];
-			fvec2 x2 = TempPosition[TriIndList[3 * i + 2]];
+			const fvec2& x0 = TempPosition[tridata[3 * i + 0]];
+			const fvec2& x1 = TempPosition[tridata[3 * i + 1]];
+			const fvec2& x2 = TempPosition[tridata[3 * i + 2]];
 
-			fmat2 A = AList[i];
-			fmat2 F = mat2(x1 - x0, x2 - x0) * A;
+			const fmat2& A = AList[i];
+			const fmat2 F  = mat2(x1 - x0, x2 - x0) * A;
 
-			fmat2 E = 0.5 * (F.transpose() * F - fmat2::identity());
+			const fmat2 E = 0.5 * (F.transpose() * F - fmat2::identity());
 
-			float V = VList[i];
-			V *= 1.0f;
+			const float& V = VList[i];
 
 			float W;
-			fmat2 B;
+			fvec2 dx0, dx1, dx2;
+
 			if (MaterialInd == 0) {
-				W = V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
-				B = V * (2 * mu * F * E + lambda * E.trace() * F);
+				FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2);
 			} else if (MaterialInd == 1) {
-				float J	   = F.det();
-				float logJ = std::log(J);
-				if (J < 0.0)
-					logJ = 0.0;
-				W = V * (0.5 * mu * (F.sqlength() - 2) - mu * logJ + 0.5 * lambda * logJ * logJ);
-				B = V * (mu * F - mu * (F.inverse()).transpose() + lambda * logJ * (F.inverse()).transpose());
+				FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2);
 			} else if (MaterialInd == 2) {
-				float omega = ExtractRotation(F, 3, oList[i]);
-				oList[i]    = omega;
-				fmat2 R(omega);
-				fmat2 S	  = R.transpose() * F;
-				float trS = S.trace();
-				W	  = V * (0.5 * mu * ((F - R).sqlength()) + 0.5 * lambda * (trS * trS - 4 * trS + 4));
-				B	  = V * (mu * (F - R) + lambda * (trS - 2) * R);
+				FemElasticDxCoRotational(F, E, A, oList[i], V, lambda, mu, W, dx0, dx1, dx2);
 			}
 
-			//std::cout << W << std::endl;
-			//std::cout << V << std::endl;
+			if (W > 0.0001) {
 
-			if (W > 0.0) {
 				float C = std::sqrt(2.0 * W);
 
-				fmat2 BAt = B * A.transpose();
+				//fmat2 BAt = B * A.transpose();
 
-				fvec2 dC1 = (1.0 / C) * fvec2(BAt.m[0], BAt.m[2]);
-				fvec2 dC2 = (1.0 / C) * fvec2(BAt.m[1], BAt.m[3]);
-				fvec2 dC0 = -(dC1 + dC2);
+				fvec2 dC1 = (1.0 / C) * dx1;
+				fvec2 dC2 = (1.0 / C) * dx2;
+				fvec2 dC0 = (1.0 / C) * dx0;
 
 				//std::cout << dC1 << std::endl;
 
 				float dtdtdlambda = (-C - ElasticLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
 
-				TempPosition[TriIndList[3 * i + 0]] = TempPosition[TriIndList[3 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
-				TempPosition[TriIndList[3 * i + 1]] = TempPosition[TriIndList[3 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
-				TempPosition[TriIndList[3 * i + 2]] = TempPosition[TriIndList[3 * i + 2]] + dtdtdlambda * (1.0 / mass) * dC2;
+				TempPosition[tridata[3 * i + 0]] = TempPosition[tridata[3 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
+				TempPosition[tridata[3 * i + 1]] = TempPosition[tridata[3 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
+				TempPosition[tridata[3 * i + 2]] = TempPosition[tridata[3 * i + 2]] + dtdtdlambda * (1.0 / mass) * dC2;
 
 				ElasticLamdalist[i] += dtdtdlambda / (dt * dt);
+			}
+
+			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001) {
+				float omega = ExtractRotation(F, 1, oList[i]);
+				oList[i]    = omega;
+				fmat2 R(omega);
+
+				//fmat2 S	  = R.transpose() * F;
+				//float trS = S.trace();
+
+				float W = 0.5 * (F - R).sqlength();
+				fmat2 B = (F - R);
+
+				float C = std::sqrt(2.0 * W);
+
+				fmat2 BAt = B * A.transpose();
+
+				fvec2 dC1 = fvec2(BAt.m[0], BAt.m[2]);
+				fvec2 dC2 = fvec2(BAt.m[1], BAt.m[3]);
+				fvec2 dC0 = -(dC1 + dC2);
+
+				float dtdtdlambda = -C / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()));
+				dtdtdlambda *= 0.35;
+
+				TempPosition[tridata[3 * i + 0]] = TempPosition[tridata[3 * i + 0]] + dtdtdlambda * dC0;
+				TempPosition[tridata[3 * i + 1]] = TempPosition[tridata[3 * i + 1]] + dtdtdlambda * dC1;
+				TempPosition[tridata[3 * i + 2]] = TempPosition[tridata[3 * i + 2]] + dtdtdlambda * dC2;
 			}
 		}
 	}
@@ -284,61 +223,42 @@ class ClothMesh {
 	void FemElasticProjectJC(std::vector<fvec2>& TempPosition)
 	{
 
-		std::vector<fvec2> dx(3 * 2 * (M - 1) * (N - 1));
+		std::vector<fvec2> dx(trisize);
 
 #pragma omp parallel for
-		for (uint32_t i = 0; i < 2 * (M - 1) * (N - 1); i++) {
-			fvec2 X0 = RestPositionList[TriIndList[3 * i + 0]];
-			fvec2 X1 = RestPositionList[TriIndList[3 * i + 1]];
-			fvec2 X2 = RestPositionList[TriIndList[3 * i + 2]];
+		for (uint32_t i = 0; i < trisize / 3; i++) {
+			const fvec2& X0 = RestPositionList[tridata[3 * i + 0]];
+			const fvec2& X1 = RestPositionList[tridata[3 * i + 1]];
+			const fvec2& X2 = RestPositionList[tridata[3 * i + 2]];
 
-			fvec2 x0 = TempPosition[TriIndList[3 * i + 0]];
-			fvec2 x1 = TempPosition[TriIndList[3 * i + 1]];
-			fvec2 x2 = TempPosition[TriIndList[3 * i + 2]];
+			const fvec2& x0 = TempPosition[tridata[3 * i + 0]];
+			const fvec2& x1 = TempPosition[tridata[3 * i + 1]];
+			const fvec2& x2 = TempPosition[tridata[3 * i + 2]];
 
-			fmat2 A = AList[i];
-			fmat2 F = mat2(x1 - x0, x2 - x0) * A;
+			const fmat2& A = AList[i];
+			const fmat2 F  = mat2(x1 - x0, x2 - x0) * A;
 
-			fmat2 E = 0.5 * (F.transpose() * F - fmat2::identity());
+			const fmat2 E = 0.5 * (F.transpose() * F - fmat2::identity());
 
-			float V = VList[i];
-			V *= 1.0f;
+			const float& V = VList[i];
 
 			float W;
-			fmat2 B;
+			fvec2 dx0, dx1, dx2;
+
 			if (MaterialInd == 0) {
-				W = V * (mu * E.sqlength() + 0.5 * lambda * E.trace() * E.trace());
-				B = V * (2 * mu * F * E + lambda * E.trace() * F);
+				FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2);
 			} else if (MaterialInd == 1) {
-				float J	   = F.det();
-				float logJ = std::log(J);
-				if (J < 0.0)
-					logJ = 0.0;
-				W = V * (0.5 * mu * (F.sqlength() - 2) - mu * logJ + 0.5 * lambda * logJ * logJ);
-				B = V * (mu * F - mu * (F.inverse()).transpose() + lambda * logJ * (F.inverse()).transpose());
+				FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2);
 			} else if (MaterialInd == 2) {
-				float omega = ExtractRotation(F, 3, oList[i]);
-				oList[i]    = omega;
-				fmat2 R(omega);
-				fmat2 S	  = R.transpose() * F;
-				float trS = S.trace();
-				W	  = V * (0.5 * mu * ((F - R).sqlength()) + 0.5 * lambda * (trS * trS - 4 * trS + 4));
-				B	  = V * (mu * (F - R) + lambda * (trS - 2) * R);
+				FemElasticDxCoRotational(F, E, A, oList[i], V, lambda, mu, W, dx0, dx1, dx2);
 			}
 
-			//std::cout << W << std::endl;
-			//std::cout << V << std::endl;
-
-			if (W > 0.0) {
+			if (W > 0.0001) {
 				float C = std::sqrt(2.0 * W);
 
-				fmat2 BAt = B * A.transpose();
-
-				fvec2 dC1 = (1.0 / C) * fvec2(BAt.m[0], BAt.m[2]);
-				fvec2 dC2 = (1.0 / C) * fvec2(BAt.m[1], BAt.m[3]);
-				fvec2 dC0 = -(dC1 + dC2);
-
-				//std::cout << dC1 << std::endl;
+				fvec2 dC1 = (1.0 / C) * dx1;
+				fvec2 dC2 = (1.0 / C) * dx2;
+				fvec2 dC0 = (1.0 / C) * dx0;
 
 				float dtdtdlambda = (-C - ElasticLamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / mass + 1.0 / (dt * dt));
 				dtdtdlambda *= 0.2;
@@ -353,16 +273,45 @@ class ClothMesh {
 				dx[3 * i + 1] = fvec2(0.0);
 				dx[3 * i + 2] = fvec2(0.0);
 			}
+
+			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001) {
+				float omega = ExtractRotation(F, 1, oList[i]);
+				oList[i]    = omega;
+				fmat2 R(omega);
+
+				//fmat2 S	  = R.transpose() * F;
+				//float trS = S.trace();
+
+				float W = 0.5 * (F - R).sqlength();
+				fmat2 B = (F - R);
+
+				float C = std::sqrt(2.0 * W);
+
+				fmat2 BAt = B * A.transpose();
+
+				fvec2 dC1 = fvec2(BAt.m[0], BAt.m[2]);
+				fvec2 dC2 = fvec2(BAt.m[1], BAt.m[3]);
+				fvec2 dC0 = -(dC1 + dC2);
+
+				float dtdtdlambda = -C / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()));
+				dtdtdlambda *= 0.35;
+
+				dx[3 * i + 0] = dtdtdlambda * dC0;
+				dx[3 * i + 1] = dtdtdlambda * dC1;
+				dx[3 * i + 2] = dtdtdlambda * dC2;
+			}
 		}
 
 #pragma omp parallel for
-		for (uint32_t i = 0; i < 3 * 2 * (M - 1) * (N - 1); i++) {
-			TempPosition[TriIndList[i]] = TempPosition[TriIndList[i]] + dx[i];
+		for (uint32_t i = 0; i < trisize; i++) {
+			TempPosition[tridata[i]] = TempPosition[tridata[i]] + dx[i];
 		}
 	}
 
 	void FixedProjection(std::vector<fvec2>& TempPosition)
 	{
+
+		//RectMeshに依存
 
 		for (uint32_t i = 0; i <= N * (M - 1); i += N)
 			TempPosition[i] = RestPositionList[i];
@@ -385,7 +334,7 @@ void timestep(ClothMesh& CM)
 
 	CM.ClearLamda();
 
-	uint32_t NodeSize = CM.N * CM.M;
+	uint32_t NodeSize = CM.vertsize;
 	std::vector<fvec2> tempp(NodeSize);
 
 #pragma omp parallel for
@@ -400,7 +349,7 @@ void timestep(ClothMesh& CM)
 			CM.FixedProjection(tempp);
 		}
 	else if (solver == 1)
-		for (uint32_t x = 0; x < 100; x++) {
+		for (uint32_t x = 0; x < 200; x++) {
 			CM.FemElasticProjectJC(tempp);
 			CM.FixedProjection(tempp);
 		}
@@ -466,6 +415,8 @@ int main(int argc, char const* argv[])
 
 		static bool nextframe = false;
 
+		static int32_t rendermethod = 0;
+
 		//physics
 		ctime = Visualizer::GetTime();
 		if (!is_stop || nextframe) {
@@ -508,6 +459,16 @@ int main(int argc, char const* argv[])
 
 			ImGui::Text("scale = %.1f", scale);
 
+			if (ImGui::Combo("RenderMethod", &(rendermethod), "Triangle\0Vertex\0\0")) {
+				if (rendermethod == 0) {
+					renderlist[0].renderswitch = true;
+					renderlist[1].renderswitch = true;
+				} else if (rendermethod == 1) {
+					renderlist[0].renderswitch = false;
+					renderlist[1].renderswitch = false;
+				}
+			}
+
 			ImGui::Combo("Solver", &(Physics::solver), "Gauss-Seidel\0Jacobi\0\0");
 			ImGui::Combo("Material", &(CM0.MaterialInd), "Saint Venant-Kirchhoff\0Neo-Hookean\0Co-Rotational\0\0");
 			ImGui::SliderFloat("mu", &mu, 0.0f, 500.0f, "%.lf", ImGuiSliderFlags_Logarithmic);
@@ -523,7 +484,7 @@ int main(int argc, char const* argv[])
 
 				vtime = 0.0;
 
-				for (uint32_t i = 0; i < (CM0.M * CM0.N); i++) {
+				for (uint32_t i = 0; i < CM0.vertsize; i++) {
 					CM0.PositionList[i].x = CM0.RestPositionList[i].x;
 					CM0.PositionList[i].y = CM0.RestPositionList[i].y;
 					CM0.VelocityList[i]   = fvec2(0.0);
@@ -533,6 +494,24 @@ int main(int argc, char const* argv[])
 			}
 
 			ImGui::End();
+		}
+
+		if (rendermethod == 1) {
+			for (uint32_t i = 0; i < CM0.trisize / 3; i++) {
+				fvec2 x0 = CM0.PositionList[CM0.tridata[3 * i + 0]];
+				fvec2 x1 = CM0.PositionList[CM0.tridata[3 * i + 1]];
+				fvec2 x2 = CM0.PositionList[CM0.tridata[3 * i + 2]];
+
+				fvec2 cm = (x0 + x1 + x2) / 3.0;
+
+				x0 = (x0 - cm) * 0.8 + cm;
+				x1 = (x1 - cm) * 0.8 + cm;
+				x2 = (x2 - cm) * 0.8 + cm;
+
+				Renderer2D::DrawLine(x0, x1);
+				Renderer2D::DrawLine(x1, x2);
+				Renderer2D::DrawLine(x2, x0);
+			}
 		}
 
 		//renderer set

@@ -96,8 +96,8 @@ void Draw(const std::vector<drawobject>& renderlist)
 	updateUniformobj();
 
 	for (const auto& d : renderlist) {
-
-		d.Va.draw();
+		if (d.renderswitch)
+			d.Va.draw();
 	}
 }
 
@@ -123,7 +123,7 @@ void DrawLine(const fvec2& x0, const fvec2& x1, const fvec3& color)
 
 void DrawLine(const fvec2& x0, const fvec2& x1)
 {
-	DrawLine(x0, x1, 1.0, 1.0, 1.0);
+	DrawLine(x0, x1, 0.0, 0.0, 0.0);
 }
 
 void DrawPoint(const fvec2& x, const float& r, const float& g, const float& b)
@@ -141,7 +141,7 @@ void DrawPoint(const fvec2& x, const fvec3& color)
 
 void DrawPoint(const fvec2& x)
 {
-	DrawPoint(x, 1.0, 1.0, 1.0);
+	DrawPoint(x, 0.0, 0.0, 0.0);
 }
 
 void DrawPolyLine(const fvec2* const X, const uint32_t size, const float& r, const float& g, const float& b)
@@ -167,7 +167,7 @@ void DrawPolyLine(const fvec2* const X, const uint32_t size, const fvec3& color)
 
 void DrawPolyLine(const fvec2* const X, const uint32_t size)
 {
-	DrawPolyLine(X, size, 1.0, 1.0, 1.0);
+	DrawPolyLine(X, size, 0.0, 0.0, 0.0);
 }
 
 }

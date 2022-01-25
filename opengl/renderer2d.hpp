@@ -13,8 +13,10 @@ namespace Renderer2D {
 
 struct drawobject {
 	const vertarray& Va;
+	bool renderswitch;
 	drawobject(const vertarray& va)
 	    : Va(va)
+	    , renderswitch(true)
 	{
 	}
 };

@@ -33,3 +33,16 @@ void CubeTetrahedra(
     uint32_t** const edgelistdata,
     uint32_t& edgelistsize,
     const fvec3& bias = fvec3(0.0));
+
+void RectTriangle(
+    const uint32_t N,
+    const uint32_t M,
+    const float Lx,
+    const float Ly,
+    fvec2** const vertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgelistdata,
+    uint32_t& edgelistsize,
+    const fvec2& bias = fvec2(0.0));
