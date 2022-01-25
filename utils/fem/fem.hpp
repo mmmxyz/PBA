@@ -283,8 +283,8 @@ void FemElasticDxNeoHookean(
 
 	fmat2 PAt = P * A.transpose();
 
-	dx1 = fvec3(PAt.m[0], PAt.m[2]);
-	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx1 = fvec2(PAt.m[0], PAt.m[2]);
+	dx2 = fvec2(PAt.m[1], PAt.m[3]);
 	dx0 = -(dx1 + dx2);
 }
 
@@ -306,8 +306,8 @@ void FemElasticDxStVenant(
 
 	fmat2 PAt = P * A.transpose();
 
-	dx1 = fvec3(PAt.m[0], PAt.m[2]);
-	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx1 = fvec2(PAt.m[0], PAt.m[2]);
+	dx2 = fvec2(PAt.m[1], PAt.m[3]);
 	dx0 = -(dx1 + dx2);
 }
 
@@ -334,7 +334,7 @@ void FemElasticDxCoRotational(
 
 	fmat2 PAt = P * A.transpose();
 
-	dx1 = fvec3(PAt.m[0], PAt.m[2]);
-	dx2 = fvec3(PAt.m[1], PAt.m[3]);
+	dx1 = fvec2(PAt.m[0], PAt.m[2]);
+	dx2 = fvec2(PAt.m[1], PAt.m[3]);
 	dx0 = -(dx1 + dx2);
 }
