@@ -322,7 +322,7 @@ void FemElasticDxCoRotational(
     float& W,
     fvec2& dx0,
     fvec2& dx1,
-    fvec2& dx2,
+    fvec2& dx2
 {
 	omega = ExtractRotation(F, 3, omega);
 
