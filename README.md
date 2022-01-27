@@ -3,6 +3,27 @@
 ![ウブンツ](https://github.com/poly-bear/PBA/actions/workflows/ubuntu.yml/badge.svg)
 ![マック](https://github.com/poly-bear/PBA/actions/workflows/mac.yml/badge.svg)
 
+## ディレクトリ構成
+
+* 3rdparty:  
+    サードパーティライブラリ
+* opengl:  
+    レンダラ with OpenGL
+* project2d:  
+    物理シミュレーション等の実装(二次元)
+* project3d:  
+    物理シミュレーション等の実装(三次元)
+* projectcuda:  
+    物理シミュレーション等の実装 using CUDA
+* resource:  
+    メッシュ等のリソース
+* utils:  
+    数学関数等のユーティリティ
+* utilscuda:  
+    数学関数等のユーティリティ using CUDA
+* test:  
+    テスト用
+
 ## ビルド・実行に必要なもの
 
 - GLFW
