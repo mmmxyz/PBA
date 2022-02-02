@@ -846,6 +846,7 @@ int main(int argc, char const* argv[])
 	/////////////////////////////////////
 
 	//cubeから滑り落ちるcubeとbunnyのstack
+	/*
 	uint32_t objectsize = 5;
 	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(-5.0, -8.0, 0.0), 4.00, 1.00);
 	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
@@ -886,6 +887,7 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[4].tva.setcolor(0.8, 0.3, 0.3, 1.0);
 	Physics::rbodyvec[4].tva.settype(1);
 	Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+	*/
 
 	////////////////////////////////////
 
@@ -976,7 +978,6 @@ int main(int argc, char const* argv[])
 	////////////////////////////////////
 
 	//衝突するBunny
-	/*
 	uint32_t objectsize = 4;
 	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(0.0, -11.0, 0.0), 6.00, 5.00);
 	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
@@ -988,7 +989,7 @@ int main(int argc, char const* argv[])
 
 	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(2.0, 2.0, 0.0), 3.00, 3.00);
 	Physics::rbodyvec[1].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0 * 3.1415));
-	Physics::rbodyvec[1].omega    = fvec3(0.0, 0.0, 0.0);
+	Physics::rbodyvec[1].omega    = fvec3(0.0, 8.0, 0.0);
 	Physics::rbodyvec[1].velocity = fvec3(0.0, 0.0, 0.0);
 	Physics::rbodyvec[1].tva.setcolor(0.6, 0.1, 0.7, 1.0);
 	Physics::rbodyvec[1].tva.settype(2);
@@ -1002,14 +1003,13 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[2].tva.settype(2);
 	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(-2.0, 6.0, 2.0), 2.00, 3.00);
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(-2.0, 9.0, 2.0), 2.00, 3.00);
 	Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0 * 3.1415));
 	Physics::rbodyvec[3].omega    = fvec3(2.0, 4.0, 0.0);
 	Physics::rbodyvec[3].velocity = fvec3(2.0, -4.0, 0.0);
 	Physics::rbodyvec[3].tva.setcolor(0.6, 0.1, 0.7, 1.0);
 	Physics::rbodyvec[3].tva.settype(2);
 	Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
-	*/
 
 	//init
 	for (uint32_t i = 0; i < Physics::rbodyvec.size(); i++) {

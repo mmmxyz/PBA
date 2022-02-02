@@ -1,3 +1,7 @@
 # Multibody剛体シミュレーション
 
-![](rbody.gif)
+![](rb1.gif)
+
+![](rb2.gif)
+
+![](rb3.gif)
