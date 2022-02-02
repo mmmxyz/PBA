@@ -47,6 +47,8 @@ class ClothMesh {
 	uint32_t trisize;
 	uint32_t* edgedata;
 	uint32_t edgesize;
+	uint32_t* boundarydata;
+	uint32_t boundarysize;
 
 	linevertarray lva;
 	trianglevertarray tva;
@@ -70,7 +72,7 @@ class ClothMesh {
 	    , tva()
 	{
 
-		RectTriangle(N, M, lengthx, lengthy, &vertdata, vertsize, &tridata, trisize, &edgedata, edgesize, bias);
+		RectTriangle(N, M, lengthx, lengthy, &vertdata, vertsize, &tridata, trisize, &edgedata, edgesize, &boundarydata, boundarysize, bias);
 
 		PositionList.resize(vertsize);
 		RestPositionList.resize(vertsize);
@@ -459,11 +461,15 @@ int main(int argc, char const* argv[])
 
 			ImGui::Text("scale = %.1f", scale);
 
-			if (ImGui::Combo("RenderMethod", &(rendermethod), "Triangle\0Vertex\0\0")) {
+			if (ImGui::Combo("RenderMethod", &(rendermethod), "Triangle\0Vertex\0Surface\0\0")) {
 				if (rendermethod == 0) {
 					renderlist[0].renderswitch = true;
 					renderlist[1].renderswitch = true;
 				} else if (rendermethod == 1) {
+					renderlist[0].renderswitch = false;
+					renderlist[1].renderswitch = false;
+
+				} else if (rendermethod == 2) {
 					renderlist[0].renderswitch = false;
 					renderlist[1].renderswitch = false;
 				}
@@ -511,6 +517,19 @@ int main(int argc, char const* argv[])
 				Renderer2D::DrawLine(x0, x1);
 				Renderer2D::DrawLine(x1, x2);
 				Renderer2D::DrawLine(x2, x0);
+			}
+		}
+		if (rendermethod == 2) {
+			for (uint32_t i = 0; i < CM0.boundarysize / 2; i++) {
+				fvec2 x0 = CM0.PositionList[CM0.boundarydata[2 * i + 0]];
+				fvec2 x1 = CM0.PositionList[CM0.boundarydata[2 * i + 1]];
+
+				fvec2 cm = (x0 + x1) / 2.0;
+
+				x0 = (x0 - cm) * 0.8 + cm;
+				x1 = (x1 - cm) * 0.8 + cm;
+
+				Renderer2D::DrawLine(x0, x1);
 			}
 		}
 

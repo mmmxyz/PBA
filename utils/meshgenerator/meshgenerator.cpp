@@ -343,6 +343,8 @@ void RectTriangle(
     uint32_t& ilistsize,
     uint32_t** const edgelistdata,
     uint32_t& edgelistsize,
+    uint32_t** const boundarydata,
+    uint32_t& boundarysize,
     const fvec2& bias)
 {
 	vertsize  = N * M;
@@ -353,6 +355,9 @@ void RectTriangle(
 
 	edgelistsize  = 6 * (N - 1) * (M - 1);
 	*edgelistdata = new uint32_t[edgelistsize];
+
+	boundarysize  = 4 * (N - 1) * (M - 1);
+	*boundarydata = new uint32_t[boundarysize];
 
 	for (uint32_t y = 0; y < M; y++) {
 		float vy = -0.5 * Ly + Ly * (y / float(M - 1));
@@ -391,5 +396,26 @@ void RectTriangle(
 			(*edgelistdata)[6 * ((N - 1) * y + x) + 4] = Ind0 + N;
 			(*edgelistdata)[6 * ((N - 1) * y + x) + 5] = Ind0;
 		}
+	}
+
+	for (uint32_t i = 0; i < N - 1; i++) {
+		uint32_t Ind0		   = i;
+		(*boundarydata)[2 * i + 0] = Ind0;
+		(*boundarydata)[2 * i + 1] = Ind0 + 1;
+	}
+	for (uint32_t i = 0; i < M - 1; i++) {
+		uint32_t Ind0				 = N * i + N - 1;
+		(*boundarydata)[2 * (N - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[2 * (N - 1) + 2 * i + 1] = Ind0 + N;
+	}
+	for (uint32_t i = 0; i < N - 1; i++) {
+		uint32_t Ind0					       = N * (M - 1) + N - 1 - i;
+		(*boundarydata)[2 * (N - 1) + 2 * (M - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[2 * (N - 1) + 2 * (M - 1) + 2 * i + 1] = Ind0 - 1;
+	}
+	for (uint32_t i = 0; i < M - 1; i++) {
+		uint32_t Ind0					       = N * (M - 1) - N * i;
+		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 1] = Ind0 - N;
 	}
 }

@@ -45,4 +45,6 @@ void RectTriangle(
     uint32_t& ilistsize,
     uint32_t** const edgelistdata,
     uint32_t& edgelistsize,
+    uint32_t** const boundarydata,
+    uint32_t& boundarysize,
     const fvec2& bias = fvec2(0.0));
