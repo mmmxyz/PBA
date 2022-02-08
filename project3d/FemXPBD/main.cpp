@@ -17,6 +17,8 @@
 
 #include "utils/fileloader/TetGenLoader.hpp"
 
+#include "utils/meshgenerator/meshgenerator.hpp"
+
 #include "utils/fem/fem.hpp"
 
 #include <imgui.h>
@@ -37,6 +39,7 @@ class DeformableMesh {
 	std::vector<fvec3> PositionList;
 	std::vector<fvec3> RestPositionList;
 	std::vector<fvec3> VelocityList;
+	std::vector<fvec3> TempPositionList;
 
 	uint32_t vertsize;
 	uint32_t* elementlist;
@@ -69,7 +72,8 @@ class DeformableMesh {
 		fvec3* vertdata;
 
 		LoadTetGentoTetrahedraMesh("../../../resource/Bunny", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 6.0);
-		//LoadTetGentoTetrahedraMesh("../../../resource/Dragon", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 18.0);
+		//LoadTetGentoTetrahedraMesh("../../../resource/Dragon", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -6.0, 0.0), 18.0);
+		//CubeTetrahedra(6, 10.0, &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, 0.0, 0.0));
 
 		tva.resetvertarray(vertsize, tisize, tilist);
 		lva.resetvertarray(vertsize, lisize, lilist);
@@ -79,6 +83,7 @@ class DeformableMesh {
 		RestPositionList.resize(vertsize);
 		PositionList.resize(vertsize);
 		VelocityList.resize(vertsize);
+		TempPositionList.resize(vertsize);
 
 		for (uint32_t i = 0; i < vertsize; i++) {
 			RestPositionList[i] = vertdata[i];
@@ -164,7 +169,7 @@ class DeformableMesh {
 		}
 	}
 
-	void FemProjectGS(std::vector<fvec3>& TempPosition)
+	void FemProjectGS()
 	{
 		for (uint32_t i = 0; i < elementsize / 4; i++) {
 			const fvec3& X0 = RestPositionList[elementlist[4 * i + 0]];
@@ -172,10 +177,10 @@ class DeformableMesh {
 			const fvec3& X2 = RestPositionList[elementlist[4 * i + 2]];
 			const fvec3& X3 = RestPositionList[elementlist[4 * i + 3]];
 
-			const fvec3& x0 = TempPosition[elementlist[4 * i + 0]];
-			const fvec3& x1 = TempPosition[elementlist[4 * i + 1]];
-			const fvec3& x2 = TempPosition[elementlist[4 * i + 2]];
-			const fvec3& x3 = TempPosition[elementlist[4 * i + 3]];
+			const fvec3& x0 = TempPositionList[elementlist[4 * i + 0]];
+			const fvec3& x1 = TempPositionList[elementlist[4 * i + 1]];
+			const fvec3& x2 = TempPositionList[elementlist[4 * i + 2]];
+			const fvec3& x3 = TempPositionList[elementlist[4 * i + 3]];
 
 			const fmat3& A = AList[i];
 			const fmat3 F  = mat3(x1 - x0, x2 - x0, x3 - x0) * A;
@@ -185,16 +190,17 @@ class DeformableMesh {
 
 			float W;
 			fvec3 dx0, dx1, dx2, dx3;
+			bool ValidEnergy;
 
 			if (MaterialInd == 0) {
-				FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
 			} else if (MaterialInd == 1) {
-				FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
 			} else if (MaterialInd == 2) {
-				FemElasticDxCoRotational(F, E, A, qList[i], V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxCoRotational(F, E, A, qList[i], V, lambda, mu, W, dx0, dx1, dx2, dx3);
 			}
 
-			if (W > 0.0001) {
+			if (ValidEnergy && W > 0.0001) {
 				float C = std::sqrt(2.0 * W);
 
 				//fmat3 BAt = B * A.transpose();
@@ -210,14 +216,15 @@ class DeformableMesh {
 
 				float dtdtdlambda = (-C - Lamdalist[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / mass + 1.0 / (dt * dt));
 
-				TempPosition[elementlist[4 * i + 0]] = TempPosition[elementlist[4 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
-				TempPosition[elementlist[4 * i + 1]] = TempPosition[elementlist[4 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
-				TempPosition[elementlist[4 * i + 2]] = TempPosition[elementlist[4 * i + 2]] + dtdtdlambda * (1.0 / mass) * dC2;
-				TempPosition[elementlist[4 * i + 3]] = TempPosition[elementlist[4 * i + 3]] + dtdtdlambda * (1.0 / mass) * dC3;
+				TempPositionList[elementlist[4 * i + 0]] = TempPositionList[elementlist[4 * i + 0]] + dtdtdlambda * (1.0 / mass) * dC0;
+				TempPositionList[elementlist[4 * i + 1]] = TempPositionList[elementlist[4 * i + 1]] + dtdtdlambda * (1.0 / mass) * dC1;
+				TempPositionList[elementlist[4 * i + 2]] = TempPositionList[elementlist[4 * i + 2]] + dtdtdlambda * (1.0 / mass) * dC2;
+				TempPositionList[elementlist[4 * i + 3]] = TempPositionList[elementlist[4 * i + 3]] + dtdtdlambda * (1.0 / mass) * dC3;
 
 				Lamdalist[i] += dtdtdlambda / (dt * dt);
 			}
 
+			/*
 			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001 && MaterialInd != 2) {
 				fquaternion q = ExtractRotation(F, 1, qList[i]);
 				qList[i]      = q;
@@ -240,15 +247,16 @@ class DeformableMesh {
 
 				float dtdtdlambda = -C / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()));
 
-				TempPosition[elementlist[4 * i + 0]] = TempPosition[elementlist[4 * i + 0]] + dtdtdlambda * dC0;
-				TempPosition[elementlist[4 * i + 1]] = TempPosition[elementlist[4 * i + 1]] + dtdtdlambda * dC1;
-				TempPosition[elementlist[4 * i + 2]] = TempPosition[elementlist[4 * i + 2]] + dtdtdlambda * dC2;
-				TempPosition[elementlist[4 * i + 3]] = TempPosition[elementlist[4 * i + 3]] + dtdtdlambda * dC3;
+				TempPositionList[elementlist[4 * i + 0]] = TempPositionList[elementlist[4 * i + 0]] + dtdtdlambda * dC0;
+				TempPositionList[elementlist[4 * i + 1]] = TempPositionList[elementlist[4 * i + 1]] + dtdtdlambda * dC1;
+				TempPositionList[elementlist[4 * i + 2]] = TempPositionList[elementlist[4 * i + 2]] + dtdtdlambda * dC2;
+				TempPositionList[elementlist[4 * i + 3]] = TempPositionList[elementlist[4 * i + 3]] + dtdtdlambda * dC3;
 			}
+			*/
 		}
 	}
 
-	void FemProjectJC(std::vector<fvec3>& TempPosition)
+	void FemProjectJC()
 	{
 
 		std::vector<fvec3> dx(elementsize);
@@ -261,10 +269,10 @@ class DeformableMesh {
 			const fvec3& X2 = RestPositionList[elementlist[4 * i + 2]];
 			const fvec3& X3 = RestPositionList[elementlist[4 * i + 3]];
 
-			const fvec3& x0 = TempPosition[elementlist[4 * i + 0]];
-			const fvec3& x1 = TempPosition[elementlist[4 * i + 1]];
-			const fvec3& x2 = TempPosition[elementlist[4 * i + 2]];
-			const fvec3& x3 = TempPosition[elementlist[4 * i + 3]];
+			const fvec3& x0 = TempPositionList[elementlist[4 * i + 0]];
+			const fvec3& x1 = TempPositionList[elementlist[4 * i + 1]];
+			const fvec3& x2 = TempPositionList[elementlist[4 * i + 2]];
+			const fvec3& x3 = TempPositionList[elementlist[4 * i + 3]];
 
 			const fmat3& A = AList[i];
 			const fmat3 F  = mat3(x1 - x0, x2 - x0, x3 - x0) * A;
@@ -274,6 +282,7 @@ class DeformableMesh {
 
 			float W;
 			fvec3 dx0, dx1, dx2, dx3;
+			bool ValidEnergy;
 
 			/*
 			if (MaterialInd == 0) {
@@ -300,9 +309,9 @@ class DeformableMesh {
 			}
 			*/
 			if (MaterialInd == 0) {
-				FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxStVenant(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
 			} else if (MaterialInd == 1) {
-				FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxNeoHookean(F, E, A, V, lambda, mu, W, dx0, dx1, dx2, dx3);
 
 				//float J	   = F.det();
 				//float logJ = std::log(J);
@@ -316,7 +325,7 @@ class DeformableMesh {
 			} else if (MaterialInd == 2) {
 				//fquaternion q = ExtractRotation(F, 3, qList[i]);
 				//qList[i]      = q;
-				FemElasticDxCoRotational(F, E, A, qList[i], V, lambda, mu, W, dx0, dx1, dx2, dx3);
+				ValidEnergy = FemElasticDxCoRotational(F, E, A, qList[i], V, lambda, mu, W, dx0, dx1, dx2, dx3);
 
 				//fmat3 R	  = q.qtomat();
 				//fmat3 S	  = R.transpose() * F;
@@ -327,7 +336,7 @@ class DeformableMesh {
 
 			//std::cout << W << std::endl;
 
-			if (W > 0.0001) {
+			if (ValidEnergy && W > 0.0001) {
 				float C = std::sqrt(2.0 * W);
 
 				//fmat3 BAt = B * A.transpose();
@@ -357,6 +366,7 @@ class DeformableMesh {
 				dx[4 * i + 3] = fvec3(0.0);
 			}
 
+			/*
 			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001) {
 				fquaternion q = ExtractRotation(F, 1, qList[i]);
 				qList[i]      = q;
@@ -385,15 +395,120 @@ class DeformableMesh {
 				dx[4 * i + 2] = dtdtdlambda * dC2;
 				dx[4 * i + 3] = dtdtdlambda * dC3;
 			}
+			*/
 		}
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < elementsize; i++) {
-			TempPosition[elementlist[i]] = TempPosition[elementlist[i]] + dx[i];
+			TempPositionList[elementlist[i]] = TempPositionList[elementlist[i]] + dx[i];
 		}
 	}
 
-	void FixedProjection(std::vector<fvec3>& TempPosition)
+	void FemFixInversionGS()
+	{
+		for (uint32_t i = 0; i < elementsize / 4; i++) {
+			const fvec3& X0 = RestPositionList[elementlist[4 * i + 0]];
+			const fvec3& X1 = RestPositionList[elementlist[4 * i + 1]];
+			const fvec3& X2 = RestPositionList[elementlist[4 * i + 2]];
+			const fvec3& X3 = RestPositionList[elementlist[4 * i + 3]];
+
+			const fvec3& x0 = TempPositionList[elementlist[4 * i + 0]];
+			const fvec3& x1 = TempPositionList[elementlist[4 * i + 1]];
+			const fvec3& x2 = TempPositionList[elementlist[4 * i + 2]];
+			const fvec3& x3 = TempPositionList[elementlist[4 * i + 3]];
+
+			const fmat3& A = AList[i];
+			const fmat3 F  = mat3(x1 - x0, x2 - x0, x3 - x0) * A;
+			const fmat3 E  = 0.5 * (F.transpose() * F - fmat3::indentity());
+
+			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001 && MaterialInd != 2) {
+				fquaternion q = ExtractRotation(F, 3, qList[i]);
+				qList[i]      = q;
+				fmat3 R	      = q.qtomat();
+
+				fmat3 S	  = R.transpose() * F;
+				float trS = S.trace();
+
+				float W = 0.5 * (F.sqlength() - 2.0 * trS + 3);
+				fmat3 B = (F - R);
+
+				float C = std::sqrt(2.0 * W);
+
+				fmat3 BAt = B * A.transpose();
+
+				fvec3 dC1 = fvec3(BAt.m[0], BAt.m[3], BAt.m[6]);
+				fvec3 dC2 = fvec3(BAt.m[1], BAt.m[4], BAt.m[7]);
+				fvec3 dC3 = fvec3(BAt.m[2], BAt.m[5], BAt.m[8]);
+				fvec3 dC0 = -(dC1 + dC2 + dC3);
+
+				float dtdtdlambda = -C / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()));
+
+				TempPositionList[elementlist[4 * i + 0]] = TempPositionList[elementlist[4 * i + 0]] + dtdtdlambda * dC0;
+				TempPositionList[elementlist[4 * i + 1]] = TempPositionList[elementlist[4 * i + 1]] + dtdtdlambda * dC1;
+				TempPositionList[elementlist[4 * i + 2]] = TempPositionList[elementlist[4 * i + 2]] + dtdtdlambda * dC2;
+				TempPositionList[elementlist[4 * i + 3]] = TempPositionList[elementlist[4 * i + 3]] + dtdtdlambda * dC3;
+			}
+		}
+	}
+
+	void FemFixInversionJC()
+	{
+		std::vector<fvec3> dx(elementsize);
+
+#pragma omp parallel for
+		for (uint32_t i = 0; i < elementsize / 4; i++) {
+
+			const fvec3& X0 = RestPositionList[elementlist[4 * i + 0]];
+			const fvec3& X1 = RestPositionList[elementlist[4 * i + 1]];
+			const fvec3& X2 = RestPositionList[elementlist[4 * i + 2]];
+			const fvec3& X3 = RestPositionList[elementlist[4 * i + 3]];
+
+			const fvec3& x0 = TempPositionList[elementlist[4 * i + 0]];
+			const fvec3& x1 = TempPositionList[elementlist[4 * i + 1]];
+			const fvec3& x2 = TempPositionList[elementlist[4 * i + 2]];
+			const fvec3& x3 = TempPositionList[elementlist[4 * i + 3]];
+
+			const fmat3& A = AList[i];
+			const fmat3 F  = mat3(x1 - x0, x2 - x0, x3 - x0) * A;
+			const fmat3 E  = 0.5 * (F.transpose() * F - fmat3::indentity());
+
+			if (F.det() < 0.00001 && lambda > 0.00001 && mu > 0.00001) {
+				fquaternion q = ExtractRotation(F, 3, qList[i]);
+				qList[i]      = q;
+				fmat3 R	      = q.qtomat();
+
+				fmat3 S	  = R.transpose() * F;
+				float trS = S.trace();
+
+				float W = 0.5 * (F.sqlength() - 2.0 * trS + 3);
+				fmat3 B = (F - R);
+
+				float C = std::sqrt(2.0 * W);
+
+				fmat3 BAt = B * A.transpose();
+
+				fvec3 dC1 = fvec3(BAt.m[0], BAt.m[3], BAt.m[6]);
+				fvec3 dC2 = fvec3(BAt.m[1], BAt.m[4], BAt.m[7]);
+				fvec3 dC3 = fvec3(BAt.m[2], BAt.m[5], BAt.m[8]);
+				fvec3 dC0 = -(dC1 + dC2 + dC3);
+
+				float dtdtdlambda = -C / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()));
+				dtdtdlambda *= 0.35;
+
+				dx[4 * i + 0] = dtdtdlambda * dC0;
+				dx[4 * i + 1] = dtdtdlambda * dC1;
+				dx[4 * i + 2] = dtdtdlambda * dC2;
+				dx[4 * i + 3] = dtdtdlambda * dC3;
+			}
+		}
+
+#pragma omp parallel for
+		for (uint32_t i = 0; i < elementsize; i++) {
+			TempPositionList[elementlist[i]] = TempPositionList[elementlist[i]] + dx[i];
+		}
+	}
+
+	void FixedProjection()
 	{
 
 		//for (uint32_t i = N * N * (N - 1); i < N * N * N; i++) {
@@ -402,7 +517,7 @@ class DeformableMesh {
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < vertsize; i++) {
-			fvec3& position = TempPosition[i];
+			fvec3& position = TempPositionList[i];
 			if (position.y < -12.0)
 				position.y = -11.99;
 			if (position.y > 12.0)
@@ -453,30 +568,31 @@ void timestep(DeformableMesh& CM)
 	CM.ClearLamda();
 
 	uint32_t NodeSize = CM.vertsize;
-	std::vector<fvec3> tempp(NodeSize);
 
 #pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
-		fvec3 velocity = CM.VelocityList[i] + dt * fvec3(0.0, -9.8, 0.0);
-		tempp[i]       = CM.PositionList[i] + dt * velocity;
+		fvec3 velocity	       = CM.VelocityList[i] + dt * fvec3(0.0, -9.8, 0.0);
+		CM.TempPositionList[i] = CM.PositionList[i] + dt * velocity;
 	}
 
 	if (solver == 0)
 		for (uint32_t x = 0; x < 5; x++) {
-			CM.FemProjectGS(tempp);
-			CM.FixedProjection(tempp);
+			CM.FemProjectGS();
+			CM.FemFixInversionGS();
+			CM.FixedProjection();
 		}
 	else if (solver == 1)
 		for (uint32_t x = 0; x < 15; x++) {
-			CM.FemProjectJC(tempp);
-			CM.FixedProjection(tempp);
+			CM.FemProjectJC();
+			CM.FemFixInversionJC();
+			CM.FixedProjection();
 		}
 
 #pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
-		CM.VelocityList[i] = (tempp[i] - CM.PositionList[i]) / dt;
+		CM.VelocityList[i] = (CM.TempPositionList[i] - CM.PositionList[i]) / dt;
 		CM.VelocityList[i] = (1.0 - 0.7 * dt) * CM.VelocityList[i];
-		CM.PositionList[i] = tempp[i];
+		CM.PositionList[i] = CM.TempPositionList[i];
 	}
 }
 };
