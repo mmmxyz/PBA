@@ -11,6 +11,8 @@ if(POLICY CMP0072)
 endif()
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 
 add_subdirectory(../../opengl ../../../opengl/build)
@@ -30,6 +32,11 @@ target_include_directories(Program PRIVATE
 	../..
 )
 
+target_compile_options(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
+)
+
+
 if (APPLE)
 	link_directories(Program
 		"/usr/local/lib"
@@ -42,6 +49,7 @@ if (APPLE)
 endif()
 
 target_link_libraries(Program PRIVATE
+	${OpenMP_CXX_FLAGS}
 	glLib
 	imguiLib
 	collisionLib
@@ -55,5 +63,6 @@ target_link_libraries(Program PRIVATE
 	${OPENGL_LIBRARY}
 	glfw
 	gladLib
+	Eigen3::Eigen
 	${CMAKE_DL_LIBS}
 )

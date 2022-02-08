@@ -18,6 +18,7 @@ jobs:
               sudo apt-get update
               sudo apt-get install libglfw3 libglfw3-dev
               sudo apt-get install libomp-dev
+              sudo apt-get install libeigen3-dev
 
         - name: build Demo
           run: |

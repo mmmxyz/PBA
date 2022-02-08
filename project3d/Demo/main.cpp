@@ -72,7 +72,7 @@ int main(int argc, char const* argv[])
 
 	trianglevertarray Bunnytva;
 
-	LoadOBJtoRenderTriangleMesh("../../../resource/Cube.obj", Bunnytva, fvec3(0.0, -4.0, 0.0), 5.00);
+	LoadOBJtoRenderTriangleMesh("../../../resource/TeaPot.obj", Bunnytva, fvec3(0.0, -4.0, 0.0), 0.10);
 
 	Bunnytva.settype(2);
 	Bunnytva.vboupdate();
@@ -177,8 +177,7 @@ int main(int argc, char const* argv[])
 			constexpr uint32_t hogesize = 256;
 			fvec3 hogef[hogesize];
 			for (uint32_t i = 0; i < hogesize; i++)
-				hogef[i] = fvec3(i * 0.001 - 9.0, 10 * sin(i * 0.005 * cmx), 0.0);
-			hogef[hogesize - 1] = fvec3(10.0, 10.0, 5.0);
+				hogef[i] = fvec3(i * 0.1 - 9.0, 10 * sin(i * 0.005 * cmx), 0.0);
 
 			Renderer3D::DrawPolyLine(hogef, hogesize);
 
