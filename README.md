@@ -28,6 +28,7 @@
 
 - GLFW
 - OpenMP
+- Eigen (Global Solverを扱う場合)
 
 例:project3d/Demoを実行する
 ```
