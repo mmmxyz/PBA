@@ -39,7 +39,7 @@ fmat4 makeperspective()
 
 bool Init()
 {
-	rendershader.setprogram("../../../opengl/shadercode/vert2d.c", "../../../opengl/shadercode/frag2d.c");
+	rendershader.setprogram("vert2d.c", "frag2d.c");
 
 	//mics OpenGL setting for 3D rendering
 	glPointSize(10.0f);

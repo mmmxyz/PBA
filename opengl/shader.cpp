@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cstdint>
+#include <string>
 #include <fstream>
 #include <vector>
 
@@ -42,11 +43,16 @@ bool loadcode(const char* name, GLchar*& buffer)
 {
 	using namespace std;
 
-	cout << "load code: " << name << endl;
+	std::string fullname = ABSOLUTEPATH;
 
-	ifstream file(name, ios::binary);
+	fullname += "/shadercode/";
+	fullname += name;
+
+	std::cout << "load code: " << fullname << std::endl;
+
+	std::ifstream file(fullname, std::ios::binary);
 	if (file.fail()) {
-		cout << "fail to open file!!" << endl;
+		std::cout << "fail to open file!!" << std::endl;
 		return false;
 	}
 

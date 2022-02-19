@@ -11,12 +11,12 @@ endif()
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
-
 set(EX_INC "")
 if(APPLE)
 	set(EX_INC "/usr/local/include")
 endif()
 
+#message(STATUS "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(glLib STATIC
 	drawobject.cpp
@@ -27,6 +27,8 @@ add_library(glLib STATIC
 	texture.cpp
 	shader.cpp
 )
+
+target_compile_definitions(glLib PRIVATE ABSOLUTEPATH=\"${CMAKE_CURRENT_SOURCE_DIR}\")
 
 target_include_directories(glLib PRIVATE
 	../3rdparty/glad/include

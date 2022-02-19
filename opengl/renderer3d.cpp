@@ -114,9 +114,9 @@ void setLightint(const float& x)
 bool Init()
 {
 
-	shadowshader.setprogram("../../../opengl/shadercode/shadowvert.c", "../../../opengl/shadercode/shadowfrag.c");
-	edgeshader.setprogram("../../../opengl/shadercode/edgevert.c", "../../../opengl/shadercode/edgefrag.c");
-	rendershader.setprogram("../../../opengl/shadercode/vert.c", "../../../opengl/shadercode/frag.c");
+	shadowshader.setprogram("shadowvert.c", "shadowfrag.c");
+	edgeshader.setprogram("edgevert.c", "edgefrag.c");
+	rendershader.setprogram("vert.c", "frag.c");
 
 	counter	     = 0;
 	shadowwidth  = 4096;
