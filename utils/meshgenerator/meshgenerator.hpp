@@ -48,3 +48,33 @@ void RectTriangle(
     uint32_t** const boundarydata,
     uint32_t& boundarysize,
     const fvec2& bias = fvec2(0.0));
+
+void ClothFemMesh(
+    const uint32_t N,
+    const float L,
+    fvec3** const vertdata,
+    fvec2** const Restvertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize,
+    uint32_t** const InnerEdgedata,
+    uint32_t& InnerEdgesize,
+    fvec4** const InnerEdgeCdata,
+    const fvec3& bias = fvec3(0.0));
+
+void ClothFemMesh2(
+    const uint32_t N,
+    const float L,
+    fvec3** const vertdata,
+    fvec2** const Restvertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize,
+    uint32_t** const InnerEdgedata,
+    uint32_t& InnerEdgesize,
+    fvec4** const InnerEdgeCdata,
+    const fvec3& bias = fvec3(0.0));

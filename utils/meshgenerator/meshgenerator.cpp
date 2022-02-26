@@ -1,6 +1,8 @@
 
 #include "utils/meshgenerator/meshgenerator.hpp"
 
+#include <cmath>
+
 void CubeTetrahedra(
     const uint32_t N,
     const float L,
@@ -417,5 +419,331 @@ void RectTriangle(
 		uint32_t Ind0					       = N * (M - 1) - N * i;
 		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 0] = Ind0;
 		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 1] = Ind0 - N;
+	}
+}
+
+void ClothFemMesh(
+    const uint32_t N,
+    const float L,
+    fvec3** const vertdata,
+    fvec2** const Restvertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize,
+    uint32_t** const InnerEdgedata,
+    uint32_t& InnerEdgesize,
+    fvec4** const InnerEdgeCdata,
+    const fvec3& bias)
+{
+	vertsize	= N * N;
+	(*vertdata)	= new fvec3[vertsize];
+	(*Restvertdata) = new fvec2[vertsize];
+
+	for (uint32_t y = 0; y < N; y++) {
+		float vy = -0.5 * L + L * (y / float(N - 1));
+		for (uint32_t x = 0; x < N; x++) {
+			float vx		   = -0.5 * L + L * (x / float(N - 1));
+			(*vertdata)[N * y + x]	   = fvec3(vx, 1.0 * vy, -0.10000 * vy) + bias;
+			(*Restvertdata)[N * y + x] = fvec2(vx, vy) + fvec2(bias.x, bias.y);
+		}
+	}
+
+	ilistsize    = 3 * 2 * (N - 1) * (N - 1);
+	(*ilistdata) = new uint32_t[ilistsize];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + 1;
+			uint32_t Ind2 = Ind0 + N;
+			uint32_t Ind3 = Ind0 + N + 1;
+
+			(*ilistdata)[6 * (y * (N - 1) + x) + 0] = Ind0;
+			(*ilistdata)[6 * (y * (N - 1) + x) + 1] = Ind1;
+			(*ilistdata)[6 * (y * (N - 1) + x) + 2] = Ind2;
+
+			(*ilistdata)[6 * (y * (N - 1) + x) + 3] = Ind2;
+			(*ilistdata)[6 * (y * (N - 1) + x) + 4] = Ind1;
+			(*ilistdata)[6 * (y * (N - 1) + x) + 5] = Ind3;
+		}
+	}
+
+	edgesize    = 6 * (N - 1) * (N - 1) + 2 * (N - 1) + 2 * (N - 1);
+	(*edgedata) = new uint32_t[edgesize];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0				       = N * y + x;
+			uint32_t Ind1				       = N * y + x + 1;
+			uint32_t Ind2				       = N * y + x + N;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 0] = Ind0;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 1] = Ind1;
+
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 2] = Ind1;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 3] = Ind2;
+
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 4] = Ind2;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 5] = Ind0;
+		}
+		(*edgedata)[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 0] = N * y + N - 1;
+		(*edgedata)[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 1] = N * y + N - 1 + N;
+	}
+	for (uint32_t x = 0; x < N - 1; x++) {
+		(*edgedata)[(6 * (N - 1) + 2) * (N - 1) + 2 * x + 0] = (N - 1) * N + x;
+		(*edgedata)[(6 * (N - 1) + 2) * (N - 1) + 2 * x + 1] = (N - 1) * N + x + 1;
+	}
+
+	InnerEdgesize	  = 4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2));
+	(*InnerEdgedata)  = new uint32_t[InnerEdgesize];
+	(*InnerEdgeCdata) = new fvec4[InnerEdgesize / 4];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + 1;
+			uint32_t Ind2 = Ind0 + N;
+			uint32_t Ind3 = Ind0 + N + 1;
+
+			(*InnerEdgedata)[4 * (y * (N - 1) + x) + 0] = Ind1;
+			(*InnerEdgedata)[4 * (y * (N - 1) + x) + 1] = Ind2;
+			(*InnerEdgedata)[4 * (y * (N - 1) + x) + 2] = Ind0;
+			(*InnerEdgedata)[4 * (y * (N - 1) + x) + 3] = Ind3;
+		}
+	}
+	for (uint32_t y = 1; y < N - 1; y++) {
+		for (uint32_t x = 1; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + N;
+			uint32_t Ind2 = Ind0 + N - 1;
+			uint32_t Ind3 = Ind0 + 1;
+
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 0] = Ind0;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 1] = Ind1;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 2] = Ind2;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 3] = Ind3;
+		}
+	}
+	for (uint32_t y = 1; y < N - 1; y++) {
+		for (uint32_t x = 1; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + 1;
+			uint32_t Ind2 = Ind0 + N;
+			uint32_t Ind3 = Ind0 - N + 1;
+
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 0] = Ind0;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 1] = Ind1;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 2] = Ind2;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 3] = Ind3;
+		}
+	}
+
+	for (uint32_t i = 0; i < InnerEdgesize / 4; i++) {
+		fvec2 X0 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 0]];
+		fvec2 X1 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 1]];
+		fvec2 X2 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 2]];
+		fvec2 X3 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 3]];
+
+		float angle210 = std::acos(((X2 - X1).normalize()).dot((X0 - X1).normalize()));
+		float angle201 = std::acos(((X2 - X0).normalize()).dot((X1 - X0).normalize()));
+		float angle310 = std::acos(((X3 - X1).normalize()).dot((X0 - X1).normalize()));
+		float angle301 = std::acos(((X3 - X0).normalize()).dot((X1 - X0).normalize()));
+
+		float cot210 = 1.0 / std::tan(angle210);
+		float cot201 = 1.0 / std::tan(angle201);
+		float cot310 = 1.0 / std::tan(angle310);
+		float cot301 = 1.0 / std::tan(angle301);
+
+		(*InnerEdgeCdata)[i] = fvec4(cot210 + cot310, cot301 + cot201, -cot210 - cot201, -cot310 - cot301);
+	}
+}
+
+void ClothFemMesh2(
+    const uint32_t N,
+    const float L,
+    fvec3** const vertdata,
+    fvec2** const Restvertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize,
+    uint32_t** const InnerEdgedata,
+    uint32_t& InnerEdgesize,
+    fvec4** const InnerEdgeCdata,
+    const fvec3& bias)
+{
+	vertsize	= N * N;
+	(*vertdata)	= new fvec3[vertsize];
+	(*Restvertdata) = new fvec2[vertsize];
+
+	for (uint32_t y = 0; y < N; y++) {
+		float vy = -0.5 * L + L * (y / float(N - 1));
+		for (uint32_t x = 0; x < N; x++) {
+			float vx		   = -0.5 * L + L * (x / float(N - 1));
+			(*vertdata)[N * y + x]	   = fvec3(vx, 1.0 * vy, -0.10000 * vy) + bias;
+			(*Restvertdata)[N * y + x] = fvec2(vx, vy) + fvec2(bias.x, bias.y);
+		}
+	}
+
+	ilistsize    = 3 * 2 * (N - 1) * (N - 1);
+	(*ilistdata) = new uint32_t[ilistsize];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+
+			if ((x + y) % 2 == 0) {
+				uint32_t Ind0 = N * y + x;
+				uint32_t Ind1 = Ind0 + 1;
+				uint32_t Ind2 = Ind0 + N;
+				uint32_t Ind3 = Ind0 + N + 1;
+
+				(*ilistdata)[6 * (y * (N - 1) + x) + 0] = Ind0;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 1] = Ind1;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 2] = Ind2;
+
+				(*ilistdata)[6 * (y * (N - 1) + x) + 3] = Ind2;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 4] = Ind1;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 5] = Ind3;
+			} else {
+				uint32_t Ind0 = N * y + x;
+				uint32_t Ind1 = Ind0 + 1;
+				uint32_t Ind2 = Ind0 + N;
+				uint32_t Ind3 = Ind0 + N + 1;
+
+				(*ilistdata)[6 * (y * (N - 1) + x) + 0] = Ind0;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 1] = Ind1;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 2] = Ind3;
+
+				(*ilistdata)[6 * (y * (N - 1) + x) + 3] = Ind3;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 4] = Ind2;
+				(*ilistdata)[6 * (y * (N - 1) + x) + 5] = Ind0;
+			}
+		}
+	}
+
+	edgesize    = 6 * (N - 1) * (N - 1) + 2 * (N - 1) + 2 * (N - 1);
+	(*edgedata) = new uint32_t[edgesize];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = N * y + x + 1;
+			uint32_t Ind2 = N * y + x + N;
+			uint32_t Ind3 = N * y + x + N + 1;
+
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 0] = Ind0;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 1] = Ind1;
+
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 2] = Ind0;
+			(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 3] = Ind2;
+
+			if ((x + y) % 2 == 0) {
+				(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 4] = Ind1;
+				(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 5] = Ind2;
+			} else {
+				(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 4] = Ind0;
+				(*edgedata)[(6 * (N - 1) + 2) * y + 6 * x + 5] = Ind3;
+			}
+		}
+		(*edgedata)[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 0] = N * y + N - 1;
+		(*edgedata)[(6 * (N - 1) + 2) * y + 6 * (N - 1) + 1] = N * y + N - 1 + N;
+	}
+	for (uint32_t x = 0; x < N - 1; x++) {
+		(*edgedata)[(6 * (N - 1) + 2) * (N - 1) + 2 * x + 0] = (N - 1) * N + x;
+		(*edgedata)[(6 * (N - 1) + 2) * (N - 1) + 2 * x + 1] = (N - 1) * N + x + 1;
+	}
+
+	InnerEdgesize	  = 4 * ((N - 1) * (N - 1) + 2 * (N - 2) * (N - 2));
+	(*InnerEdgedata)  = new uint32_t[InnerEdgesize];
+	(*InnerEdgeCdata) = new fvec4[InnerEdgesize / 4];
+
+	for (uint32_t y = 0; y < N - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0 = N * y + x;
+			uint32_t Ind1 = Ind0 + 1;
+			uint32_t Ind2 = Ind0 + N;
+			uint32_t Ind3 = Ind0 + N + 1;
+
+			if ((x + y) % 2 == 0) {
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 0] = Ind1;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 1] = Ind2;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 2] = Ind0;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 3] = Ind3;
+			} else {
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 0] = Ind0;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 1] = Ind3;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 2] = Ind2;
+				(*InnerEdgedata)[4 * (y * (N - 1) + x) + 3] = Ind1;
+			}
+		}
+	}
+	for (uint32_t y = 1; y < N - 1; y++) {
+		for (uint32_t x = 1; x < N - 1; x++) {
+
+			if ((x + y) % 2 == 0) {
+				uint32_t Ind0								    = N * y + x;
+				uint32_t Ind1								    = Ind0 + N;
+				uint32_t Ind2								    = Ind0 - 1;
+				uint32_t Ind3								    = Ind0 + 1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
+			} else {
+				uint32_t Ind0								    = N * y + x;
+				uint32_t Ind1								    = Ind0 + N;
+				uint32_t Ind2								    = Ind0 + N - 1;
+				uint32_t Ind3								    = Ind0 + N + 1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
+			}
+		}
+	}
+	for (uint32_t y = 1; y < N - 1; y++) {
+		for (uint32_t x = 1; x < N - 1; x++) {
+
+			if ((x + y) % 2 == 0) {
+				uint32_t Ind0											= N * y + x;
+				uint32_t Ind1											= Ind0 + 1;
+				uint32_t Ind2											= Ind0 + N;
+				uint32_t Ind3											= Ind0 - N;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
+			} else {
+				uint32_t Ind0											= N * y + x;
+				uint32_t Ind1											= Ind0 + 1;
+				uint32_t Ind2											= Ind0 + N + 1;
+				uint32_t Ind3											= Ind0 - N + 1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+				(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
+			}
+		}
+	}
+
+	for (uint32_t i = 0; i < InnerEdgesize / 4; i++) {
+		fvec2 X0 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 0]];
+		fvec2 X1 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 1]];
+		fvec2 X2 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 2]];
+		fvec2 X3 = (*Restvertdata)[(*InnerEdgedata)[4 * i + 3]];
+
+		float angle210 = std::acos(((X2 - X1).normalize()).dot((X0 - X1).normalize()));
+		float angle201 = std::acos(((X2 - X0).normalize()).dot((X1 - X0).normalize()));
+		float angle310 = std::acos(((X3 - X1).normalize()).dot((X0 - X1).normalize()));
+		float angle301 = std::acos(((X3 - X0).normalize()).dot((X1 - X0).normalize()));
+
+		float cot210 = 1.0 / std::tan(angle210);
+		float cot201 = 1.0 / std::tan(angle201);
+		float cot310 = 1.0 / std::tan(angle310);
+		float cot301 = 1.0 / std::tan(angle301);
+
+		(*InnerEdgeCdata)[i] = fvec4(cot210 + cot310, cot301 + cot201, -cot210 - cot201, -cot310 - cot301);
 	}
 }

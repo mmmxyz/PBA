@@ -321,6 +321,14 @@ class vec4 {
 	{
 	}
 
+	inline vec4(void)
+	    : x(0.0)
+	    , y(0.0)
+	    , z(0.0)
+	    , w(0.0)
+	{
+	}
+
 	inline vec4(
 	    const vec3<T>& a)
 	    : x(a.x)

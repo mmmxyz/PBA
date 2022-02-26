@@ -191,7 +191,7 @@ bool Init()
 	Ltop	= 1.0f;
 	Lbottom = -1.0f;
 
-	Lint	 = 800.0f;
+	Lint	 = 1000.0f;
 	Lambient = 0.3f;
 
 	Affinemat = fmat3::indentity();
