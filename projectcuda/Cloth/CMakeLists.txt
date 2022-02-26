@@ -20,6 +20,8 @@ add_subdirectory(../../utils/mathfunc ../../../utils/mathfunc/build)
 add_subdirectory(../../utils/fileloader ../../../utils/fileloader/build)
 add_subdirectory(../../utils/collision ../../../utils/collision/build)
 add_subdirectory(../../utils/meshprocessing ../../../utils/meshprocessing/build)
+add_subdirectory(../../utils/meshgenerator ../../../utils/meshgenerator/build)
+add_subdirectory(../../utils/fem ../../../utils/fem/build)
 add_subdirectory(../../3rdparty/glad ../../../3rdparty/glad/build)
 add_subdirectory(../../3rdparty/imgui ../../../3rdparty/imgui/build)
 
@@ -57,7 +59,9 @@ target_link_libraries(Program PRIVATE
 	collisionLib
 	fileloaderLib
 	meshprosLib
+	meshgeneratorLib
 	mathLib
+	femLib
 	${EX_GLFWLIB}
 	${OPENGL_LIBRARY}
 	glfw

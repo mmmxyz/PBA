@@ -47,8 +47,6 @@ class ClothMesh {
 	std::vector<fvec3> dx;
 
 	uint32_t vertsize;
-	uint32_t* elementlist;
-	uint32_t elementsize;
 	uint32_t* tilist;
 	uint32_t* tilist2;
 	uint32_t tisize;
