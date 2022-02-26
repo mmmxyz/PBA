@@ -39,6 +39,8 @@ float rho = 0.005;
 
 float edgedist = 0.3;
 
+bool is_fix = true;
+
 class ClothMesh {
     public:
 	std::vector<fvec3> PositionList;
@@ -503,16 +505,22 @@ class ClothMesh {
 
 	void FixedProjection(std::vector<fvec3>& TempPosition)
 	{
-
-		for (auto ind : fix0) {
-			TempPosition[ind].x = RestPositionList[ind].x + 0.5 * edgedist;
-			TempPosition[ind].y = RestPositionList[ind].y;
-			TempPosition[ind].z = 0.0f;
-		}
-		for (auto ind : fix1) {
-			TempPosition[ind].x = RestPositionList[ind].x - 0.5 * edgedist;
-			TempPosition[ind].y = RestPositionList[ind].y;
-			TempPosition[ind].z = 0.0f;
+		if (is_fix) {
+			for (auto ind : fix0) {
+				TempPosition[ind].x = RestPositionList[ind].x + 0.5 * edgedist;
+				TempPosition[ind].y = RestPositionList[ind].y;
+				TempPosition[ind].z = 0.0f;
+			}
+			for (auto ind : fix1) {
+				TempPosition[ind].x = RestPositionList[ind].x - 0.5 * edgedist;
+				TempPosition[ind].y = RestPositionList[ind].y;
+				TempPosition[ind].z = 0.0f;
+			}
+		} else {
+			for (uint32_t i = 0; i < vertsize; i++) {
+				if (TempPosition[i].y < -12.0)
+					TempPosition[i].y = -11.99;
+			}
 		}
 	}
 };
@@ -564,8 +572,10 @@ void timestep(ClothMesh& CM)
 		for (uint32_t x = 0; x < 20; x++) {
 			CM.FixedProjection(tempp);
 			FemElasticProjectGPU(tempp.data(), lambda, mu);
-			if (x % 5 == 0)
+			if (x % 3 == 0) {
 				FemBendProjectGPU(tempp.data(), bendCof);
+				FemAreaProjectGPU(tempp.data());
+			}
 		}
 	}
 
@@ -705,6 +715,7 @@ int main(int argc, char const* argv[])
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
 
 		static bool is_stop = true;
 
@@ -798,6 +809,7 @@ int main(int argc, char const* argv[])
 			ImGui::SliderFloat("Spring", &SpringCof, 0.0f, 10.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 
 			ImGui::SliderFloat("length", &edgedist, -6.0f, 6.0f);
+			ImGui::Checkbox("fix", &is_fix);
 
 			ImGui::Text("virtualtime = %.1f", vtime);
 
@@ -811,6 +823,8 @@ int main(int argc, char const* argv[])
 					CM0.PositionList[i].z = 1.00010 * CM0.RestPositionList[i].y - 4.0;
 					CM0.VelocityList[i]   = fvec3(0.0);
 				}
+				CM0.UpdataVertarray();
+				CM0.Setdata();
 			}
 
 			ImGui::End();

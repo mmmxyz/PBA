@@ -55,4 +55,6 @@ void FemElasticProjectGPU(fvec3* const tempp, const float lambda, const float mu
 
 void FemBendProjectGPU(fvec3* const tempp, const float bendCof);
 
+void FemAreaProjectGPU(fvec3* const tempp);
+
 void ClearLambdaGPU();

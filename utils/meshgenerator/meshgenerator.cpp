@@ -519,10 +519,10 @@ void ClothFemMesh(
 			uint32_t Ind2 = Ind0 + N - 1;
 			uint32_t Ind3 = Ind0 + 1;
 
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 0] = Ind0;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 1] = Ind1;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 2] = Ind2;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + y * (N - 2) + x) + 3] = Ind3;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
 		}
 	}
 	for (uint32_t y = 1; y < N - 1; y++) {
@@ -532,10 +532,10 @@ void ClothFemMesh(
 			uint32_t Ind2 = Ind0 + N;
 			uint32_t Ind3 = Ind0 - N + 1;
 
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 0] = Ind0;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 1] = Ind1;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 2] = Ind2;
-			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + y * (N - 2) + x) + 3] = Ind3;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 0] = Ind0;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 1] = Ind1;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 2] = Ind2;
+			(*InnerEdgedata)[4 * ((N - 1) * (N - 1) + (N - 2) * (N - 2) + (y - 1) * (N - 2) + (x - 1)) + 3] = Ind3;
 		}
 	}
 

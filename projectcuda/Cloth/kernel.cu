@@ -176,6 +176,42 @@ FemBendProjectGPU_Kernel(const float bendCof)
 }
 
 __global__ void
+FemAreaProjectGPU_Kernel()
+{
+
+	uint32_t i = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if (i < d_InnerEdgesize / 4) {
+		fvec3 x0 = d_tempp[d_TriIndList[3 * i + 0]];
+		fvec3 x1 = d_tempp[d_TriIndList[3 * i + 1]];
+		fvec3 x2 = d_tempp[d_TriIndList[3 * i + 2]];
+
+		float V = d_VList[i];
+
+		float C = ((x1 - x0).cross(x2 - x0)).sqlength() - 4.0 * V * V;
+
+		if (abs(C) > 0.001) {
+
+			fvec3 dC1 = 2.0f * (x2 - x0).cross((x1 - x0).cross(x2 - x0));
+			fvec3 dC2 = 2.0f * (x1 - x0).cross((x2 - x0).cross(x1 - x0));
+			fvec3 dC0 = -(dC1 + dC2);
+
+			float dtdtdlambda = (-C) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength()) / d_mass);
+
+			d_dx[3 * i + 0] = dtdtdlambda * (1.0f / d_mass) * dC0;
+			d_dx[3 * i + 1] = dtdtdlambda * (1.0f / d_mass) * dC1;
+			d_dx[3 * i + 2] = dtdtdlambda * (1.0f / d_mass) * dC2;
+
+		} else {
+
+			d_dx[3 * i + 0] = fvec3(0.0);
+			d_dx[3 * i + 1] = fvec3(0.0);
+			d_dx[3 * i + 2] = fvec3(0.0);
+		}
+	}
+}
+
+__global__ void
 updatetempp_Kernel(fvec3* const tempp, const fvec3* const dx, const uint32_t* const TriIndList, const uint32_t N)
 {
 	uint32_t i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -330,6 +366,23 @@ void FemBendProjectGPU(fvec3* const tempp, const float bendCof)
 
 	for (uint32_t i = 0; i < cpu_InnerEdgesize; i++) {
 		tempp[cpu_InnerEdgeIndList[i]] = tempp[cpu_InnerEdgeIndList[i]] + cpu_dx[i];
+	}
+}
+
+void FemAreaProjectGPU(fvec3* const tempp)
+{
+	cudaMemcpy(cpu_d_tempp, tempp, cpu_vertsize * sizeof(fvec3), cudaMemcpyHostToDevice);
+	cudaDeviceSynchronize();
+	uint32_t Thsize = cpu_tisize / 3;
+	uint32_t Ds	= Thsize / 320;
+	FemAreaProjectGPU_Kernel<<<Ds + 1, 320>>>();
+	cudaDeviceSynchronize();
+
+	cudaMemcpy(cpu_dx, cpu_d_dx, cpu_tisize * sizeof(fvec3), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+
+	for (uint32_t i = 0; i < cpu_tisize; i++) {
+		tempp[cpu_TriIndList[i]] = tempp[cpu_TriIndList[i]] + cpu_dx[i];
 	}
 }
 
