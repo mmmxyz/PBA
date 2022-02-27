@@ -1,5 +1,6 @@
 # XPBDと有限要素法による超弾性体のシミュレーション
 
+https://www.youtube.com/watch?v=dADKH_5RJL0
 
 ![](db0.gif)
 
