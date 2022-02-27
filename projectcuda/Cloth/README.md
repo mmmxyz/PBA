@@ -1,3 +1,3 @@
 # XPBDと有限要素法によるClothシミュレーション(CUDA)
 
-![](cudacloth.gif)
+https://www.youtube.com/watch?v=8NEHFc7Oi0M
