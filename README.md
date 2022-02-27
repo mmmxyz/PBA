@@ -3,6 +3,8 @@
 ![ウブンツ](https://github.com/poly-bear/PBA/actions/workflows/ubuntu.yml/badge.svg)
 ![マック](https://github.com/poly-bear/PBA/actions/workflows/mac.yml/badge.svg)
 
+https://www.youtube.com/channel/UCsTJawTc_A88lmAUU2DJ1XQ
+
 ## ディレクトリ構成
 
 * 3rdparty:  
