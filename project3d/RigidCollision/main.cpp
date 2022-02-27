@@ -792,55 +792,32 @@ int main(int argc, char const* argv[])
 	fvec3 camerap(0.0, 15.0, 20.0);
 
 	//いろいろ
+
 	/*
-	uint32_t objectsize = 6;
-	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(4.8, -5.1, -0.8), 4.00);
-	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(-0.000 * 3.1415, 2.00 * 3.1415, 0.0 * 3.1415));
-	Physics::rbodyvec[0].omega    = fvec3(.0, .0, .0);
-	Physics::rbodyvec[0].velocity = fvec3(.0, .0, .0);
-	Physics::rbodyvec[0].tva.setcolor(0.4, 0.4, 0.8, 1.0);
+	uint32_t objectsize = 3;
+	Physics::rbodyvec.emplace_back("../../../resource/TeaPot.obj", "../../../resource/LightTeaPot.obj", fvec3(0.0, -6.0, 0.0), 0.10, 1.00);
+	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
+	Physics::rbodyvec[0].omega    = fvec3(.0, .0, 0.0);
+	Physics::rbodyvec[0].velocity = fvec3(.0, 0.0, .0);
+	Physics::rbodyvec[0].tva.setcolor(0.8, 0.4, 0.3, 1.0);
 	Physics::rbodyvec[0].tva.settype(2);
 	Physics::rbodyvec[0].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(0.0, -8.0, 0.0), 4.00, 1.00);
-	Physics::rbodyvec[1].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
-	Physics::rbodyvec[1].omega    = fvec3(3.0, 0.0, 0.0);
-	Physics::rbodyvec[1].velocity = fvec3(0.0, 0.0, -3.0);
+	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(0.0, -9.0, 0.0), 3.00, 1.00);
+	Physics::rbodyvec[1].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
+	Physics::rbodyvec[1].omega    = fvec3(0.0, 0.0, 0.0);
+	Physics::rbodyvec[1].velocity = fvec3(0.0, 0.0, 0.0);
 	Physics::rbodyvec[1].tva.setcolor(0.8, 0.4, 0.3, 1.0);
-	Physics::rbodyvec[1].tva.settype(1);
+	Physics::rbodyvec[1].tva.settype(2);
 	Physics::rbodyvec[1].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/TeaPot.obj", "../../../resource/LightTeaPot.obj", fvec3(0.0, 1.0, 0.0), 0.04, 1.00);
-	Physics::rbodyvec[2].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
-	Physics::rbodyvec[2].omega    = fvec3(3.0, 3.0, 0.0);
-	Physics::rbodyvec[2].velocity = fvec3(3.0, 0.0, -3.0);
-	Physics::rbodyvec[2].tva.setcolor(0.8, 0.4, 0.3, 1.0);
+	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(8.0, -1.1, 5.0), 1.00, 6.00);
+	Physics::rbodyvec[2].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0));
+	Physics::rbodyvec[2].omega    = fvec3(-4.0, 8.0, -5.0);
+	Physics::rbodyvec[2].velocity = fvec3(-11.0, 1.0, 0.0);
+	Physics::rbodyvec[2].tva.setcolor(0.8, 0.3, 0.3, 1.0);
 	Physics::rbodyvec[2].tva.settype(1);
 	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
-
-	Physics::rbodyvec.emplace_back("../../../resource/Serapis.obj", "../../../resource/LightSerapis.obj", fvec3(0.0, 10.0, 0.0), 0.18, 8.00);
-	Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
-	Physics::rbodyvec[3].omega    = fvec3(0.0, -8.0, 0.0);
-	Physics::rbodyvec[3].velocity = fvec3(3.0, 3.0, -3.0);
-	Physics::rbodyvec[3].tva.setcolor(0.8, 0.4, 0.3, 1.0);
-	Physics::rbodyvec[3].tva.settype(1);
-	Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
-
-	Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(0.0, 2.0, 6.0), 7.00, 1.00);
-	Physics::rbodyvec[4].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
-	Physics::rbodyvec[4].omega    = fvec3(3.0, 3.0, 3.0);
-	Physics::rbodyvec[4].velocity = fvec3(0.0, 3.0, 10.0);
-	Physics::rbodyvec[4].tva.setcolor(0.8, 0.4, 0.3, 1.0);
-	Physics::rbodyvec[4].tva.settype(1);
-	Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
-
-	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(-3.0, 2.0, 0.0), 2.00, 1.00);
-	Physics::rbodyvec[5].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.50 * 3.1415, 0.0));
-	Physics::rbodyvec[5].omega    = fvec3(3.0, 2.0, 2.0);
-	Physics::rbodyvec[5].velocity = fvec3(3.0, 30.0, -10.0);
-	Physics::rbodyvec[5].tva.setcolor(0.8, 0.4, 0.3, 1.0);
-	Physics::rbodyvec[5].tva.settype(1);
-	Physics::rbodyvec[5].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 	*/
 
 	/////////////////////////////////////
@@ -1046,7 +1023,6 @@ int main(int argc, char const* argv[])
 
 	//rendering loop
 
-	double ctime = 0.0;
 	double vtime = 0.0;
 
 	while (!Visualizer::Is_Closed()) {
@@ -1060,6 +1036,8 @@ int main(int argc, char const* argv[])
 
 		static bool is_stop = true;
 
+		static int32_t renderstatus = 0;
+
 		static float mousemovex = 0.5 * 3.14;
 		static float mousemovey = 0.5 * 3.14;
 		static float cameraL	= 30.0f;
@@ -1072,7 +1050,6 @@ int main(int argc, char const* argv[])
 		static bool nextframe = false;
 
 		//physics
-		ctime = Visualizer::GetTime();
 		if (!is_stop || nextframe) {
 			Physics::timestep();
 			vtime += dt;
@@ -1120,7 +1097,18 @@ int main(int argc, char const* argv[])
 
 			ImGui::Text("camera length = %.1f", cameraL);
 
-			ImGui::Text("realtime = %.1f", ctime);
+			if (ImGui::Combo("Render Status", &(renderstatus), "Surface\0Surface Edge\0\0")) {
+				if (renderstatus == 0) {
+					for (uint32_t i = 2; i < 2 + 2 * objectsize; i += 2) {
+						renderlist[i + 1].renderswitch = true;
+					}
+				} else if (renderstatus == 1) {
+					for (uint32_t i = 2; i < 2 + 2 * objectsize; i += 2) {
+						renderlist[i + 1].renderswitch = false;
+					}
+				}
+			}
+
 			ImGui::Text("virtualtime = %.1f", vtime);
 
 			if (ImGui::Button("reset")) {

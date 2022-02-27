@@ -526,6 +526,9 @@ int main(int argc, char const* argv[])
 
 	DeformableMesh CM0;
 
+	std::cout << "vertex: " << CM0.vertsize << std::endl;
+	std::cout << "element: " << CM0.tisize / 3 << std::endl;
+
 	//init
 
 	std::vector<Renderer3D::drawobject> shadowlist;

@@ -43,7 +43,8 @@ int main(int argc, char const* argv[])
 
 	omp_set_num_threads(20);
 
-	fvec3 camerap(0.0, 15.0, 20.0);
+	fvec3 camerap(0.0, 0.0, 20.0);
+	fvec3 cameralookat(0.0, 0.0, 0.0);
 
 	//init
 
@@ -205,6 +206,7 @@ int main(int argc, char const* argv[])
 		//renderer set
 
 		Renderer3D::setcposi(camerap);
+		Renderer3D::setclookat(cameralookat);
 		Renderer3D::updateUniformobj();
 
 		//rendering

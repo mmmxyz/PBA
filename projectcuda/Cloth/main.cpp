@@ -682,6 +682,9 @@ int main(int argc, char const* argv[])
 
 	ClothMesh CM0(51, 8.0, fvec3(0.0, 3.0, 0.0));
 
+	std::cout << "vertex: " << CM0.vertsize << std::endl;
+	std::cout << "triangle: " << CM0.tisize / 3 << std::endl;
+
 	//CUDA Init
 	MeshInfo mInfo(CM0.vertsize, CM0.RestPositionList.data(), CM0.tilist, CM0.tisize, CM0.edgelist, CM0.edgesize, CM0.InnerEdgeList, CM0.InnerEdgeCList, CM0.InnerEdgesize, CM0.AList.data(), CM0.VList.data(), CM0.mass, dt);
 	Init(mInfo);

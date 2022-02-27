@@ -388,7 +388,7 @@ int main(int argc, char const* argv[])
 
 	//init
 
-	ClothMesh CM0(50, 10, 50.0, 10.0, fvec2(0.0));
+	ClothMesh CM0(40, 8, 50.0, 10.0, fvec2(0.0));
 
 	std::vector<Renderer2D::drawobject> renderlist;
 
