@@ -909,8 +909,7 @@ class mat4 {
 			m[i] = 0.0;
 	}
 
-	template <class U>
-	mat4(const mat3<U>& mat, const vec3<U>& vec)
+	mat4(const mat3<T>& mat, const vec3<T>& vec)
 	{
 		m[0]  = mat.m[0];
 		m[1]  = mat.m[1];

@@ -18,7 +18,7 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 
-#if defined(__CUDA_ARCH__)
+#ifdef __CUDA_ARCH__
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -833,7 +833,7 @@ __host__ __device__ float fmat3::sqlength() const
 {
 	float hoge = 0.0;
 	for (uint32_t i = 0; i < 9; i++)
-		hoge += m[i];
+		hoge += m[i] * m[i];
 	return hoge;
 }
 template <>

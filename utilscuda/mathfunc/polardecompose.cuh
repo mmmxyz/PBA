@@ -2,7 +2,9 @@
 
 #include "utilscuda/mathfunc/mathfunc.cuh"
 
-__device__ fquaternion ExtractRotation(const fmat3& A, const uint32_t& numitr, const fquaternion initq)
+namespace CUDAutils {
+
+__host__ __device__ fquaternion ExtractRotation(const fmat3& A, const uint32_t& numitr, const fquaternion initq)
 {
 
 	fquaternion q = initq;
@@ -27,3 +29,25 @@ __device__ fquaternion ExtractRotation(const fmat3& A, const uint32_t& numitr, c
 	}
 	return q;
 }
+
+__host__ __device__ float ExtractRotation(const fmat2& A, const uint32_t& numitr, const float& initomega)
+{
+	float omega = initomega;
+
+	fvec2 a0 = fvec2(A.m[0], A.m[2]);
+	fvec2 a1 = fvec2(A.m[1], A.m[3]);
+
+	for (uint32_t i = 0; i < numitr; i++) {
+		fmat2 R(omega);
+		fvec2 r0 = fvec2(R.m[0], R.m[2]);
+		fvec2 r1 = fvec2(R.m[1], R.m[3]);
+
+		float domega = r0.cross(a0) + r1.cross(a1);
+		domega	     = domega / (std::abs(a0.dot(r0) + a1.dot(r1)) + 0.00000001);
+
+		omega = domega + omega;
+	}
+	return omega;
+}
+
+};

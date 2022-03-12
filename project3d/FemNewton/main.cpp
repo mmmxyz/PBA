@@ -958,6 +958,11 @@ class DeformableMesh {
 				dx[4 * i + 1] = dtdtdlambda * dC1;
 				dx[4 * i + 2] = dtdtdlambda * dC2;
 				dx[4 * i + 3] = dtdtdlambda * dC3;
+			} else {
+				dx[4 * i + 0] = fvec3(0.0);
+				dx[4 * i + 1] = fvec3(0.0);
+				dx[4 * i + 2] = fvec3(0.0);
+				dx[4 * i + 3] = fvec3(0.0);
 			}
 		}
 
