@@ -12,3 +12,10 @@ void ConvertPTMtoREM(
     const uint32_t* const Pidata,
     const uint32_t& pisize,
     linevertarray& varray);
+
+void ConvertEVtoVE(
+    const uint32_t vertsize,
+    const uint32_t* const elementlist,
+    const uint32_t elementsize,
+    uint32_t** const elsup_index,
+    uint32_t** const elsup);

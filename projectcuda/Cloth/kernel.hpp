@@ -12,6 +12,12 @@ struct MeshInfo {
 	uint32_t* InnerEdgelist;
 	fvec4* InnerEdgeClist;
 	uint32_t InnerEdgesize;
+	uint32_t* VtoTlist;
+	uint32_t* VtoTind;
+	uint32_t* VtoElist;
+	uint32_t* VtoEind;
+	uint32_t* VtoIlist;
+	uint32_t* VtoIind;
 	fmat2* Alist;
 	float* Vlist;
 	float mass;
@@ -26,6 +32,12 @@ struct MeshInfo {
 	    uint32_t* InnerEdgelist,
 	    fvec4* InnerEdgeClist,
 	    uint32_t InnerEdgesize,
+	    uint32_t* VtoTlist,
+	    uint32_t* VtoTind,
+	    uint32_t* VtoElist,
+	    uint32_t* VtoEind,
+	    uint32_t* VtoIlist,
+	    uint32_t* VtoIind,
 	    fmat2* Alist,
 	    float* Vlist,
 	    float mass,
@@ -39,6 +51,12 @@ struct MeshInfo {
 	    , InnerEdgelist(InnerEdgelist)
 	    , InnerEdgeClist(InnerEdgeClist)
 	    , InnerEdgesize(InnerEdgesize)
+	    , VtoTlist(VtoTlist)
+	    , VtoTind(VtoTind)
+	    , VtoElist(VtoElist)
+	    , VtoEind(VtoEind)
+	    , VtoIlist(VtoIlist)
+	    , VtoIind(VtoIind)
 	    , Alist(Alist)
 	    , Vlist(Vlist)
 	    , dt(dt)
@@ -47,9 +65,15 @@ struct MeshInfo {
 	}
 };
 
-//void Init(const fvec2* const RestPositionList, const uint32_t* const TriIndList, const uint32_t* const edgelist, const uint32_t* const InnerEdgeIndList, const fvec4* const InnerEdgeCList, const fmat2* const AList, const float* const VList, const uint32_t N);
-
 void Init(MeshInfo& minfo);
+
+void MassSpringIterationGPU(fvec3* const tempp, const float SpringCof, const float edgedist, const bool isfix, const uint32_t N, const float bendCof, const uint32_t iternum);
+
+void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu, const float edgedist, const bool isfix, const uint32_t N, const float bendCof, const uint32_t iternum);
+
+void MassSpringProjectGPU(fvec3* const tempp, const float SpringCof);
+
+void FixedProjectionGPU(fvec3* const tempp, const float edgedist, const bool isfix, const uint32_t N);
 
 void FemElasticProjectGPU(fvec3* const tempp, const float lambda, const float mu);
 

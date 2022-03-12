@@ -72,3 +72,38 @@ void ConvertPTMtoREM(
 		varray[i].type = 0;
 	}
 }
+
+void ConvertEVtoVE(
+    const uint32_t vertsize,
+    const uint32_t* const elementlist,
+    const uint32_t elementsize,
+    uint32_t** const elsup_index,
+    uint32_t** const elsup)
+{
+	(*elsup_index) = new uint32_t[vertsize + 1];
+	(*elsup)       = new uint32_t[elementsize];
+
+	for (uint32_t i = 0; i < vertsize + 1; i++) {
+		(*elsup_index)[i] = 0;
+	}
+
+	for (uint32_t i = 0; i < elementsize; i++) {
+		(*elsup_index)[elementlist[i]]++;
+	}
+
+	uint32_t counter = 0;
+	for (uint32_t i = 0; i < vertsize + 1; i++) {
+		counter += (*elsup_index)[i];
+		(*elsup_index)[i] = counter - (*elsup_index)[i];
+	}
+
+	for (uint32_t i = 0; i < elementsize; i++) {
+		(*elsup)[(*elsup_index)[elementlist[i]]] = i;
+		(*elsup_index)[elementlist[i]]++;
+	}
+
+	for (uint32_t i = vertsize; i > 0; i--) {
+		(*elsup_index)[i] = (*elsup_index)[i - 1];
+	}
+	(*elsup_index)[0] = 0;
+}

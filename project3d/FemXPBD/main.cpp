@@ -19,6 +19,8 @@
 
 #include "utils/meshgenerator/meshgenerator.hpp"
 
+#include "utils/meshprocessing/MeshConv.hpp"
+
 #include "utils/fem/fem.hpp"
 
 #include <imgui.h>
@@ -49,6 +51,12 @@ class DeformableMesh {
 	uint32_t* lilist; //辺数x2
 	uint32_t lisize;
 
+	uint32_t* VtoElist;
+	uint32_t* VtoEind;
+
+	uint32_t* VtoTlist;
+	uint32_t* VtoTind;
+
 	linevertarray lva;
 
 	trianglevertarray tva;
@@ -73,6 +81,9 @@ class DeformableMesh {
 		LoadTetGentoTetrahedraMesh("../../../resource/Bunny", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -8.0, 0.0), 6.0);
 		//LoadTetGentoTetrahedraMesh("../../../resource/Dragon", &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, -6.0, 0.0), 18.0);
 		//CubeTetrahedra(6, 10.0, &vertdata, vertsize, &elementlist, elementsize, &tilist, tisize, &lilist, lisize, fvec3(0.0, 0.0, 0.0));
+
+		ConvertEVtoVE(vertsize, elementlist, elementsize, &VtoEind, &VtoElist);
+		ConvertEVtoVE(vertsize, tilist, tisize, &VtoTind, &VtoTlist);
 
 		tva.resetvertarray(vertsize, tisize, tilist);
 		lva.resetvertarray(vertsize, lisize, lilist);
@@ -124,18 +135,26 @@ class DeformableMesh {
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
-		for (uint32_t i = 0; i < tisize / 3; i++) {
-			fvec3 v0 = PositionList[tilist[3 * i + 0]];
-			fvec3 v1 = PositionList[tilist[3 * i + 1]];
-			fvec3 v2 = PositionList[tilist[3 * i + 2]];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
+				uint32_t Tind = VtoTlist[j] / 3;
 
-			fvec3 normal = (v1 - v0).cross(v2 - v0);
-			if (normal.sqlength() > 0.000001)
-				normal = normal.normalize();
+				fvec3 v0 = PositionList[tilist[3 * Tind + 0]];
+				fvec3 v1 = PositionList[tilist[3 * Tind + 1]];
+				fvec3 v2 = PositionList[tilist[3 * Tind + 2]];
 
-			NormalSet[tilist[3 * i + 0]] = NormalSet[tilist[3 * i + 0]] + normal;
-			NormalSet[tilist[3 * i + 1]] = NormalSet[tilist[3 * i + 1]] + normal;
-			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
+				fvec3 normal = (v1 - v0).cross(v2 - v0);
+				if (normal.sqlength() > 0.000001)
+					normal = normal.normalize();
+
+				NormalSet[i] = NormalSet[i] + normal;
+			}
+		}
+
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			NormalSet[i] = NormalSet[i].normalize();
 		}
 
 #pragma omp parallel for
@@ -281,8 +300,10 @@ class DeformableMesh {
 		}
 
 #pragma omp parallel for
-		for (uint32_t i = 0; i < elementsize; i++) {
-			TempPositionList[elementlist[i]] = TempPositionList[elementlist[i]] + dx[i];
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoEind[i]; j < VtoEind[i + 1]; j++) {
+				TempPositionList[i] = TempPositionList[i] + dx[VtoElist[j]];
+			}
 		}
 	}
 
@@ -385,8 +406,10 @@ class DeformableMesh {
 		}
 
 #pragma omp parallel for
-		for (uint32_t i = 0; i < elementsize; i++) {
-			TempPositionList[elementlist[i]] = TempPositionList[elementlist[i]] + dx[i];
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoEind[i]; j < VtoEind[i + 1]; j++) {
+				TempPositionList[i] = TempPositionList[i] + dx[VtoElist[j]];
+			}
 		}
 	}
 
@@ -438,7 +461,7 @@ void timestep(DeformableMesh& CM)
 			CM.FixedProjection();
 		}
 	else if (solver == 1)
-		for (uint32_t x = 0; x < 15; x++) {
+		for (uint32_t x = 0; x < 12; x++) {
 			CM.FemProjectJC();
 			CM.FemFixInversionJC();
 			CM.FixedProjection();

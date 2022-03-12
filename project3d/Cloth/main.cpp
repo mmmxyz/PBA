@@ -16,6 +16,8 @@
 
 #include "utils/meshgenerator/meshgenerator.hpp"
 
+#include "utils/meshprocessing/MeshConv.hpp"
+
 #include "utils/fem/fem.hpp"
 
 #include <imgui.h>
@@ -42,7 +44,6 @@ class ClothMesh {
 	std::vector<fvec3> PositionList;
 	std::vector<fvec2> RestPositionList;
 	std::vector<fvec3> VelocityList;
-	std::vector<fvec3> TempPositionList;
 
 	std::vector<fvec3> dx;
 
@@ -55,6 +56,15 @@ class ClothMesh {
 	uint32_t* InnerEdgeList;
 	fvec4* InnerEdgeCList;
 	uint32_t InnerEdgesize;
+
+	uint32_t* VtoTlist;
+	uint32_t* VtoTind;
+
+	uint32_t* VtoElist;
+	uint32_t* VtoEind;
+
+	uint32_t* VtoIlist;
+	uint32_t* VtoIind;
 
 	linevertarray lva;
 
@@ -87,9 +97,12 @@ class ClothMesh {
 
 		ClothFemMesh(N, length, &vertdata, &Restvertdata, vertsize, &tilist, tisize, &edgelist, edgesize, &InnerEdgeList, InnerEdgesize, &InnerEdgeCList);
 
+		ConvertEVtoVE(vertsize, tilist, tisize, &VtoTind, &VtoTlist);
+		ConvertEVtoVE(vertsize, edgelist, edgesize, &VtoEind, &VtoElist);
+		ConvertEVtoVE(vertsize, InnerEdgeList, InnerEdgesize, &VtoIind, &VtoIlist);
+
 		PositionList.reserve(vertsize);
 		RestPositionList.reserve(vertsize);
-		TempPositionList.reserve(vertsize);
 		VelocityList.reserve(vertsize);
 
 		dx.reserve(std::max(std::max(edgesize, tisize), InnerEdgesize));
@@ -105,7 +118,6 @@ class ClothMesh {
 
 		for (uint32_t i = 0; i < vertsize; i++) {
 			PositionList[i]	    = vertdata[i];
-			TempPositionList[i] = vertdata[i];
 			RestPositionList[i] = Restvertdata[i];
 			VelocityList[i]	    = fvec3(0.0);
 		}
@@ -178,18 +190,25 @@ class ClothMesh {
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
-		for (uint32_t i = 0; i < tisize / 3; i++) {
-			fvec3 v0 = fvec3(tva[tilist[3 * i + 0]].position);
-			fvec3 v1 = fvec3(tva[tilist[3 * i + 1]].position);
-			fvec3 v2 = fvec3(tva[tilist[3 * i + 2]].position);
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
+				uint32_t Tind = VtoTlist[j] / 3;
 
-			fvec3 normal = (v1 - v0).cross(v2 - v0);
-			if (normal.sqlength() > 0.000001)
-				normal = normal.normalize();
+				fvec3 v0 = fvec3(tva[tilist[3 * Tind + 0]].position);
+				fvec3 v1 = fvec3(tva[tilist[3 * Tind + 1]].position);
+				fvec3 v2 = fvec3(tva[tilist[3 * Tind + 2]].position);
 
-			NormalSet[tilist[3 * i + 0]] = NormalSet[tilist[3 * i + 0]] + normal;
-			NormalSet[tilist[3 * i + 1]] = NormalSet[tilist[3 * i + 1]] + normal;
-			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
+				fvec3 normal = (v1 - v0).cross(v2 - v0);
+				if (normal.sqlength() > 0.000001)
+					normal = normal.normalize();
+
+				NormalSet[i] = NormalSet[i] + normal;
+			}
+		}
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			NormalSet[i] = NormalSet[i].normalize();
 		}
 
 #pragma omp parallel for
@@ -298,8 +317,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < edgesize; i++) {
-			TempPosition[edgelist[i]] = TempPosition[edgelist[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoEind[i]; j < VtoEind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoElist[j]];
+			}
 		}
 	}
 
@@ -411,8 +433,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < tisize; i++) {
-			TempPosition[tilist[i]] = TempPosition[tilist[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoTlist[j]];
+			}
 		}
 	}
 
@@ -494,8 +519,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < InnerEdgesize; i++) {
-			TempPosition[InnerEdgeList[i]] = TempPosition[InnerEdgeList[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoIind[i]; j < VtoIind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoIlist[j]];
+			}
 		}
 	}
 

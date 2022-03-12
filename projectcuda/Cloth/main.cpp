@@ -16,6 +16,8 @@
 
 #include "utils/meshgenerator/meshgenerator.hpp"
 
+#include "utils/meshprocessing/MeshConv.hpp"
+
 #include "utils/fem/fem.hpp"
 
 #include "kernel.hpp"
@@ -31,11 +33,11 @@ constexpr float dt     = 1.0 / FPS;
 
 float mu      = 90;
 float lambda  = 50;
-float bendCof = 0.00100;
+float bendCof = 0.0001;
 
 float SpringCof = 3.0;
 
-float rho = 0.005;
+float rho = 0.0001;
 
 float edgedist = 0.3;
 
@@ -59,6 +61,15 @@ class ClothMesh {
 	uint32_t* InnerEdgeList;
 	fvec4* InnerEdgeCList;
 	uint32_t InnerEdgesize;
+
+	uint32_t* VtoTlist;
+	uint32_t* VtoTind;
+
+	uint32_t* VtoElist;
+	uint32_t* VtoEind;
+
+	uint32_t* VtoIlist;
+	uint32_t* VtoIind;
 
 	linevertarray lva;
 
@@ -90,6 +101,10 @@ class ClothMesh {
 		fvec2* Restvertdata;
 
 		ClothFemMesh(N, length, &vertdata, &Restvertdata, vertsize, &tilist, tisize, &edgelist, edgesize, &InnerEdgeList, InnerEdgesize, &InnerEdgeCList);
+
+		ConvertEVtoVE(vertsize, tilist, tisize, &VtoTind, &VtoTlist);
+		ConvertEVtoVE(vertsize, edgelist, edgesize, &VtoEind, &VtoElist);
+		ConvertEVtoVE(vertsize, InnerEdgeList, InnerEdgesize, &VtoIind, &VtoIlist);
 
 		PositionList.reserve(vertsize);
 		RestPositionList.reserve(vertsize);
@@ -182,18 +197,25 @@ class ClothMesh {
 		for (auto& x : NormalSet)
 			x = fvec3(0.0);
 
-		for (uint32_t i = 0; i < tisize / 3; i++) {
-			fvec3 v0 = fvec3(tva[tilist[3 * i + 0]].position);
-			fvec3 v1 = fvec3(tva[tilist[3 * i + 1]].position);
-			fvec3 v2 = fvec3(tva[tilist[3 * i + 2]].position);
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
+				uint32_t Tind = VtoTlist[j] / 3;
 
-			fvec3 normal = (v1 - v0).cross(v2 - v0);
-			if (normal.sqlength() > 0.000001)
-				normal = normal.normalize();
+				fvec3 v0 = fvec3(tva[tilist[3 * Tind + 0]].position);
+				fvec3 v1 = fvec3(tva[tilist[3 * Tind + 1]].position);
+				fvec3 v2 = fvec3(tva[tilist[3 * Tind + 2]].position);
 
-			NormalSet[tilist[3 * i + 0]] = NormalSet[tilist[3 * i + 0]] + normal;
-			NormalSet[tilist[3 * i + 1]] = NormalSet[tilist[3 * i + 1]] + normal;
-			NormalSet[tilist[3 * i + 2]] = NormalSet[tilist[3 * i + 2]] + normal;
+				fvec3 normal = (v1 - v0).cross(v2 - v0);
+				if (normal.sqlength() > 0.000001)
+					normal = normal.normalize();
+
+				NormalSet[i] = NormalSet[i] + normal;
+			}
+		}
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			NormalSet[i] = NormalSet[i].normalize();
 		}
 
 #pragma omp parallel for
@@ -215,9 +237,9 @@ class ClothMesh {
 
 #pragma omp parallel for
 		for (uint32_t i = 0; i < vertsize; i++) {
-			lva[i].position[0] += 0.005 * NormalSet[i].x;
-			lva[i].position[1] += 0.005 * NormalSet[i].y;
-			lva[i].position[2] += 0.005 * NormalSet[i].z;
+			lva[i].position[0] += 0.008 * NormalSet[i].x;
+			lva[i].position[1] += 0.008 * NormalSet[i].y;
+			lva[i].position[2] += 0.008 * NormalSet[i].z;
 		}
 	}
 
@@ -302,8 +324,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < edgesize; i++) {
-			TempPosition[edgelist[i]] = TempPosition[edgelist[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoEind[i]; j < VtoEind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoElist[j]];
+			}
 		}
 	}
 
@@ -415,8 +440,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < tisize; i++) {
-			TempPosition[tilist[i]] = TempPosition[tilist[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoTlist[j]];
+			}
 		}
 	}
 
@@ -498,8 +526,11 @@ class ClothMesh {
 			}
 		}
 
-		for (uint32_t i = 0; i < InnerEdgesize; i++) {
-			TempPosition[InnerEdgeList[i]] = TempPosition[InnerEdgeList[i]] + dx[i];
+#pragma omp parallel for
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoIind[i]; j < VtoIind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoIlist[j]];
+			}
 		}
 	}
 
@@ -539,7 +570,7 @@ void timestep(ClothMesh& CM)
 
 #pragma omp parallel for
 	for (uint32_t i = 0; i < NodeSize; i++) {
-		fvec3 velocity = CM.VelocityList[i] + dt * fvec3(0.0, -9.8, 0.0);
+		fvec3 velocity = CM.VelocityList[i] + dt * fvec3(0.0, -98.0, 0.0);
 		tempp[i]       = CM.PositionList[i] + dt * velocity;
 	}
 
@@ -569,14 +600,10 @@ void timestep(ClothMesh& CM)
 		}
 	} else if (solver == 4) {
 		ClearLambdaGPU();
-		for (uint32_t x = 0; x < 20; x++) {
-			CM.FixedProjection(tempp);
-			FemElasticProjectGPU(tempp.data(), lambda, mu);
-			if (x % 3 == 0) {
-				FemBendProjectGPU(tempp.data(), bendCof);
-				FemAreaProjectGPU(tempp.data());
-			}
-		}
+		ElasticIterationGPU(tempp.data(), lambda, mu, edgedist, is_fix, CM.N, bendCof, 200);
+	} else if (solver == 5) {
+		ClearLambdaGPU();
+		MassSpringIterationGPU(tempp.data(), SpringCof, edgedist, is_fix, CM.N, bendCof, 180);
 	}
 
 #pragma omp parallel for
@@ -680,13 +707,14 @@ int main(int argc, char const* argv[])
 	Renderer3D::setclookat(fvec3(0.0, 2.0, 0.0));
 	Renderer3D::setLightint(600.0);
 
-	ClothMesh CM0(51, 8.0, fvec3(0.0, 3.0, 0.0));
+	ClothMesh CM0(71, 8.0, fvec3(0.0, 3.0, 0.0));
 
 	std::cout << "vertex: " << CM0.vertsize << std::endl;
 	std::cout << "triangle: " << CM0.tisize / 3 << std::endl;
 
 	//CUDA Init
-	MeshInfo mInfo(CM0.vertsize, CM0.RestPositionList.data(), CM0.tilist, CM0.tisize, CM0.edgelist, CM0.edgesize, CM0.InnerEdgeList, CM0.InnerEdgeCList, CM0.InnerEdgesize, CM0.AList.data(), CM0.VList.data(), CM0.mass, dt);
+	MeshInfo mInfo(CM0.vertsize, CM0.RestPositionList.data(), CM0.tilist, CM0.tisize, CM0.edgelist, CM0.edgesize, CM0.InnerEdgeList, CM0.InnerEdgeCList, CM0.InnerEdgesize, CM0.VtoTlist, CM0.VtoTind, CM0.VtoElist, CM0.VtoEind, CM0.VtoIlist, CM0.VtoIind, CM0.AList.data(), CM0.VList.data(), CM0.mass, dt);
+
 	Init(mInfo);
 
 	//Render object
@@ -705,6 +733,8 @@ int main(int argc, char const* argv[])
 	renderlist.emplace_back(CM0.tva2);
 	renderlist.emplace_back(CM0.lva);
 
+	Renderer3D::setLightint(600.0);
+
 	//rendering loop
 
 	double ctime = 0.0;
@@ -718,7 +748,7 @@ int main(int argc, char const* argv[])
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(350, 500), ImGuiCond_FirstUseEver);
 
 		static bool is_stop = true;
 
@@ -734,6 +764,10 @@ int main(int argc, char const* argv[])
 		float cameracost;
 
 		static bool nextframe = false;
+
+		static float Lposix = -6.0;
+		static float Lposiy = 15.0;
+		static float Lposiz = 18.0;
 
 		//imgui
 		{
@@ -804,12 +838,16 @@ int main(int argc, char const* argv[])
 				}
 			}
 
-			ImGui::Combo("Solver", &(Physics::solver), "Continuum Gauss-Seidel\0Continuum Jacobi\0MassSpring Gauss-Seidel\0MassSpring Jacobi\0GPU Continuum\0\0");
+			ImGui::SliderFloat("Lightx", &Lposix, -20.0f, 20.0f);
+			ImGui::SliderFloat("Lighty", &Lposiy, 0.0f, 15.0f);
+			ImGui::SliderFloat("Lightz", &Lposiz, -20.0f, 20.0f);
+
+			ImGui::Combo("Solver", &(Physics::solver), "Continuum Gauss-Seidel\0Continuum Jacobi\0MassSpring Gauss-Seidel\0MassSpring Jacobi\0GPU Continuum\0GPU MassSpring\0\0");
 
 			ImGui::SliderFloat("mu", &mu, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 			ImGui::SliderFloat("lambda", &lambda, 0.0f, 500.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
-			ImGui::SliderFloat("Bending", &bendCof, 0.0f, 1.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
-			ImGui::SliderFloat("Spring", &SpringCof, 0.0f, 10.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
+			ImGui::SliderFloat("Bending", &bendCof, 0.0f, 0.1f, "%.4f", ImGuiSliderFlags_Logarithmic);
+			ImGui::SliderFloat("Spring", &SpringCof, 0.0f, 50.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 
 			ImGui::SliderFloat("length", &edgedist, -6.0f, 6.0f);
 			ImGui::Checkbox("fix", &is_fix);
@@ -881,6 +919,8 @@ int main(int argc, char const* argv[])
 			}
 		}
 
+		Renderer3D::setLposi(fvec3(Lposix, Lposiy, Lposiz));
+		Renderer3D::DrawPoint(fvec3(Lposix, Lposiy, Lposiz), 1.0, 1.0, 1.0);
 		Renderer3D::setcposi(camerap);
 		Renderer3D::updateUniformobj();
 
