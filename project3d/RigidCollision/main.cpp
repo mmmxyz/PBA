@@ -31,7 +31,7 @@ constexpr float dt     = 1.0 / FPS;
 
 constexpr float CoFs = 0.20f; //静止摩擦係数
 constexpr float CoFk = 0.10f; //動摩擦係数
-constexpr float CoE  = 0.8f;  //反発係数
+constexpr float CoE  = 0.9f;  //反発係数
 
 class rigidbody {
     public:
@@ -824,8 +824,8 @@ int main(int argc, char const* argv[])
 
 	//cubeから滑り落ちるcubeとbunnyのstack
 	/*
-	uint32_t objectsize = 5;
-	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(-5.0, -8.0, 0.0), 4.00, 1.00);
+	uint32_t objectsize = 3;
+	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(-5.0, -8.0, 0.0), 4.00, 10.00);
 	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
 	Physics::rbodyvec[0].omega    = fvec3(0.0, 0.0, 0.0);
 	Physics::rbodyvec[0].velocity = fvec3(0.0, 0.0, 0.0);
@@ -833,7 +833,7 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[0].tva.settype(2);
 	Physics::rbodyvec[0].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(-1.0, -1.0, 0.0), 3.00, 1.00);
+	Physics::rbodyvec.emplace_back("../../../resource/Cube.obj", "../../../resource/Cube.obj", fvec3(-1.1, -1.0, 0.0), 3.00, 1.00);
 	Physics::rbodyvec[1].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0 * 3.1415));
 	Physics::rbodyvec[1].omega    = fvec3(0.0, 0.0, 0.0);
 	Physics::rbodyvec[1].velocity = fvec3(0.0, 0.0, 0.0);
@@ -849,21 +849,21 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[2].tva.settype(2);
 	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(0.0, 8.2, 0.5), 8.00, 7.00);
-	Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
-	Physics::rbodyvec[3].omega    = fvec3(0.0, 0.0, 0.0);
-	Physics::rbodyvec[3].velocity = fvec3(0.0, 0.0, 1.0);
-	Physics::rbodyvec[3].tva.setcolor(0.3, 0.8, 0.8, 1.0);
-	Physics::rbodyvec[3].tva.settype(1);
-	Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+	//Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(0.0, 8.2, 0.5), 8.00, 7.00);
+	//Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
+	//Physics::rbodyvec[3].omega    = fvec3(0.0, 0.0, 0.0);
+	//Physics::rbodyvec[3].velocity = fvec3(0.0, 0.0, 1.0);
+	//Physics::rbodyvec[3].tva.setcolor(0.3, 0.8, 0.8, 1.0);
+	//Physics::rbodyvec[3].tva.settype(1);
+	//Physics::rbodyvec[3].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 
-	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(8.5, 6.0, -0.5), 2.00, 6.00);
-	Physics::rbodyvec[4].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0));
-	Physics::rbodyvec[4].omega    = fvec3(4.0, 4.0, 5.0);
-	Physics::rbodyvec[4].velocity = fvec3(-12.0, 3.0, 1.0);
-	Physics::rbodyvec[4].tva.setcolor(0.8, 0.3, 0.3, 1.0);
-	Physics::rbodyvec[4].tva.settype(1);
-	Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+	//Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(8.5, 6.0, -0.5), 2.00, 6.00);
+	//Physics::rbodyvec[4].rotq     = fquaternion(fvec3(.0 * 3.1415, 0.25 * 3.1415, 0.0));
+	//Physics::rbodyvec[4].omega    = fvec3(4.0, 4.0, 5.0);
+	//Physics::rbodyvec[4].velocity = fvec3(-12.0, 3.0, 1.0);
+	//Physics::rbodyvec[4].tva.setcolor(0.8, 0.3, 0.3, 1.0);
+	//Physics::rbodyvec[4].tva.settype(1);
+	//Physics::rbodyvec[4].lva.setcolor(0.8, 0.8, 0.8, 1.0);
 	*/
 
 	////////////////////////////////////
@@ -959,7 +959,7 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(0.0, -11.0, 0.0), 6.00, 5.00);
 	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
 	Physics::rbodyvec[0].omega    = fvec3(0.0, 4.0, 0.0);
-	Physics::rbodyvec[0].velocity = fvec3(0.0, 4.0, 0.0);
+	Physics::rbodyvec[0].velocity = fvec3(0.0, 20.0, 0.0);
 	Physics::rbodyvec[0].tva.setcolor(0.8, 0.4, 0.3, 1.0);
 	Physics::rbodyvec[0].tva.settype(2);
 	Physics::rbodyvec[0].lva.setcolor(0.8, 0.8, 0.8, 1.0);

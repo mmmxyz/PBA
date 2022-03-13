@@ -349,7 +349,7 @@ void ClearLambdaGPU()
 	ClearLambda<<<lambdasize / 32 + 1, 32>>>();
 }
 
-void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu, const int32_t MaterialInd, const uint32_t iternum)
+void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu, const int32_t MaterialInd, const uint32_t iternum, const bool isinv)
 {
 
 	cudaMemcpy(cpu_d_tempp, tempp, cpu_vertsize * sizeof(fvec3), cudaMemcpyHostToDevice);
@@ -368,7 +368,7 @@ void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu,
 		dxtotemppElement<<<cpu_vertsize / 320 + 1, 320>>>();
 		cudaDeviceSynchronize();
 
-		if (x % 10 == 0 && MaterialInd != 2) {
+		if (x % 10 == 0 && isinv) {
 			FemFixInversionGPU_Kernel<<<EDs + 1, 320>>>(lambda, mu, MaterialInd);
 			cudaDeviceSynchronize();
 			dxtotemppElement<<<cpu_vertsize / 320 + 1, 320>>>();

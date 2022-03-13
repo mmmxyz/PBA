@@ -38,6 +38,8 @@ float mu     = 80;
 float lambda = 80;
 float rho    = 0.1;
 
+bool is_invfix = true;
+
 class DeformableMesh {
     public:
 	std::vector<fvec3> PositionList;
@@ -475,7 +477,7 @@ void timestep(DeformableMesh& CM)
 		}
 	} else if (solver == 2) {
 		ClearLambdaGPU();
-		ElasticIterationGPU(CM.TempPositionList.data(), lambda, mu, CM.MaterialInd, 80);
+		ElasticIterationGPU(CM.TempPositionList.data(), lambda, mu, CM.MaterialInd, 80, is_invfix);
 	}
 
 #pragma omp parallel for
@@ -693,6 +695,8 @@ int main(int argc, char const* argv[])
 			ImGui::Combo("Material", &(CM0.MaterialInd), "Saint Venant-Kirchhoff\0Neo-Hookean\0Co-Rotational\0\0");
 			ImGui::SliderFloat("mu", &mu, 0.0f, 150.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
 			ImGui::SliderFloat("lambda", &lambda, 0.0f, 150.0f, "%.4f", ImGuiSliderFlags_Logarithmic);
+
+			ImGui::Checkbox("Inversion fix", &is_invfix);
 
 			ImGui::Text("virtualtime = %.1f", vtime);
 

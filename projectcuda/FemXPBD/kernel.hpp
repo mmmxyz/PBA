@@ -43,7 +43,7 @@ struct MeshInfo {
 
 void Init(MeshInfo& minfo);
 
-void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu, const int32_t MaterialInd, const uint32_t iternum);
+void ElasticIterationGPU(fvec3* const tempp, const float lambda, const float mu, const int32_t MaterialInd, const uint32_t iternum, const bool isinv);
 
 void Clearqlist();
 

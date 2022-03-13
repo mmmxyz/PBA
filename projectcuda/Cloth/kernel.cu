@@ -179,7 +179,7 @@ FemBendProjectGPU_Kernel(const float bendCof)
 			fvec3 dC3 = (1.0f / C) * bendCof * fvec3(XCot.x * Cot.w, XCot.y * Cot.w, XCot.z * Cot.w);
 
 			float dtdtdlambda = (-C - d_LambdaBendList[i]) / ((dC0.sqlength() + dC1.sqlength() + dC2.sqlength() + dC3.sqlength()) / d_mass + 1.0 / (d_dt * d_dt));
-			dtdtdlambda *= 0.8;
+			dtdtdlambda *= 0.2;
 
 			d_dx[4 * i + 0] = dtdtdlambda * (1.0f / d_mass) * dC0;
 			d_dx[4 * i + 1] = dtdtdlambda * (1.0f / d_mass) * dC1;
