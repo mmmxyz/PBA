@@ -216,4 +216,13 @@ class vertarray {
 	void bind() const;
 	virtual void draw() const = 0;
 	void unbind() const;
+
+	uint32_t getsize() const
+	{
+		return size;
+	}
+	uint32_t getisize() const
+	{
+		return isize;
+	}
 };

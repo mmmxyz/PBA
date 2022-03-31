@@ -73,6 +73,56 @@ void ConvertPTMtoREM(
 	}
 }
 
+void ConvertPTMtoPEM(
+    const uint32_t& Pvsize,
+    const uint32_t* const Pidata,
+    const uint32_t& Pisize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize)
+{
+
+	std::vector<std::set<uint32_t>> AdjacencyList(Pvsize);
+
+	for (uint32_t i = 0; i < Pisize / 3; i++) {
+		uint32_t VI0 = Pidata[3 * i + 0];
+		uint32_t VI1 = Pidata[3 * i + 1];
+		uint32_t VI2 = Pidata[3 * i + 2];
+
+		if (VI0 < VI1)
+			AdjacencyList[VI0].insert(VI1);
+		else
+			AdjacencyList[VI1].insert(VI0);
+
+		if (VI1 < VI2)
+			AdjacencyList[VI1].insert(VI2);
+		else
+			AdjacencyList[VI2].insert(VI1);
+
+		if (VI2 < VI0)
+			AdjacencyList[VI2].insert(VI0);
+		else
+			AdjacencyList[VI0].insert(VI2);
+	}
+
+	edgesize = 0;
+	for (auto x : AdjacencyList) {
+		edgesize += 2 * x.size();
+	}
+
+	(*edgedata) = new uint32_t[edgesize];
+
+	uint32_t counter = 0;
+	for (uint32_t i = 0; i < AdjacencyList.size(); i++) {
+		uint32_t counterinlist = 0;
+		for (const auto& x : AdjacencyList[i]) {
+			(*edgedata)[counter + 2 * counterinlist]     = i;
+			(*edgedata)[counter + 2 * counterinlist + 1] = x;
+			counterinlist++;
+		}
+		counter += 2 * AdjacencyList[i].size();
+	}
+}
+
 void ConvertEVtoVE(
     const uint32_t vertsize,
     const uint32_t* const elementlist,

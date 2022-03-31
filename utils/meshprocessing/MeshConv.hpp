@@ -10,8 +10,15 @@ void ConvertPTMtoREM(
     const fvec3* const Pvdata,
     const uint32_t& Pvsize,
     const uint32_t* const Pidata,
-    const uint32_t& pisize,
+    const uint32_t& Pisize,
     linevertarray& varray);
+
+void ConvertPTMtoPEM(
+    const uint32_t& Pvsize,
+    const uint32_t* const Pidata,
+    const uint32_t& Pisize,
+    uint32_t** const edgedata,
+    uint32_t& edgesize);
 
 void ConvertEVtoVE(
     const uint32_t vertsize,
