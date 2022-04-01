@@ -195,16 +195,19 @@ class Mesh {
 			for (uint32_t j = VtoTind[i]; j < VtoTind[i + 1]; j++) {
 				uint32_t Tind = VtoTlist[j] / 3;
 
-				const fvec3& vi = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 0) % 3]];
-				const fvec3& vj = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 1) % 3]];
-				const fvec3& vk = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 2) % 3]];
+				const fvec3& Rvi = RestPositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 0) % 3]];
+				const fvec3& Rvj = RestPositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 1) % 3]];
+				const fvec3& Rvk = RestPositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 2) % 3]];
+				const fvec3& vi	 = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 0) % 3]];
+				const fvec3& vj	 = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 1) % 3]];
+				const fvec3& vk	 = PositionList[tilist[3 * Tind + (VtoTlist[j] % 3 + 2) % 3]];
 
-				float cotj = (vk - vj).dot(vi - vj) / ((vk - vj).cross(vi - vj)).length();
-				float cotk = (vi - vk).dot(vj - vk) / ((vi - vk).cross(vj - vk)).length();
+				float cotj = (Rvk - Rvj).dot(Rvi - Rvj) / ((Rvk - Rvj).cross(Rvi - Rvj)).length();
+				float cotk = (Rvi - Rvk).dot(Rvj - Rvk) / ((Rvi - Rvk).cross(Rvj - Rvk)).length();
 
 				fvec3 Hn = 0.5 * (-0.5 * (cotj + cotk) * PositionList[i] + 0.5 * cotj * vk + 0.5 * cotk * vj);
 				HNSet[i] = HNSet[i] + Hn;
-				AreaSet[i] += (0.5 * ((vj - vi).cross(vk - vi)).length()) / 3.0;
+				AreaSet[i] += (0.5 * ((Rvj - Rvi).cross(Rvk - Rvi)).length()) / 3.0;
 
 				fvec3 normal = (vj - vi).cross(vk - vi);
 				NormalSet[i] = NormalSet[i] + normal;
