@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 17)
 add_library(collisionLib STATIC
 	RigidObbBvh.cpp
 	primitive.cpp
+	primitive2d.cpp
+	DeformableBvh.cpp
 )
 
 target_include_directories(collisionLib PRIVATE

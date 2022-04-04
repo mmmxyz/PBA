@@ -4,7 +4,7 @@
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/collision/primitive.hpp"
 
-static float epsilon = 0.000001;
+constexpr float epsilon = 0.000001;
 
 ClosestDV DistLinePoint(const fvec3& a0, const fvec3& a1, const fvec3& b, float* const pt)
 {
