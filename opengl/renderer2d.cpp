@@ -23,6 +23,8 @@ static linevertarray Line;
 static pointvertarray Point;
 static linestripvertarray PolyLine;
 
+static trianglevertarray Triangle;
+
 fmat4 makeperspective()
 {
 	fmat4 pmat;
@@ -54,7 +56,7 @@ bool Init()
 	glEnable(GL_BLEND);
 
 	//depth test
-	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
 
 	//vsync on
 	glfwSwapInterval(1);
@@ -71,6 +73,7 @@ bool Init()
 	Line.resetvertarray(2);
 	Point.resetvertarray(1);
 	PolyLine.resetvertarray(1024);
+	Triangle.resetvertarray(3);
 
 	return true;
 }
@@ -168,6 +171,29 @@ void DrawPolyLine(const fvec2* const X, const uint32_t size, const fvec3& color)
 void DrawPolyLine(const fvec2* const X, const uint32_t size)
 {
 	DrawPolyLine(X, size, 0.0, 0.0, 0.0);
+}
+
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2, const float& r, const float& g, const float& b)
+{
+
+	Triangle.setposition(0, x0);
+	Triangle.setposition(1, x1);
+	Triangle.setposition(2, x2);
+
+	Triangle.setcolor(r, g, b, 1.0);
+	Triangle.vboupdate();
+	Triangle.draw();
+}
+
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2, const fvec3& color)
+{
+
+	DrawTriangle(x0, x1, x2, color.x, color.y, color.z);
+}
+
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2)
+{
+	DrawTriangle(x0, x1, x2, 0.0, 0.0, 0.0);
 }
 
 }

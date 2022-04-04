@@ -44,4 +44,7 @@ void DrawPolyLine(const fvec2* const X, const uint32_t size, const float& r, con
 void DrawPolyLine(const fvec2* const X, const uint32_t size, const fvec3& color);
 void DrawPolyLine(const fvec2* const X, const uint32_t size);
 
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2, const float& r, const float& g, const float& b);
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2, const fvec3& color);
+void DrawTriangle(const fvec2& x0, const fvec2& x1, const fvec2& x2);
 }
