@@ -422,6 +422,117 @@ void RectTriangle(
 	}
 }
 
+void RectTriangle2(
+    const uint32_t N,
+    const uint32_t M,
+    const float Lx,
+    const float Ly,
+    fvec2** const vertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const edgelistdata,
+    uint32_t& edgelistsize,
+    uint32_t** const boundarydata,
+    uint32_t& boundarysize,
+    const fvec2& bias)
+{
+	vertsize  = N * M;
+	*vertdata = new fvec2[vertsize];
+
+	ilistsize  = 2 * 3 * (N - 1) * (M - 1);
+	*ilistdata = new uint32_t[ilistsize];
+
+	edgelistsize  = 6 * (N - 1) * (M - 1);
+	*edgelistdata = new uint32_t[edgelistsize];
+
+	boundarysize  = 4 * ((N - 1) + (M - 1));
+	*boundarydata = new uint32_t[boundarysize];
+
+	for (uint32_t y = 0; y < M; y++) {
+		float vy = -0.5 * Ly + Ly * (y / float(M - 1));
+		for (uint32_t x = 0; x < N; x++) {
+			float vx	       = -0.5 * Lx + Lx * (x / float(N - 1));
+			(*vertdata)[N * y + x] = fvec2(vx, vy) + bias;
+		}
+	}
+
+	for (uint32_t y = 0; y < M - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+
+			if ((x + y) % 2 == 0) {
+
+				uint32_t Ind0 = N * y + x;
+				uint32_t Ind1 = Ind0 + 1;
+				uint32_t Ind2 = Ind0 + N;
+				uint32_t Ind3 = Ind0 + N + 1;
+
+				(*ilistdata)[6 * ((N - 1) * y + x) + 0] = Ind0;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 1] = Ind1;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 2] = Ind2;
+
+				(*ilistdata)[6 * ((N - 1) * y + x) + 3] = Ind2;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 4] = Ind1;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 5] = Ind3;
+			} else {
+				uint32_t Ind0 = N * y + x;
+				uint32_t Ind1 = Ind0 + 1;
+				uint32_t Ind2 = Ind0 + N;
+				uint32_t Ind3 = Ind0 + N + 1;
+
+				(*ilistdata)[6 * ((N - 1) * y + x) + 0] = Ind0;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 1] = Ind1;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 2] = Ind3;
+
+				(*ilistdata)[6 * ((N - 1) * y + x) + 3] = Ind3;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 4] = Ind2;
+				(*ilistdata)[6 * ((N - 1) * y + x) + 5] = Ind0;
+			}
+		}
+	}
+
+	for (uint32_t y = 0; y < M - 1; y++) {
+		for (uint32_t x = 0; x < N - 1; x++) {
+			uint32_t Ind0				   = N * y + x;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 0] = Ind0;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 1] = Ind0 + 1;
+
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 2] = Ind0 + N;
+			(*edgelistdata)[6 * ((N - 1) * y + x) + 3] = Ind0;
+
+			if ((x + y) % 2 == 0) {
+				(*edgelistdata)[6 * ((N - 1) * y + x) + 4] = Ind0 + 1;
+				(*edgelistdata)[6 * ((N - 1) * y + x) + 5] = Ind0 + N;
+
+			} else {
+				(*edgelistdata)[6 * ((N - 1) * y + x) + 4] = Ind0;
+				(*edgelistdata)[6 * ((N - 1) * y + x) + 5] = Ind0 + N + 1;
+			}
+		}
+	}
+
+	for (uint32_t i = 0; i < N - 1; i++) {
+		uint32_t Ind0		   = i;
+		(*boundarydata)[2 * i + 0] = Ind0;
+		(*boundarydata)[2 * i + 1] = Ind0 + 1;
+	}
+	for (uint32_t i = 0; i < M - 1; i++) {
+		uint32_t Ind0				 = N * i + N - 1;
+		(*boundarydata)[2 * (N - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[2 * (N - 1) + 2 * i + 1] = Ind0 + N;
+	}
+	for (uint32_t i = 0; i < N - 1; i++) {
+		uint32_t Ind0					       = N * (M - 1) + N - 1 - i;
+		(*boundarydata)[2 * (N - 1) + 2 * (M - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[2 * (N - 1) + 2 * (M - 1) + 2 * i + 1] = Ind0 - 1;
+	}
+	for (uint32_t i = 0; i < M - 1; i++) {
+		uint32_t Ind0					       = N * (M - 1) - N * i;
+		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 0] = Ind0;
+		(*boundarydata)[4 * (N - 1) + 2 * (M - 1) + 2 * i + 1] = Ind0 - N;
+	}
+}
+
 void ClothFemMesh(
     const uint32_t N,
     const float L,
