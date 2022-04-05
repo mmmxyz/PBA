@@ -157,3 +157,51 @@ void ConvertEVtoVE(
 	}
 	(*elsup_index)[0] = 0;
 }
+
+void ExtractBoundaryTetrahedra(
+    const uint32_t vertsize,
+    const uint32_t* const elementlist,
+    const uint32_t elementsize,
+    const uint32_t* const VtoElist,
+    const uint32_t* const VtoEind,
+    const uint32_t* const trilist,
+    const uint32_t trisize,
+    uint32_t** const boundaryelementlist,
+    uint32_t& boundaryelementsize)
+{
+	int32_t* is_boundary = new int32_t[elementsize / 4];
+
+	for (uint32_t i = 0; i < elementsize / 4; i++) {
+		is_boundary[i] = 0;
+	}
+
+	for (uint32_t i = 0; i < trisize; i++) {
+		for (uint32_t j = VtoEind[trilist[i]]; j < VtoEind[trilist[i] + 1]; j++) {
+			uint32_t elementind = VtoElist[j] / 4;
+
+			is_boundary[elementind] = 1;
+		}
+	}
+
+	boundaryelementsize = 0;
+	for (uint32_t i = 0; i < elementsize / 4; i++) {
+		if (is_boundary[i] != 0) {
+			boundaryelementsize += 4;
+		}
+	}
+
+	(*boundaryelementlist) = new uint32_t[boundaryelementsize];
+
+	uint32_t ind = 0;
+	for (uint32_t i = 0; i < elementsize / 4; i++) {
+		if (is_boundary[i] != 0) {
+			(*boundaryelementlist)[4 * ind + 0] = elementlist[4 * i + 0];
+			(*boundaryelementlist)[4 * ind + 1] = elementlist[4 * i + 1];
+			(*boundaryelementlist)[4 * ind + 2] = elementlist[4 * i + 2];
+			(*boundaryelementlist)[4 * ind + 3] = elementlist[4 * i + 3];
+			ind++;
+		}
+	}
+
+	delete[] is_boundary;
+}

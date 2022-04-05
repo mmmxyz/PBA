@@ -341,3 +341,83 @@ ClosestDVV DistTriangleTriangle(const fvec3& a0, const fvec3& a1, const fvec3& a
 
 	return result[minind];
 }
+
+bool Is_CollideTetraTetra(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& a3,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2,
+    const fvec3& b3)
+{
+
+	//sat
+
+	fvec3 normallist[8 + 6 * 6];
+
+	normallist[0] = (a1 - a0).cross(a2 - a0);
+	normallist[1] = (a2 - a1).cross(a3 - a1);
+	normallist[2] = (a3 - a2).cross(a0 - a2);
+	normallist[3] = (a0 - a3).cross(a1 - a3);
+
+	normallist[4] = (b1 - b0).cross(b2 - b0);
+	normallist[5] = (b2 - b1).cross(b3 - b1);
+	normallist[6] = (b3 - b2).cross(b0 - b2);
+	normallist[7] = (b0 - b3).cross(b1 - b3);
+
+	normallist[8 + 0 * 6 + 0] = (a1 - a0).cross(b1 - b0);
+	normallist[8 + 0 * 6 + 1] = (a1 - a0).cross(b2 - b1);
+	normallist[8 + 0 * 6 + 2] = (a1 - a0).cross(b3 - b2);
+	normallist[8 + 0 * 6 + 3] = (a1 - a0).cross(b0 - b3);
+	normallist[8 + 0 * 6 + 4] = (a1 - a0).cross(b2 - b0);
+	normallist[8 + 0 * 6 + 5] = (a1 - a0).cross(b3 - b1);
+
+	normallist[8 + 1 * 6 + 0] = (a2 - a1).cross(b1 - b0);
+	normallist[8 + 1 * 6 + 1] = (a2 - a1).cross(b2 - b1);
+	normallist[8 + 1 * 6 + 2] = (a2 - a1).cross(b3 - b2);
+	normallist[8 + 1 * 6 + 3] = (a2 - a1).cross(b0 - b3);
+	normallist[8 + 1 * 6 + 4] = (a2 - a1).cross(b2 - b0);
+	normallist[8 + 1 * 6 + 5] = (a2 - a1).cross(b3 - b1);
+
+	normallist[8 + 2 * 6 + 0] = (a3 - a2).cross(b1 - b0);
+	normallist[8 + 2 * 6 + 1] = (a3 - a2).cross(b2 - b1);
+	normallist[8 + 2 * 6 + 2] = (a3 - a2).cross(b3 - b2);
+	normallist[8 + 2 * 6 + 3] = (a3 - a2).cross(b0 - b3);
+	normallist[8 + 2 * 6 + 4] = (a3 - a2).cross(b2 - b0);
+	normallist[8 + 2 * 6 + 5] = (a3 - a2).cross(b3 - b1);
+
+	normallist[8 + 3 * 6 + 0] = (a0 - a3).cross(b1 - b0);
+	normallist[8 + 3 * 6 + 1] = (a0 - a3).cross(b2 - b1);
+	normallist[8 + 3 * 6 + 2] = (a0 - a3).cross(b3 - b2);
+	normallist[8 + 3 * 6 + 3] = (a0 - a3).cross(b0 - b3);
+	normallist[8 + 3 * 6 + 4] = (a0 - a3).cross(b2 - b0);
+	normallist[8 + 3 * 6 + 5] = (a0 - a3).cross(b3 - b1);
+
+	normallist[8 + 4 * 6 + 0] = (a2 - a0).cross(b1 - b0);
+	normallist[8 + 4 * 6 + 1] = (a2 - a0).cross(b2 - b1);
+	normallist[8 + 4 * 6 + 2] = (a2 - a0).cross(b3 - b2);
+	normallist[8 + 4 * 6 + 3] = (a2 - a0).cross(b0 - b3);
+	normallist[8 + 4 * 6 + 4] = (a2 - a0).cross(b2 - b0);
+	normallist[8 + 4 * 6 + 5] = (a2 - a0).cross(b3 - b1);
+
+	normallist[8 + 5 * 6 + 0] = (a3 - a1).cross(b1 - b0);
+	normallist[8 + 5 * 6 + 1] = (a3 - a1).cross(b2 - b1);
+	normallist[8 + 5 * 6 + 2] = (a3 - a1).cross(b3 - b2);
+	normallist[8 + 5 * 6 + 3] = (a3 - a1).cross(b0 - b3);
+	normallist[8 + 5 * 6 + 4] = (a3 - a1).cross(b2 - b0);
+	normallist[8 + 5 * 6 + 5] = (a3 - a1).cross(b3 - b1);
+
+	for (uint32_t i = 0; i < 44; i++) {
+		float maxa = std::max(std::max(std::max(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+		float mina = std::min(std::min(std::min(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+		float maxb = std::max(std::max(std::max(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+		float minb = std::min(std::min(std::min(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+
+		if (maxa < minb || maxb < mina)
+			return false;
+	}
+
+	return true;
+}

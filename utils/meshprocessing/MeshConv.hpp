@@ -26,3 +26,14 @@ void ConvertEVtoVE(
     const uint32_t elementsize,
     uint32_t** const elsup_index,
     uint32_t** const elsup);
+
+void ExtractBoundaryTetrahedra(
+    const uint32_t vertsize,
+    const uint32_t* const elementlist,
+    const uint32_t elementsize,
+    const uint32_t* const VtoElist,
+    const uint32_t* const VtoEind,
+    const uint32_t* const trilist,
+    const uint32_t trisize,
+    uint32_t** const boundaryelementlist,
+    uint32_t& boundaryelementsize);

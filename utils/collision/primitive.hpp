@@ -30,3 +30,13 @@ ClosestDVV DistTriangleLine(const fvec3& a0, const fvec3& a1, const fvec3& a2, c
 ClosestDVV DistTriangleSegment(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b0, const fvec3& b1);
 
 ClosestDVV DistTriangleTriangle(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b0, const fvec3& b1, const fvec3& b2);
+
+bool Is_CollideTetraTetra(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& a3,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2,
+    const fvec3& b3);
