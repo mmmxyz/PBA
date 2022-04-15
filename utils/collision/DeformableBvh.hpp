@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils/mathfunc/mathfunc.hpp"
-#include "opengl/drawobject.hpp"
+//#include "opengl/drawobject.hpp"
 
 #include <deque>
 
