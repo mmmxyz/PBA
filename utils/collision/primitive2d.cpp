@@ -71,8 +71,11 @@ ClosestPair DistTriangleTriangle(
     const fvec2& b1,
     const fvec2& b2)
 {
-	//実質的にはgjk+epaと同じ
+	//(a1 - a0)x(a2 - a0) > 0
+
 	//形式的には，sat+最も遠い頂点の近い頂点(min max)を戻す
+
+	//todo 内積は事前に計算する
 
 	fvec2 normallist[6];
 

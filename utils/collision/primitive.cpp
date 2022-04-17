@@ -4,7 +4,7 @@
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/collision/primitive.hpp"
 
-constexpr float epsilon = 0.000001;
+constexpr float epsilon = 0.0001;
 
 ClosestDV DistLinePoint(const fvec3& a0, const fvec3& a1, const fvec3& b, float* const pt)
 {
@@ -410,14 +410,759 @@ bool Is_CollideTetraTetra(
 	normallist[8 + 5 * 6 + 5] = (a3 - a1).cross(b3 - b1);
 
 	for (uint32_t i = 0; i < 44; i++) {
+
+		if (normallist[i].sqlength() < 0.00001)
+			continue;
+
 		float maxa = std::max(std::max(std::max(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
 		float mina = std::min(std::min(std::min(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
 		float maxb = std::max(std::max(std::max(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
 		float minb = std::min(std::min(std::min(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
 
-		if (maxa < minb || maxb < mina)
+		if (maxa - epsilon < minb || maxb - epsilon < mina)
 			return false;
 	}
 
 	return true;
+}
+
+//ClosestPair3D DistTetraTetra(
+//    const fvec3& a0,
+//    const fvec3& a1,
+//    const fvec3& a2,
+//    const fvec3& a3,
+//    const fvec3& b0,
+//    const fvec3& b1,
+//    const fvec3& b2,
+//    const fvec3& b3)
+//{
+//	//sat + 最も遠い頂点のうち，最短のものを選択
+//
+//	//epaのほうが簡単そうだが，面と面が向かい合うときに面倒
+//
+//	fvec3 normallist[8 + 6 * 6];
+//
+//	normallist[0] = (a1 - a0).cross(a2 - a0);
+//	normallist[1] = (a2 - a1).cross(a3 - a1);
+//	normallist[2] = (a3 - a2).cross(a0 - a2);
+//	normallist[3] = (a0 - a3).cross(a1 - a3);
+//
+//	normallist[4] = (b1 - b0).cross(b2 - b0);
+//	normallist[5] = (b2 - b1).cross(b3 - b1);
+//	normallist[6] = (b3 - b2).cross(b0 - b2);
+//	normallist[7] = (b0 - b3).cross(b1 - b3);
+//
+//	normallist[8 + 0 * 6 + 0] = (a1 - a0).cross(b1 - b0);
+//	normallist[8 + 0 * 6 + 1] = (a1 - a0).cross(b2 - b1);
+//	normallist[8 + 0 * 6 + 2] = (a1 - a0).cross(b3 - b2);
+//	normallist[8 + 0 * 6 + 3] = (a1 - a0).cross(b0 - b3);
+//	normallist[8 + 0 * 6 + 4] = (a1 - a0).cross(b2 - b0);
+//	normallist[8 + 0 * 6 + 5] = (a1 - a0).cross(b3 - b1);
+//
+//	normallist[8 + 1 * 6 + 0] = (a2 - a1).cross(b1 - b0);
+//	normallist[8 + 1 * 6 + 1] = (a2 - a1).cross(b2 - b1);
+//	normallist[8 + 1 * 6 + 2] = (a2 - a1).cross(b3 - b2);
+//	normallist[8 + 1 * 6 + 3] = (a2 - a1).cross(b0 - b3);
+//	normallist[8 + 1 * 6 + 4] = (a2 - a1).cross(b2 - b0);
+//	normallist[8 + 1 * 6 + 5] = (a2 - a1).cross(b3 - b1);
+//
+//	normallist[8 + 2 * 6 + 0] = (a3 - a2).cross(b1 - b0);
+//	normallist[8 + 2 * 6 + 1] = (a3 - a2).cross(b2 - b1);
+//	normallist[8 + 2 * 6 + 2] = (a3 - a2).cross(b3 - b2);
+//	normallist[8 + 2 * 6 + 3] = (a3 - a2).cross(b0 - b3);
+//	normallist[8 + 2 * 6 + 4] = (a3 - a2).cross(b2 - b0);
+//	normallist[8 + 2 * 6 + 5] = (a3 - a2).cross(b3 - b1);
+//
+//	normallist[8 + 3 * 6 + 0] = (a0 - a3).cross(b1 - b0);
+//	normallist[8 + 3 * 6 + 1] = (a0 - a3).cross(b2 - b1);
+//	normallist[8 + 3 * 6 + 2] = (a0 - a3).cross(b3 - b2);
+//	normallist[8 + 3 * 6 + 3] = (a0 - a3).cross(b0 - b3);
+//	normallist[8 + 3 * 6 + 4] = (a0 - a3).cross(b2 - b0);
+//	normallist[8 + 3 * 6 + 5] = (a0 - a3).cross(b3 - b1);
+//
+//	normallist[8 + 4 * 6 + 0] = (a2 - a0).cross(b1 - b0);
+//	normallist[8 + 4 * 6 + 1] = (a2 - a0).cross(b2 - b1);
+//	normallist[8 + 4 * 6 + 2] = (a2 - a0).cross(b3 - b2);
+//	normallist[8 + 4 * 6 + 3] = (a2 - a0).cross(b0 - b3);
+//	normallist[8 + 4 * 6 + 4] = (a2 - a0).cross(b2 - b0);
+//	normallist[8 + 4 * 6 + 5] = (a2 - a0).cross(b3 - b1);
+//
+//	normallist[8 + 5 * 6 + 0] = (a3 - a1).cross(b1 - b0);
+//	normallist[8 + 5 * 6 + 1] = (a3 - a1).cross(b2 - b1);
+//	normallist[8 + 5 * 6 + 2] = (a3 - a1).cross(b3 - b2);
+//	normallist[8 + 5 * 6 + 3] = (a3 - a1).cross(b0 - b3);
+//	normallist[8 + 5 * 6 + 4] = (a3 - a1).cross(b2 - b0);
+//	normallist[8 + 5 * 6 + 5] = (a3 - a1).cross(b3 - b1);
+//
+//	//
+//
+//	float dist     = 99999.0;
+//	int32_t status = -1;
+//	// 0 - 63 face v.s. vertex
+//	//64 -135 (0-71)
+//	//
+//
+//	//min,maxを2回計算している todo
+//	for (uint32_t i = 0; i < 4; i++) {
+//		if (normallist[i].sqlength() < 0.00001)
+//			continue;
+//		normallist[i] = normallist[i].normalize();
+//		//aのface v.s. bのvertex
+//
+//		float maxa = std::max(std::max(std::max(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+//		float mina = std::min(std::min(std::min(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+//		float maxb = std::max(std::max(std::max(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+//		float minb = std::min(std::min(std::min(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+//
+//		if (maxa - epsilon < minb || maxb - epsilon < mina)
+//			return { 0.0, -1 };
+//
+//		if (maxa - minb < maxb - mina) {
+//			//normalは外を向いている
+//
+//			if (maxa - minb < dist) {
+//
+//				dist = maxa - minb;
+//
+//				if (
+//				    b0.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 0;
+//				else if (
+//				    b1.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 1;
+//				else if (
+//				    b2.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 2;
+//				else
+//					status = 8 * i + 3;
+//			}
+//
+//		} else {
+//			//normalを内を向いている
+//
+//			if (maxb - mina < dist) {
+//
+//				dist = maxb - mina;
+//
+//				if (
+//				    b0.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 4;
+//				else if (
+//				    b1.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 5;
+//				else if (
+//				    b2.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 6;
+//				else
+//					status = 8 * i + 7;
+//			}
+//		}
+//	}
+//
+//	for (uint32_t i = 4; i < 8; i++) {
+//		if (normallist[i].sqlength() < 0.00001)
+//			continue;
+//		normallist[i] = normallist[i].normalize();
+//
+//		//bのface v.s. aのvertex
+//
+//		float maxa = std::max(std::max(std::max(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+//		float mina = std::min(std::min(std::min(a0.dot(normallist[i]), a1.dot(normallist[i])), a2.dot(normallist[i])), a3.dot(normallist[i]));
+//		float maxb = std::max(std::max(std::max(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+//		float minb = std::min(std::min(std::min(b0.dot(normallist[i]), b1.dot(normallist[i])), b2.dot(normallist[i])), b3.dot(normallist[i]));
+//
+//		if (maxa - epsilon < minb || maxb - epsilon < mina)
+//			return { 0.0, -1 };
+//
+//		if (maxb - mina < maxa - minb) {
+//			//normalは外を向いている
+//
+//			if (maxb - mina < dist) {
+//
+//				dist = maxb - mina;
+//
+//				if (
+//				    a0.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 0;
+//				else if (
+//				    a1.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 1;
+//				else if (
+//				    a2.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon)
+//					status = 8 * i + 2;
+//				else
+//					status = 8 * i + 3;
+//			}
+//
+//		} else {
+//			//normalを内を向いている
+//
+//			if (maxa - minb < dist) {
+//
+//				dist = maxa - minb;
+//
+//				if (
+//				    a0.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 0;
+//				else if (
+//				    a1.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 1;
+//				else if (
+//				    a2.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon)
+//					status = 8 * i + 2;
+//				else
+//					status = 8 * i + 3;
+//			}
+//		}
+//	}
+//
+//	//同じ法線を生成する組がある場合に，適切な最短の辺の組を計算できない
+//	//iに応じて辺を構成する頂点のみ選択する
+//	for (uint32_t i = 8; i < 44; i++) {
+//		if (normallist[i].sqlength() < 0.00001)
+//			continue;
+//
+//		normallist[i] = normallist[i].normalize();
+//
+//		//edge v.s. edge
+//		//サーチする際に浸透が最も小さい組がedge v.s. edgeの場合である．
+//		//gjkでミンコフスキー差の外周に現れる頂点がどちらの組で構成されるかの違いである
+//		//normallist[i]を基準にしてa,bの辺のどちらが上にあるかを確認する
+//
+//		uint32_t Inda0, Inda1, Indb0, Indb1;
+//
+//		if ((i - 8) / 6 == 0) {
+//			Inda0 = 0;
+//			Inda1 = 1;
+//		} else if ((i - 8) / 6 == 1) {
+//			Inda0 = 1;
+//			Inda1 = 2;
+//		} else if ((i - 8) / 6 == 2) {
+//			Inda0 = 2;
+//			Inda1 = 3;
+//		} else if ((i - 8) / 6 == 3) {
+//			Inda0 = 3;
+//			Inda1 = 0;
+//		} else if ((i - 8) / 6 == 4) {
+//			Inda0 = 0;
+//			Inda1 = 2;
+//		} else if ((i - 8) / 6 == 5) {
+//			Inda0 = 1;
+//			Inda1 = 3;
+//		}
+//
+//		if ((i - 8) % 6 == 0) {
+//			Indb0 = 0;
+//			Indb1 = 1;
+//		} else if ((i - 8) % 6 == 1) {
+//			Indb0 = 1;
+//			Indb1 = 2;
+//		} else if ((i - 8) % 6 == 2) {
+//			Indb0 = 2;
+//			Indb1 = 3;
+//		} else if ((i - 8) % 6 == 3) {
+//			Indb0 = 3;
+//			Indb1 = 0;
+//		} else if ((i - 8) % 6 == 4) {
+//			Indb0 = 0;
+//			Indb1 = 2;
+//		} else if ((i - 8) % 6 == 5) {
+//			Indb0 = 1;
+//			Indb1 = 3;
+//		}
+//
+//		float maxa;
+//		float mina;
+//		float maxb;
+//		float minb;
+//
+//		uint32_t Indmina, Indmaxa, Indminb, Indmaxb;
+//
+//		if (a0.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon) {
+//			Indmina = 0;
+//			mina	= a0.dot(normallist[i]);
+//		} else if (a1.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon) {
+//			Indmina = 1;
+//			mina	= a1.dot(normallist[i]);
+//		} else if (a2.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon) {
+//			Indmina = 2;
+//			mina	= a2.dot(normallist[i]);
+//		} else {
+//			Indmina = 3;
+//			mina	= a3.dot(normallist[i]);
+//		}
+//
+//		if (a0.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon) {
+//			Indmaxa = 0;
+//			maxa	= a0.dot(normallist[i]);
+//		} else if (a1.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon) {
+//			Indmaxa = 1;
+//			maxa	= a1.dot(normallist[i]);
+//		} else if (a2.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon) {
+//			Indmaxa = 2;
+//			maxa	= a2.dot(normallist[i]);
+//		} else {
+//			Indmaxa = 3;
+//			maxa	= a3.dot(normallist[i]);
+//		}
+//
+//		if (b0.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon) {
+//			Indminb = 0;
+//			minb	= b0.dot(normallist[i]);
+//		} else if (b1.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon) {
+//			Indminb = 1;
+//			minb	= b1.dot(normallist[i]);
+//		} else if (b2.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon) {
+//			Indminb = 2;
+//			minb	= b2.dot(normallist[i]);
+//		} else {
+//			Indminb = 3;
+//			minb	= b3.dot(normallist[i]);
+//		}
+//
+//		if (b0.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon) {
+//			Indmaxb = 0;
+//			maxb	= b0.dot(normallist[i]);
+//		} else if (b1.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon) {
+//			Indmaxb = 1;
+//			maxb	= b1.dot(normallist[i]);
+//		} else if (b2.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon) {
+//			Indmaxb = 2;
+//			maxb	= b2.dot(normallist[i]);
+//		} else {
+//			Indmaxb = 3;
+//			maxb	= b3.dot(normallist[i]);
+//		}
+//
+//		if (maxa - epsilon < minb || maxb - epsilon < mina)
+//			return { 0.0, -1 };
+//
+//		if (maxa - minb < maxb - mina) {
+//			//bのほうが高い
+//			if (maxa - minb < dist) {
+//				if ((Inda0 == Indmaxa || Inda1 == Indmaxa) && (Indb0 == Indminb || Indb1 == Indminb)) {
+//					dist   = maxa - minb;
+//					status = 64 + 2 * (i - 8) + 0;
+//				}
+//			}
+//		} else {
+//			//aのほうが高い
+//			if (maxb - mina < dist) {
+//				if ((Inda0 == Indmina || Inda1 == Indmina) && (Indb0 == Indmaxb || Indb1 == Indmaxb)) {
+//					dist   = maxb - mina;
+//					status = 64 + 2 * (i - 8) + 1;
+//				}
+//			}
+//		}
+//	}
+//
+//	return { dist, status };
+//}
+
+ClosestPair3D DistTetraTetra(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& a3,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2,
+    const fvec3& b3)
+{
+	//sat + 最も遠い頂点のうち，最短のものを選択
+
+	//epaのほうが簡単そうだが，面と面が向かい合うときに面倒
+
+	fvec3 normallist[8 + 6 * 6];
+
+	normallist[0] = (a1 - a0).cross(a2 - a0);
+	normallist[1] = (a2 - a1).cross(a3 - a1);
+	normallist[2] = (a3 - a2).cross(a0 - a2);
+	normallist[3] = (a0 - a3).cross(a1 - a3);
+
+	normallist[4] = (b1 - b0).cross(b2 - b0);
+	normallist[5] = (b2 - b1).cross(b3 - b1);
+	normallist[6] = (b3 - b2).cross(b0 - b2);
+	normallist[7] = (b0 - b3).cross(b1 - b3);
+
+	normallist[8 + 0 * 6 + 0] = (a1 - a0).cross(b1 - b0);
+	normallist[8 + 0 * 6 + 1] = (a1 - a0).cross(b2 - b1);
+	normallist[8 + 0 * 6 + 2] = (a1 - a0).cross(b3 - b2);
+	normallist[8 + 0 * 6 + 3] = (a1 - a0).cross(b0 - b3);
+	normallist[8 + 0 * 6 + 4] = (a1 - a0).cross(b2 - b0);
+	normallist[8 + 0 * 6 + 5] = (a1 - a0).cross(b3 - b1);
+
+	normallist[8 + 1 * 6 + 0] = (a2 - a1).cross(b1 - b0);
+	normallist[8 + 1 * 6 + 1] = (a2 - a1).cross(b2 - b1);
+	normallist[8 + 1 * 6 + 2] = (a2 - a1).cross(b3 - b2);
+	normallist[8 + 1 * 6 + 3] = (a2 - a1).cross(b0 - b3);
+	normallist[8 + 1 * 6 + 4] = (a2 - a1).cross(b2 - b0);
+	normallist[8 + 1 * 6 + 5] = (a2 - a1).cross(b3 - b1);
+
+	normallist[8 + 2 * 6 + 0] = (a3 - a2).cross(b1 - b0);
+	normallist[8 + 2 * 6 + 1] = (a3 - a2).cross(b2 - b1);
+	normallist[8 + 2 * 6 + 2] = (a3 - a2).cross(b3 - b2);
+	normallist[8 + 2 * 6 + 3] = (a3 - a2).cross(b0 - b3);
+	normallist[8 + 2 * 6 + 4] = (a3 - a2).cross(b2 - b0);
+	normallist[8 + 2 * 6 + 5] = (a3 - a2).cross(b3 - b1);
+
+	normallist[8 + 3 * 6 + 0] = (a0 - a3).cross(b1 - b0);
+	normallist[8 + 3 * 6 + 1] = (a0 - a3).cross(b2 - b1);
+	normallist[8 + 3 * 6 + 2] = (a0 - a3).cross(b3 - b2);
+	normallist[8 + 3 * 6 + 3] = (a0 - a3).cross(b0 - b3);
+	normallist[8 + 3 * 6 + 4] = (a0 - a3).cross(b2 - b0);
+	normallist[8 + 3 * 6 + 5] = (a0 - a3).cross(b3 - b1);
+
+	normallist[8 + 4 * 6 + 0] = (a2 - a0).cross(b1 - b0);
+	normallist[8 + 4 * 6 + 1] = (a2 - a0).cross(b2 - b1);
+	normallist[8 + 4 * 6 + 2] = (a2 - a0).cross(b3 - b2);
+	normallist[8 + 4 * 6 + 3] = (a2 - a0).cross(b0 - b3);
+	normallist[8 + 4 * 6 + 4] = (a2 - a0).cross(b2 - b0);
+	normallist[8 + 4 * 6 + 5] = (a2 - a0).cross(b3 - b1);
+
+	normallist[8 + 5 * 6 + 0] = (a3 - a1).cross(b1 - b0);
+	normallist[8 + 5 * 6 + 1] = (a3 - a1).cross(b2 - b1);
+	normallist[8 + 5 * 6 + 2] = (a3 - a1).cross(b3 - b2);
+	normallist[8 + 5 * 6 + 3] = (a3 - a1).cross(b0 - b3);
+	normallist[8 + 5 * 6 + 4] = (a3 - a1).cross(b2 - b0);
+	normallist[8 + 5 * 6 + 5] = (a3 - a1).cross(b3 - b1);
+
+	//
+
+	float dist     = 99999.0;
+	int32_t status = -1;
+	// 0 - 63 face v.s. vertex
+	//64 -135 (0-71)
+	//
+
+	//min,maxを2回計算している todo
+	for (uint32_t i = 0; i < 4; i++) {
+		//aのface v.s. bのvertex
+		if (normallist[i].sqlength() < 0.00001)
+			continue;
+		normallist[i] = normallist[i].normalize();
+
+		uint32_t Inda0, Inda1, Inda2;
+		bool is_fliped = false;
+
+		if (i == 0) {
+			Inda0 = 0;
+			Inda1 = 1;
+			Inda2 = 2;
+
+			//法線を内向きにする
+			if (a3.dot(normallist[i]) < a0.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+
+		} else if (i == 1) {
+			Inda0 = 1;
+			Inda1 = 2;
+			Inda2 = 3;
+
+			if (a0.dot(normallist[i]) < a1.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		} else if (i == 2) {
+			Inda0 = 2;
+			Inda1 = 3;
+			Inda2 = 0;
+
+			if (a1.dot(normallist[i]) < a2.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		} else if (i == 3) {
+			Inda0 = 3;
+			Inda1 = 0;
+			Inda2 = 1;
+
+			if (a2.dot(normallist[i]) < a0.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		}
+
+		float a0on = a0.dot(normallist[i]);
+		float a1on = a1.dot(normallist[i]);
+		float a2on = a2.dot(normallist[i]);
+		float a3on = a3.dot(normallist[i]);
+		float b0on = b0.dot(normallist[i]);
+		float b1on = b1.dot(normallist[i]);
+		float b2on = b2.dot(normallist[i]);
+		float b3on = b3.dot(normallist[i]);
+
+		float maxa = std::max(std::max(std::max(a0on, a1on), a2on), a3on);
+		float mina = std::min(std::min(std::min(a0on, a1on), a2on), a3on);
+
+		float maxb = std::max(std::max(std::max(b0on, b1on), b2on), b3on);
+		float minb = std::min(std::min(std::min(b0on, b1on), b2on), b3on);
+
+		if (maxb < mina + epsilon)
+			return { 0.0, -1 };
+
+		if (maxb - mina < dist) {
+
+			dist = maxb - mina;
+
+			if (
+			    b0.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 0;
+				if (is_fliped)
+					status += 4;
+			} else if (
+			    b1.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 1;
+				if (is_fliped)
+					status += 4;
+			} else if (
+			    b2.dot(normallist[i]) > b3.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 2;
+				if (is_fliped)
+					status += 4;
+			} else {
+				status = 8 * i + 3;
+				if (is_fliped)
+					status += 4;
+			}
+		}
+	}
+
+	for (uint32_t i = 4; i < 8; i++) {
+		//bのface v.s. aのvertex
+		if (normallist[i].sqlength() < 0.00001)
+			continue;
+		normallist[i] = normallist[i].normalize();
+
+		uint32_t Indb0, Indb1, Indb2;
+		bool is_fliped = false;
+
+		if (i == 0) {
+			Indb0 = 0;
+			Indb1 = 1;
+			Indb2 = 2;
+
+			//法線を内向きにする
+			if (b3.dot(normallist[i]) < b0.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+
+		} else if (i == 1) {
+			Indb0 = 1;
+			Indb1 = 2;
+			Indb2 = 3;
+
+			if (b0.dot(normallist[i]) < b1.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		} else if (i == 2) {
+			Indb0 = 2;
+			Indb1 = 3;
+			Indb2 = 0;
+
+			if (b1.dot(normallist[i]) < b2.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		} else if (i == 3) {
+			Indb0 = 3;
+			Indb1 = 0;
+			Indb2 = 1;
+
+			if (b2.dot(normallist[i]) < b0.dot(normallist[i])) {
+				normallist[i] = -1.0 * normallist[i];
+				is_fliped     = true;
+			}
+		}
+
+		float a0on = a0.dot(normallist[i]);
+		float a1on = a1.dot(normallist[i]);
+		float a2on = a2.dot(normallist[i]);
+		float a3on = a3.dot(normallist[i]);
+		float b0on = b0.dot(normallist[i]);
+		float b1on = b1.dot(normallist[i]);
+		float b2on = b2.dot(normallist[i]);
+		float b3on = b3.dot(normallist[i]);
+
+		float maxa = std::max(std::max(std::max(a0on, a1on), a2on), a3on);
+		float mina = std::min(std::min(std::min(a0on, a1on), a2on), a3on);
+
+		float maxb = std::max(std::max(std::max(b0on, b1on), b2on), b3on);
+		float minb = std::min(std::min(std::min(b0on, b1on), b2on), b3on);
+
+		if (maxa < minb + epsilon)
+			return { 0.0, -1 };
+
+		if (maxa - minb < dist) {
+
+			dist = maxa - minb;
+
+			if (
+			    a0.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 0;
+				if (is_fliped)
+					status += 4;
+			} else if (
+			    a1.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 1;
+				if (is_fliped)
+					status += 4;
+			} else if (
+			    a2.dot(normallist[i]) > a3.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon) {
+				status = 8 * i + 2;
+				if (is_fliped)
+					status += 4;
+			} else {
+				status = 8 * i + 3;
+				if (is_fliped)
+					status += 4;
+			}
+		}
+	}
+
+	//同じ法線を生成する組がある場合に，適切な最短の辺の組を計算できない
+	//iに応じて辺を構成する頂点のみ選択する
+	for (uint32_t i = 8; i < 44; i++) {
+		if (normallist[i].sqlength() < 0.00001)
+			continue;
+
+		normallist[i] = normallist[i].normalize();
+
+		//edge v.s. edge
+		//サーチする際に浸透が最も小さい組がedge v.s. edgeの場合である．
+		//gjkでミンコフスキー差の外周に現れる頂点がどちらの組で構成されるかの違いである
+		//normallist[i]を基準にしてa,bの辺のどちらが上にあるかを確認する
+
+		uint32_t Inda0, Inda1, Indb0, Indb1;
+
+		if ((i - 8) / 6 == 0) {
+			Inda0 = 0;
+			Inda1 = 1;
+		} else if ((i - 8) / 6 == 1) {
+			Inda0 = 1;
+			Inda1 = 2;
+		} else if ((i - 8) / 6 == 2) {
+			Inda0 = 2;
+			Inda1 = 3;
+		} else if ((i - 8) / 6 == 3) {
+			Inda0 = 3;
+			Inda1 = 0;
+		} else if ((i - 8) / 6 == 4) {
+			Inda0 = 0;
+			Inda1 = 2;
+		} else if ((i - 8) / 6 == 5) {
+			Inda0 = 1;
+			Inda1 = 3;
+		}
+
+		if ((i - 8) % 6 == 0) {
+			Indb0 = 0;
+			Indb1 = 1;
+		} else if ((i - 8) % 6 == 1) {
+			Indb0 = 1;
+			Indb1 = 2;
+		} else if ((i - 8) % 6 == 2) {
+			Indb0 = 2;
+			Indb1 = 3;
+		} else if ((i - 8) % 6 == 3) {
+			Indb0 = 3;
+			Indb1 = 0;
+		} else if ((i - 8) % 6 == 4) {
+			Indb0 = 0;
+			Indb1 = 2;
+		} else if ((i - 8) % 6 == 5) {
+			Indb0 = 1;
+			Indb1 = 3;
+		}
+
+		float maxa;
+		float mina;
+		float maxb;
+		float minb;
+
+		uint32_t Indmina, Indmaxa, Indminb, Indmaxb;
+
+		if (a0.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a0.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon) {
+			Indmina = 0;
+			mina	= a0.dot(normallist[i]);
+		} else if (a1.dot(normallist[i]) < a2.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a1.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon) {
+			Indmina = 1;
+			mina	= a1.dot(normallist[i]);
+		} else if (a2.dot(normallist[i]) < a3.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a0.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) < a1.dot(normallist[i]) + epsilon) {
+			Indmina = 2;
+			mina	= a2.dot(normallist[i]);
+		} else {
+			Indmina = 3;
+			mina	= a3.dot(normallist[i]);
+		}
+
+		if (a0.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon) {
+			Indmaxa = 0;
+			maxa	= a0.dot(normallist[i]);
+		} else if (a1.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon) {
+			Indmaxa = 1;
+			maxa	= a1.dot(normallist[i]);
+		} else if (a2.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon) {
+			Indmaxa = 2;
+			maxa	= a2.dot(normallist[i]);
+		} else {
+			Indmaxa = 3;
+			maxa	= a3.dot(normallist[i]);
+		}
+
+		if (b0.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b0.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon) {
+			Indminb = 0;
+			minb	= b0.dot(normallist[i]);
+		} else if (b1.dot(normallist[i]) < b2.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b1.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon) {
+			Indminb = 1;
+			minb	= b1.dot(normallist[i]);
+		} else if (b2.dot(normallist[i]) < b3.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b0.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) < b1.dot(normallist[i]) + epsilon) {
+			Indminb = 2;
+			minb	= b2.dot(normallist[i]);
+		} else {
+			Indminb = 3;
+			minb	= b3.dot(normallist[i]);
+		}
+
+		if (b0.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon) {
+			Indmaxb = 0;
+			maxb	= b0.dot(normallist[i]);
+		} else if (b1.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon) {
+			Indmaxb = 1;
+			maxb	= b1.dot(normallist[i]);
+		} else if (b2.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon) {
+			Indmaxb = 2;
+			maxb	= b2.dot(normallist[i]);
+		} else {
+			Indmaxb = 3;
+			maxb	= b3.dot(normallist[i]);
+		}
+
+		if (maxa - epsilon < minb || maxb - epsilon < mina)
+			return { 0.0, -1 };
+
+		if (maxa - minb < maxb - mina) {
+			//bのほうが高い
+			if (maxa - minb < dist) {
+				if ((Inda0 == Indmaxa || Inda1 == Indmaxa) && (Indb0 == Indminb || Indb1 == Indminb)) {
+					dist   = maxa - minb;
+					status = 64 + 2 * (i - 8) + 0;
+				}
+			}
+		} else {
+			//aのほうが高い
+			if (maxb - mina < dist) {
+				if ((Inda0 == Indmina || Inda1 == Indmina) && (Indb0 == Indmaxb || Indb1 == Indmaxb)) {
+					dist   = maxb - mina;
+					status = 64 + 2 * (i - 8) + 1;
+				}
+			}
+		}
+	}
+
+	return { dist, status };
 }

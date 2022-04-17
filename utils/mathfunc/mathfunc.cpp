@@ -260,14 +260,22 @@ template quaternion<double>::quaternion(const vec3<double>& v);
 template <class T>
 quaternion<T>::quaternion(const vec3<T>& v)
 {
-	T O	  = v.length();
-	vec3<T> l = v.normalize();
 
-	T sin = std::sin(O / 2.0);
-	x     = sin * l.x;
-	y     = sin * l.y;
-	z     = sin * l.z;
-	w     = std::cos(O / 2.0);
+	if (v.sqlength() < 0.00000000001) {
+		x = 0.0;
+		y = 0.0;
+		z = 0.0;
+		w = 1.0;
+	} else {
+		T O	  = v.length();
+		vec3<T> l = v.normalize();
+
+		T sin = std::sin(O / 2.0);
+		x     = sin * l.x;
+		y     = sin * l.y;
+		z     = sin * l.z;
+		w     = std::cos(O / 2.0);
+	}
 }
 
 //menber function
@@ -324,13 +332,23 @@ template quaternion<float> quaternion<float>::slerp(const quaternion<float>& q0,
 template quaternion<double> quaternion<double>::slerp(const quaternion<double>& q0, const quaternion<double>& q1, const float& t);
 
 template <class T>
+quaternion<T> quaternion<T>::slerp(const quaternion<T>& q, const float& t) const
+{
+	return quaternion<T>::slerp(*this, q, t);
+}
+
+template <class T>
 quaternion<T> quaternion<T>::slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t)
 {
 	if (q0.dot(q1) < 0.0) {
 		double x = 0.5 * std::acos(-q0.dot(q1));
+		if (std::abs(x) < 0.0000001)
+			return q0;
 		return (std::sin(t * x) / std::sin(x)) * -q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
 	} else {
 		double x = 0.5 * std::acos(q0.dot(q1));
+		if (std::abs(x) < 0.0000001)
+			return q0;
 		return (std::sin(t * x) / std::sin(x)) * q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
 	}
 }

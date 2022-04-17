@@ -158,6 +158,23 @@ void ConvertEVtoVE(
 	(*elsup_index)[0] = 0;
 }
 
+bool Is_SameTriangle(
+    const uint32_t& a0,
+    const uint32_t& a1,
+    const uint32_t& a2,
+    const uint32_t& b0,
+    const uint32_t& b1,
+    const uint32_t& b2)
+{
+	if (
+	    (a0 == b0 && a1 == b1 && a2 == b2)
+	    || (a0 == b1 && a1 == b2 && a2 == b0)
+	    || (a0 == b2 && a1 == b0 && a2 == b1))
+		return true;
+
+	return false;
+}
+
 void ExtractBoundaryTetrahedra(
     const uint32_t vertsize,
     const uint32_t* const elementlist,
@@ -179,6 +196,16 @@ void ExtractBoundaryTetrahedra(
 		for (uint32_t j = VtoEind[trilist[i]]; j < VtoEind[trilist[i] + 1]; j++) {
 			uint32_t elementind = VtoElist[j] / 4;
 
+			uint32_t a0 = trilist[3 * (i / 3) + 0];
+			uint32_t a1 = trilist[3 * (i / 3) + 1];
+			uint32_t a2 = trilist[3 * (i / 3) + 2];
+
+			uint32_t b0 = elementlist[4 * elementind + 0];
+			uint32_t b1 = elementlist[4 * elementind + 1];
+			uint32_t b2 = elementlist[4 * elementind + 2];
+			uint32_t b3 = elementlist[4 * elementind + 3];
+
+			//if (Is_SameTriangle(a0, a1, a2, b0, b2, b1) || Is_SameTriangle(a0, a1, a2, b0, b1, b3) || Is_SameTriangle(a0, a1, a2, b1, b2, b3) || Is_SameTriangle(a0, a1, a2, b2, b0, b3))
 			is_boundary[elementind] = 1;
 		}
 	}

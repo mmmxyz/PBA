@@ -3,7 +3,7 @@
 #include "utils/mathfunc/mathfunc.hpp"
 //#include "opengl/drawobject.hpp"
 
-#include <deque>
+#include <vector>
 
 class DeformableBvh2D;
 
@@ -54,7 +54,7 @@ class DeformableBvh2DNode {
 	void UpdateBvhNode();
 };
 
-void DetectCollisionNode(std::deque<ContactFeature>& ContactList, const DeformableBvh2DNode* const RNode, const DeformableBvh2DNode* const LNode);
+void DetectCollisionNode(std::vector<ContactFeature>& ContactList, const DeformableBvh2DNode* const RNode, const DeformableBvh2DNode* const LNode);
 
 class DeformableBvh2D {
     public:
@@ -77,7 +77,7 @@ class DeformableBvh2D {
 
 	void UpdateBvh();
 
-	void DetectSelfCollision(std::deque<ContactFeature>& ContactList);
+	void DetectSelfCollision(std::vector<ContactFeature>& ContactList);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,9 @@ class DeformableBvh3DNode {
 	void UpdateBvhNode();
 };
 
-void DetectCollisionNode(std::deque<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
+void DetectCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
+
+void DetectExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
 
 class DeformableBvh3D {
     public:
@@ -172,5 +174,9 @@ class DeformableBvh3D {
 
 	void UpdateBvh();
 
-	void DetectSelfCollision(std::deque<ContactFeature3D>& ContactList);
+	void DetectSelfCollision(std::vector<ContactFeature3D>& ContactList);
 };
+
+void DetectExternalCollision(const DeformableBvh3D& RightBvh, const DeformableBvh3D& LeftBvh, std::vector<ContactFeature3D>& ContactList);
+
+void DetectExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList);

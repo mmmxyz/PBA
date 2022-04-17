@@ -4,6 +4,7 @@
 #include <cstdint>
 
 //TODO 宣言と定義を分離する(cudamathと同じ形式にする)
+//TODO 暗黙的呼び出しを不許可にする
 
 template <class T>
 class vec2;
@@ -1120,7 +1121,9 @@ class quaternion {
 		return quaternion<T>(-x, -y, -z, w);
 	}
 
-	quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t);
+	quaternion<T> slerp(const quaternion<T>& q, const float& t) const;
+
+	static quaternion<T> slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t);
 };
 
 //io operator

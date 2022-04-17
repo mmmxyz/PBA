@@ -360,7 +360,7 @@ void CylinderTetrahedron(
 	facelistsize  = 3 * (4 * N * (L - 1) + 2 * 2 * (M - 1) * N);
 	*facelistdata = new uint32_t[facelistsize];
 
-	edgelistsize  = 2 * (3 * N * (L - 1) + 2 * 3 * N * (M - 1));
+	edgelistsize  = 2 * (3 * N * (L - 1) + 2 * 3 * N * (M - 1) + N);
 	*edgelistdata = new uint32_t[edgelistsize];
 
 	for (uint32_t l = 0; l < L; l++) {
@@ -369,7 +369,7 @@ void CylinderTetrahedron(
 				float cos			   = std::cos(2.0 * 3.1415 * float(n) / float(N));
 				float sin			   = std::sin(2.0 * 3.1415 * float(n) / float(N));
 				(*vertdata)[l * M * N + m * N + n] = fvec3(
-				    Lengthl * ((float(l) - 0.5 * float(L)) / float(L)),
+				    Lengthl * ((float(l) - 0.5 * float(L - 1)) / float(L - 1)),
 				    (Lengthr + (LengthR - Lengthr) * (float(m) / float(M - 1))) * cos,
 				    (Lengthr + (LengthR - Lengthr) * (float(m) / float(M - 1))) * sin);
 			}
@@ -506,6 +506,15 @@ void CylinderTetrahedron(
 			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 2 + 1] = Ind3;
 		}
 	}
+
+	for (uint32_t n = 0; n < N; n++) {
+		uint32_t Ind0 = (L - 1) * N * M + (M - 1) * N + n;
+		uint32_t Ind1 = (L - 1) * N * M + (M - 1) * N + (n + 1) % N;
+
+		(*edgelistdata)[2 * 3 * (N * (L - 1)) + 2 * n]	   = Ind0;
+		(*edgelistdata)[2 * 3 * (N * (L - 1)) + 2 * n + 1] = Ind1;
+	}
+
 	for (uint32_t n = 0; n < N; n++) {
 		for (uint32_t m = 0; m < M - 1; m++) {
 			uint32_t Ind0 = m * N + n;
@@ -513,14 +522,14 @@ void CylinderTetrahedron(
 			uint32_t Ind2 = (m + 1) * N + n;
 			uint32_t Ind3 = (m + 1) * N + (n + 1) % N;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 0 + 0] = Ind0;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 0 + 1] = Ind1;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 0 + 0] = Ind0;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 0 + 1] = Ind1;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 1 + 0] = Ind0;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 1 + 1] = Ind2;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 1 + 0] = Ind0;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 1 + 1] = Ind2;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 2 + 0] = Ind1;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + m * N + n) + 2 * 2 + 1] = Ind2;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 2 + 0] = Ind1;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + m * N + n) + 2 * 2 + 1] = Ind2;
 		}
 	}
 	for (uint32_t n = 0; n < N; n++) {
@@ -530,15 +539,147 @@ void CylinderTetrahedron(
 			uint32_t Ind2 = (L - 1) * M * N + (m + 1) * N + n;
 			uint32_t Ind3 = (L - 1) * M * N + (m + 1) * N + (n + 1) % N;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 0 + 0] = Ind0;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 0 + 1] = Ind1;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 0 + 0] = Ind0;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 0 + 1] = Ind1;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 1 + 0] = Ind0;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 1 + 1] = Ind2;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 1 + 0] = Ind0;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 1 + 1] = Ind2;
 
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 2 + 0] = Ind1;
-			(*edgelistdata)[2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 2 + 1] = Ind2;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 2 + 0] = Ind1;
+			(*edgelistdata)[2 * N + 2 * 3 * (N * (L - 1) + N * (M - 1) + m * N + n) + 2 * 2 + 1] = Ind2;
 		}
+	}
+}
+
+void CylinderTetrahedron2(
+    const uint32_t N,
+    const uint32_t M,
+    const uint32_t L,
+    const float LengthR,
+    const float Lengthr,
+    const float Lengthl,
+    fvec3** const vertdata,
+    uint32_t& vertsize,
+    uint32_t** const ilistdata,
+    uint32_t& ilistsize,
+    uint32_t** const facelistdata,
+    uint32_t& facelistsize,
+    uint32_t** const edgelistdata,
+    uint32_t& edgelistsize,
+    const fvec3& bias)
+{
+	vertsize  = L * M * N;
+	*vertdata = new fvec3[vertsize];
+
+	ilistsize  = 4 * (6 * (M - 1) * N * (L - 1));
+	*ilistdata = new uint32_t[ilistsize];
+
+	facelistsize  = 3 * (2 * N * (L - 1));
+	*facelistdata = new uint32_t[facelistsize];
+
+	edgelistsize  = 2 * (3 * N * (L - 1) + N);
+	*edgelistdata = new uint32_t[edgelistsize];
+
+	for (uint32_t l = 0; l < L; l++) {
+		for (uint32_t m = 0; m < M; m++) {
+			for (uint32_t n = 0; n < N; n++) {
+				float cos			   = std::cos(2.0 * 3.1415 * float(n) / float(N));
+				float sin			   = std::sin(2.0 * 3.1415 * float(n) / float(N));
+				(*vertdata)[l * M * N + m * N + n] = fvec3(
+				    Lengthl * ((float(l) - 0.5 * float(L - 1)) / float(L - 1)),
+				    (Lengthr + (LengthR - Lengthr) * (float(m) / float(M - 1))) * cos,
+				    (Lengthr + (LengthR - Lengthr) * (float(m) / float(M - 1))) * sin);
+			}
+		}
+	}
+
+	for (uint32_t l = 0; l < L - 1; l++) {
+		for (uint32_t m = 0; m < M - 1; m++) {
+			for (uint32_t n = 0; n < N; n++) {
+				uint32_t Ind0 = l * M * N + m * N + n;
+				uint32_t Ind1 = l * M * N + m * N + (n + 1) % N;
+				uint32_t Ind2 = l * M * N + (m + 1) * N + n;
+				uint32_t Ind3 = l * M * N + (m + 1) * N + (n + 1) % N;
+
+				uint32_t Ind4 = (l + 1) * M * N + m * N + n;
+				uint32_t Ind5 = (l + 1) * M * N + m * N + (n + 1) % N;
+				uint32_t Ind6 = (l + 1) * M * N + (m + 1) * N + n;
+				uint32_t Ind7 = (l + 1) * M * N + (m + 1) * N + (n + 1) % N;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 0 + 0] = Ind0;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 0 + 1] = Ind1;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 0 + 2] = Ind4;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 0 + 3] = Ind2;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 1 + 0] = Ind2;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 1 + 1] = Ind1;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 1 + 2] = Ind4;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 1 + 3] = Ind6;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 2 + 0] = Ind2;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 2 + 1] = Ind1;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 2 + 2] = Ind6;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 2 + 3] = Ind3;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 3 + 0] = Ind4;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 3 + 1] = Ind1;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 3 + 2] = Ind5;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 3 + 3] = Ind6;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 4 + 0] = Ind6;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 4 + 1] = Ind1;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 4 + 2] = Ind5;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 4 + 3] = Ind3;
+
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 5 + 0] = Ind6;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 5 + 1] = Ind3;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 5 + 2] = Ind5;
+				(*ilistdata)[4 * (6 * (l * (M - 1) * N + m * N + n)) + 4 * 5 + 3] = Ind7;
+			}
+		}
+	}
+
+	for (uint32_t n = 0; n < N; n++) {
+		for (uint32_t l = 0; l < L - 1; l++) {
+			uint32_t Ind0 = l * N * M + (M - 1) * N + n;
+			uint32_t Ind1 = l * N * M + (M - 1) * N + (n + 1) % N;
+			uint32_t Ind2 = (l + 1) * N * M + (M - 1) * N + n;
+			uint32_t Ind3 = (l + 1) * N * M + (M - 1) * N + (n + 1) % N;
+
+			(*facelistdata)[3 * 2 * (l * N + n) + 0 + 0] = Ind0;
+			(*facelistdata)[3 * 2 * (l * N + n) + 0 + 1] = Ind1;
+			(*facelistdata)[3 * 2 * (l * N + n) + 0 + 2] = Ind2;
+
+			(*facelistdata)[3 * 2 * (l * N + n) + 3 + 0] = Ind2;
+			(*facelistdata)[3 * 2 * (l * N + n) + 3 + 1] = Ind1;
+			(*facelistdata)[3 * 2 * (l * N + n) + 3 + 2] = Ind3;
+		}
+	}
+
+	for (uint32_t n = 0; n < N; n++) {
+		for (uint32_t l = 0; l < L - 1; l++) {
+			uint32_t Ind0 = l * N * M + (M - 1) * N + n;
+			uint32_t Ind1 = l * N * M + (M - 1) * N + (n + 1) % N;
+			uint32_t Ind2 = (l + 1) * N * M + (M - 1) * N + n;
+			uint32_t Ind3 = (l + 1) * N * M + (M - 1) * N + (n + 1) % N;
+
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 0 + 0] = Ind0;
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 0 + 1] = Ind1;
+
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 1 + 0] = Ind1;
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 1 + 1] = Ind2;
+
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 2 + 0] = Ind1;
+			(*edgelistdata)[2 * 3 * (l * N + n) + 2 * 2 + 1] = Ind3;
+		}
+	}
+
+	for (uint32_t n = 0; n < N; n++) {
+		uint32_t Ind0 = (L - 1) * N * M + (M - 1) * N + n;
+		uint32_t Ind1 = (L - 1) * N * M + (M - 1) * N + (n + 1) % N;
+
+		(*edgelistdata)[2 * 3 * (N * (L - 1)) + 2 * n]	   = Ind0;
+		(*edgelistdata)[2 * 3 * (N * (L - 1)) + 2 * n + 1] = Ind1;
 	}
 }
 

@@ -438,7 +438,7 @@ template <>
 __host__ __device__ fquaternion fquaternion::inverse() const;
 
 template <>
-__host__ __device__ fquaternion fquaternion::slerp(const fquaternion& q0, const fquaternion& q1, const float& t);
+__host__ __device__ fquaternion fquaternion::slerp(const fquaternion& q, const float& t) const;
 
 __host__ __device__ const fquaternion operator+(const fquaternion& q0, const fquaternion& q1);
 __host__ __device__ const fquaternion operator-(const fquaternion& q0, const fquaternion& q1);
@@ -1114,14 +1114,20 @@ __host__ __device__ fquaternion fquaternion::inverse() const
 }
 
 template <>
-__host__ __device__ fquaternion fquaternion::slerp(const fquaternion& q0, const fquaternion& q1, const float& t)
+__host__ __device__ fquaternion fquaternion::slerp(const fquaternion& q, const float& t) const
 {
-	if (q0.dot(q1) < 0.0) {
-		double x = 0.5 * acosf(-q0.dot(q1));
-		return (sinf(t * x) / sinf(x)) * -q1 + (sinf(x - t * x) / sinf(x)) * q0;
+	const fquaternion q0 = *this;
+
+	if (q0.dot(q) < 0.0) {
+		double x = 0.5 * acosf(-q0.dot(q));
+		if (abs(x) < 0.0000001)
+			return q0;
+		return (sinf(t * x) / sinf(x)) * -q + (sinf(x - t * x) / sinf(x)) * q0;
 	} else {
-		double x = 0.5 * acosf(q0.dot(q1));
-		return (sinf(t * x) / sinf(x)) * q1 + (sinf(x - t * x) / sinf(x)) * q0;
+		double x = 0.5 * acosf(q0.dot(q));
+		if (abs(x) < 0.0000001)
+			return q0;
+		return (sinf(t * x) / sinf(x)) * q + (sinf(x - t * x) / sinf(x)) * q0;
 	}
 }
 

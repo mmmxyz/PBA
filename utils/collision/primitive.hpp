@@ -13,6 +13,11 @@ struct ClosestDVV {
 	fvec3 v1;
 };
 
+struct ClosestPair3D {
+	float dist;
+	int32_t status;
+};
+
 ClosestDV DistLinePoint(const fvec3& a0, const fvec3& a1, const fvec3& b, float* const pt = nullptr);
 
 ClosestDV DistSegmentPoint(const fvec3& a0, const fvec3& a1, const fvec3& b);
@@ -32,6 +37,16 @@ ClosestDVV DistTriangleSegment(const fvec3& a0, const fvec3& a1, const fvec3& a2
 ClosestDVV DistTriangleTriangle(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b0, const fvec3& b1, const fvec3& b2);
 
 bool Is_CollideTetraTetra(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& a3,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2,
+    const fvec3& b3);
+
+ClosestPair3D DistTetraTetra(
     const fvec3& a0,
     const fvec3& a1,
     const fvec3& a2,
