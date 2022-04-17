@@ -875,6 +875,13 @@ void DetectExternalCollision(const DeformableBvh3D& RightBvh, const DeformableBv
 	DetectExternalCollisionNode(ContactList, RightBvh.RootNode, LeftBvh.RootNode);
 }
 
+void DetectCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
+{
+	ContactList.clear();
+	//ContactList.reserve(RightBvhNode->Root.elementsize);
+	DetectCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
+}
+
 void DetectExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
 {
 	ContactList.clear();
