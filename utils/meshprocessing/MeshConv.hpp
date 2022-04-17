@@ -37,3 +37,13 @@ void ExtractBoundaryTetrahedra(
     const uint32_t trisize,
     uint32_t** const boundaryelementlist,
     uint32_t& boundaryelementsize);
+
+void ExtractBoundaryTriangle(
+    const uint32_t vertsize,
+    const uint32_t* const trilist,
+    const uint32_t trisize,
+    const uint32_t* const VtoTlist,
+    const uint32_t* const VtoTind,
+    uint32_t** const TritoVertlist,
+    uint32_t& TritoVertsize,
+    uint32_t** const nonredTlist);

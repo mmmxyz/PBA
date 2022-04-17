@@ -232,3 +232,50 @@ void ExtractBoundaryTetrahedra(
 
 	delete[] is_boundary;
 }
+
+void ExtractBoundaryTriangle(
+    const uint32_t vertsize,
+    const uint32_t* const trilist,
+    const uint32_t trisize,
+    const uint32_t* const VtoTlist,
+    const uint32_t* const VtoTind,
+    uint32_t** const TritoVertlist,
+    uint32_t& TritoVertsize,
+    uint32_t** const nonredTlist)
+{
+	bool* is_boundary = new bool[vertsize];
+
+	for (uint32_t i = 0; i < vertsize; i++) {
+		is_boundary[i] = false;
+	}
+
+	for (uint32_t i = 0; i < trisize; i++) {
+		is_boundary[trilist[i]] = true;
+	}
+
+	TritoVertsize = 0;
+	for (uint32_t i = 0; i < vertsize; i++) {
+		if (is_boundary[i] == true)
+			TritoVertsize++;
+	}
+
+	*TritoVertlist = new uint32_t[TritoVertsize];
+
+	uint32_t counter = 0;
+	for (uint32_t i = 0; i < vertsize; i++) {
+		if (is_boundary[i] == true) {
+			(*TritoVertlist)[counter] = i;
+			counter++;
+		}
+	}
+
+	*nonredTlist = new uint32_t[trisize];
+
+	for (uint32_t i = 0; i < TritoVertsize; i++) {
+		for (uint32_t j = VtoTind[(*TritoVertlist)[i]]; j < VtoTind[(*TritoVertlist)[i] + 1]; j++) {
+			(*nonredTlist)[VtoTlist[j]] = i;
+		}
+	}
+
+	delete[] is_boundary;
+}
