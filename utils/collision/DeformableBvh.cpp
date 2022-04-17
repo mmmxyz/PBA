@@ -727,13 +727,8 @@ void DetectCollisionNode(std::vector<ContactFeature3D>& ContactList, const Defor
 		}
 	}
 }
-
-void DetectExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode)
+void DetectSemiExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode)
 {
-
-	//RNodeとLNodeは別のオブジェクトであることが保証される
-	//RNodeとLNodeはInnerでもLeafでもありえる
-
 	if (RNode->Type == 0 && LNode->Type == 0) {
 		//std::cout << "00" << std::endl;
 		if (Is_CollideNodeAABB(RNode, LNode)) {
@@ -753,6 +748,64 @@ void DetectExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, con
 		if (Is_CollideNodeAABB(RNode, LNode)) {
 			DetectCollisionNode(ContactList, RNode, LNode->LeftChild);
 			DetectCollisionNode(ContactList, RNode, LNode->RightChild);
+		}
+	} else if (RNode->Type == 1 && LNode->Type == 1) {
+		//std::cout << "11" << std::endl;
+		if (Is_CollideNodeAABB(RNode, LNode)) {
+
+			if (
+			    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index0 == LNode->index3 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index1 == LNode->index3 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2 || RNode->index2 == LNode->index3 || RNode->index3 == LNode->index0 || RNode->index3 == LNode->index1 || RNode->index3 == LNode->index2 || RNode->index3 == LNode->index3)
+				return;
+
+			if (Is_CollideTetraTetra(
+				RNode->Root.vertdata[RNode->index0],
+				RNode->Root.vertdata[RNode->index1],
+				RNode->Root.vertdata[RNode->index2],
+				RNode->Root.vertdata[RNode->index3],
+				LNode->Root.vertdata[LNode->index0],
+				LNode->Root.vertdata[LNode->index1],
+				LNode->Root.vertdata[LNode->index2],
+				LNode->Root.vertdata[LNode->index3]))
+				ContactList.emplace_back(
+				    RNode->index0,
+				    RNode->index1,
+				    RNode->index2,
+				    RNode->index3,
+				    LNode->index0,
+				    LNode->index1,
+				    LNode->index2,
+				    LNode->index3);
+		}
+	}
+}
+
+void DetectExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode)
+{
+
+	//RNodeとLNodeは別のオブジェクトであることが保証される
+	//RNodeとLNodeはInnerでもLeafでもありえる
+
+	//ここで再帰的に呼ぶ関数をDetectCollisionNodeとしてやばいことになった．
+
+	if (RNode->Type == 0 && LNode->Type == 0) {
+		//std::cout << "00" << std::endl;
+		if (Is_CollideNodeAABB(RNode, LNode)) {
+			DetectExternalCollisionNode(ContactList, RNode->RightChild, LNode->LeftChild);
+			DetectExternalCollisionNode(ContactList, RNode->RightChild, LNode->RightChild);
+			DetectExternalCollisionNode(ContactList, RNode->LeftChild, LNode->LeftChild);
+			DetectExternalCollisionNode(ContactList, RNode->LeftChild, LNode->RightChild);
+		}
+	} else if (RNode->Type == 0 && LNode->Type == 1) {
+		//std::cout << "01" << std::endl;
+		if (Is_CollideNodeAABB(RNode, LNode)) {
+			DetectExternalCollisionNode(ContactList, RNode->RightChild, LNode);
+			DetectExternalCollisionNode(ContactList, RNode->LeftChild, LNode);
+		}
+	} else if (RNode->Type == 1 && LNode->Type == 0) {
+		//std::cout << "10" << std::endl;
+		if (Is_CollideNodeAABB(RNode, LNode)) {
+			DetectExternalCollisionNode(ContactList, RNode, LNode->LeftChild);
+			DetectExternalCollisionNode(ContactList, RNode, LNode->RightChild);
 		}
 	} else if (RNode->Type == 1 && LNode->Type == 1) {
 		//std::cout << "11" << std::endl;
@@ -811,20 +864,27 @@ void DeformableBvh3D::UpdateBvh()
 void DeformableBvh3D::DetectSelfCollision(std::vector<ContactFeature3D>& ContactList)
 {
 	ContactList.clear();
-	ContactList.reserve(elementsize);
+	//ContactList.reserve(elementsize);
 	DetectCollisionNode(ContactList, RootNode->RightChild, RootNode->LeftChild);
 }
 
 void DetectExternalCollision(const DeformableBvh3D& RightBvh, const DeformableBvh3D& LeftBvh, std::vector<ContactFeature3D>& ContactList)
 {
 	ContactList.clear();
-	ContactList.reserve(RightBvh.elementsize);
+	//ContactList.reserve(RightBvh.elementsize);
 	DetectExternalCollisionNode(ContactList, RightBvh.RootNode, LeftBvh.RootNode);
 }
 
 void DetectExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
 {
 	ContactList.clear();
-	ContactList.reserve(RightBvhNode->Root.elementsize);
+	//ContactList.reserve(RightBvhNode->Root.elementsize);
 	DetectExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
+}
+
+void DetectSemiExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
+{
+	ContactList.clear();
+	//ContactList.reserve(RightBvhNode->Root.elementsize);
+	DetectSemiExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
 }

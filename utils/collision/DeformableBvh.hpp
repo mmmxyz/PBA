@@ -151,6 +151,8 @@ class DeformableBvh3DNode {
 
 void DetectCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
 
+void DetectSemiExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
+
 void DetectExternalCollisionNode(std::vector<ContactFeature3D>& ContactList, const DeformableBvh3DNode* const RNode, const DeformableBvh3DNode* const LNode);
 
 class DeformableBvh3D {
@@ -180,3 +182,5 @@ class DeformableBvh3D {
 void DetectExternalCollision(const DeformableBvh3D& RightBvh, const DeformableBvh3D& LeftBvh, std::vector<ContactFeature3D>& ContactList);
 
 void DetectExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList);
+
+void DetectSemiExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList);
