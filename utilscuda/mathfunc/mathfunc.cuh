@@ -1119,12 +1119,12 @@ __host__ __device__ fquaternion fquaternion::slerp(const fquaternion& q, const f
 	const fquaternion q0 = *this;
 
 	if (q0.dot(q) < 0.0) {
-		double x = 0.5 * acosf(-q0.dot(q));
+		double x = acosf(-q0.dot(q));
 		if (abs(x) < 0.0000001)
 			return q0;
 		return (sinf(t * x) / sinf(x)) * -q + (sinf(x - t * x) / sinf(x)) * q0;
 	} else {
-		double x = 0.5 * acosf(q0.dot(q));
+		double x = acosf(q0.dot(q));
 		if (abs(x) < 0.0000001)
 			return q0;
 		return (sinf(t * x) / sinf(x)) * q + (sinf(x - t * x) / sinf(x)) * q0;

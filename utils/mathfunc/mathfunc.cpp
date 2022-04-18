@@ -341,12 +341,12 @@ template <class T>
 quaternion<T> quaternion<T>::slerp(const quaternion<T>& q0, const quaternion<T>& q1, const float& t)
 {
 	if (q0.dot(q1) < 0.0) {
-		double x = 0.5 * std::acos(-q0.dot(q1));
+		double x = std::acos(-q0.dot(q1));
 		if (std::abs(x) < 0.0000001)
 			return q0;
 		return (std::sin(t * x) / std::sin(x)) * -q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
 	} else {
-		double x = 0.5 * std::acos(q0.dot(q1));
+		double x = std::acos(q0.dot(q1));
 		if (std::abs(x) < 0.0000001)
 			return q0;
 		return (std::sin(t * x) / std::sin(x)) * q1 + (std::sin(x - t * x) / std::sin(x)) * q0;
