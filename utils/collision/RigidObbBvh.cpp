@@ -8,7 +8,8 @@
 #include "utils/collision/RigidObbBvh.hpp"
 
 #include "utils/mathfunc/mathfunc.hpp"
-#include "utils/collision/primitive.hpp"
+//#include "utils/collision/primitive.hpp"
+#include "utils/collision/basic3d.hpp"
 
 constexpr float Epsilon = 0.000001;
 
@@ -437,7 +438,9 @@ bool Is_CollideRigidObbBvhNode(const RigidObbBvhNode* const ROBNode0, const Rigi
 uint32_t contactontriangle(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b0, const fvec3& b1, const fvec3& b2, ContactFeature& CF1, ContactFeature& CF2)
 {
 
-	ClosestDVV result[6];
+	//TODO
+
+	DistP4 result[6];
 
 	result[0] = DistTriangleSegment(a0, a1, a2, b0, b1);
 	result[1] = DistTriangleSegment(a0, a1, a2, b1, b2);
@@ -447,13 +450,26 @@ uint32_t contactontriangle(const fvec3& a0, const fvec3& a1, const fvec3& a2, co
 	result[4] = DistTriangleSegment(b0, b1, b2, a1, a2);
 	result[5] = DistTriangleSegment(b0, b1, b2, a2, a0);
 
-	uint32_t flag = 0;
+	fvec3 resultvec0[6];
+	fvec3 resultvec1[6];
+
+	for (uint32_t i = 0; i < 3; i++) {
+		resultvec0[i] = result[i].p[0] * a0 + result[i].p[1] * a1 + result[i].p[2] * a2;
+		resultvec1[i] = result[i].p[3] * b0 + (1.0 - result[i].p[3]) * b1;
+	}
+	resultvec1[0] = result[0].p[3] * b0 + (1.0 - result[0].p[3]) * b1;
+	resultvec1[1] = result[1].p[3] * b1 + (1.0 - result[1].p[3]) * b2;
+	resultvec1[2] = result[2].p[3] * b2 + (1.0 - result[2].p[3]) * b0;
 
 	for (uint32_t i = 3; i < 6; i++) {
-		fvec3 hoge   = result[i].v0;
-		result[i].v0 = result[i].v1;
-		result[i].v1 = hoge;
+		resultvec1[i] = result[i].p[0] * b0 + result[i].p[1] * b1 + result[i].p[2] * b2;
+		resultvec0[i] = result[i].p[3] * a0 + (1.0 - result[i].p[3]) * a1;
 	}
+	resultvec0[3] = result[3].p[3] * a0 + (1.0 - result[3].p[3]) * a1;
+	resultvec0[4] = result[4].p[3] * a1 + (1.0 - result[4].p[3]) * a2;
+	resultvec0[5] = result[5].p[3] * a2 + (1.0 - result[5].p[3]) * a0;
+
+	uint32_t flag = 0;
 
 	fvec3 vcross;
 	fvec3 normal0 = ((a1 - a0).cross(a2 - a0)).normalize();
@@ -465,99 +481,99 @@ uint32_t contactontriangle(const fvec3& a0, const fvec3& a1, const fvec3& a2, co
 
 	if (result[0].dist < Epsilon && result[1].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[0].v0 + result[1].v0) / 2.0;
+		vcross = (resultvec0[0] + resultvec0[1]) / 2.0;
 	} else if (result[1].dist < Epsilon && result[2].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[1].v0 + result[2].v0) / 2.0;
+		vcross = (resultvec0[1] + resultvec0[2]) / 2.0;
 	} else if (result[2].dist < Epsilon && result[0].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[2].v0 + result[0].v0) / 2.0;
+		vcross = (resultvec0[2] + resultvec0[0]) / 2.0;
 	} else if (result[3].dist < Epsilon && result[4].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[3].v0 + result[4].v0) / 2.0;
+		vcross = (resultvec0[3] + resultvec0[4]) / 2.0;
 	} else if (result[4].dist < Epsilon && result[5].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[4].v0 + result[5].v0) / 2.0;
+		vcross = (resultvec0[4] + resultvec0[5]) / 2.0;
 	} else if (result[5].dist < Epsilon && result[3].dist < Epsilon) {
 		flag   = 1;
-		vcross = (result[5].v0 + result[3].v0) / 2.0;
+		vcross = (resultvec0[5] + resultvec0[3]) / 2.0;
 	} else if (result[0].dist < Epsilon && result[3].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[0].v0 + result[3].v0) / 2.0;
-		v0     = result[3].v0;
-		v1     = result[0].v0;
+		vcross = (resultvec0[0] + resultvec0[3]) / 2.0;
+		v0     = resultvec0[3];
+		v1     = resultvec0[0];
 		ax     = a0;
 		ay     = a1;
 		bx     = b0;
 		by     = b1;
 	} else if (result[0].dist < Epsilon && result[4].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[0].v0 + result[4].v0) / 2.0;
-		v0     = result[4].v0;
-		v1     = result[0].v0;
+		vcross = (resultvec0[0] + resultvec0[4]) / 2.0;
+		v0     = resultvec0[4];
+		v1     = resultvec0[0];
 		ax     = a1;
 		ay     = a2;
 		bx     = b0;
 		by     = b1;
 	} else if (result[0].dist < Epsilon && result[5].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[0].v0 + result[5].v0) / 2.0;
-		v0     = result[5].v0;
-		v1     = result[0].v0;
+		vcross = (resultvec0[0] + resultvec0[5]) / 2.0;
+		v0     = resultvec0[5];
+		v1     = resultvec0[0];
 		ax     = a2;
 		ay     = a0;
 		bx     = b0;
 		by     = b1;
 	} else if (result[1].dist < Epsilon && result[3].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[1].v0 + result[3].v0) / 2.0;
-		v0     = result[3].v0;
-		v1     = result[1].v0;
+		vcross = (resultvec0[1] + resultvec0[3]) / 2.0;
+		v0     = resultvec0[3];
+		v1     = resultvec0[1];
 		ax     = a0;
 		ay     = a1;
 		bx     = b1;
 		by     = b2;
 	} else if (result[1].dist < Epsilon && result[4].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[1].v0 + result[4].v0) / 2.0;
-		v0     = result[4].v0;
-		v1     = result[1].v0;
+		vcross = (resultvec0[1] + resultvec0[4]) / 2.0;
+		v0     = resultvec0[4];
+		v1     = resultvec0[1];
 		ax     = a1;
 		ay     = a2;
 		bx     = b1;
 		by     = b2;
 	} else if (result[1].dist < Epsilon && result[5].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[1].v0 + result[5].v0) / 2.0;
-		v0     = result[5].v0;
-		v1     = result[1].v0;
+		vcross = (resultvec0[1] + resultvec0[5]) / 2.0;
+		v0     = resultvec0[5];
+		v1     = resultvec0[1];
 		ax     = a2;
 		ay     = a0;
 		bx     = b1;
 		by     = b2;
 	} else if (result[2].dist < Epsilon && result[3].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[2].v0 + result[3].v0) / 2.0;
-		v0     = result[3].v0;
-		v1     = result[2].v0;
+		vcross = (resultvec0[2] + resultvec0[3]) / 2.0;
+		v0     = resultvec0[3];
+		v1     = resultvec0[2];
 		ax     = a0;
 		ay     = a1;
 		bx     = b2;
 		by     = b0;
 	} else if (result[2].dist < Epsilon && result[4].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[2].v0 + result[4].v0) / 2.0;
-		v0     = result[4].v0;
-		v1     = result[2].v0;
+		vcross = (resultvec0[2] + resultvec0[4]) / 2.0;
+		v0     = resultvec0[4];
+		v1     = resultvec0[2];
 		ax     = a1;
 		ay     = a2;
 		bx     = b2;
 		by     = b0;
 	} else if (result[2].dist < Epsilon && result[5].dist < Epsilon) {
 		flag   = 2;
-		vcross = (result[2].v0 + result[5].v0) / 2.0;
-		v0     = result[5].v0;
-		v1     = result[2].v0;
+		vcross = (resultvec0[2] + resultvec0[5]) / 2.0;
+		v0     = resultvec0[5];
+		v1     = resultvec0[2];
 		ax     = a2;
 		ay     = a0;
 		bx     = b2;

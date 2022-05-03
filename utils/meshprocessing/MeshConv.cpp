@@ -233,7 +233,7 @@ void ExtractBoundaryTetrahedra(
 	delete[] is_boundary;
 }
 
-void ExtractBoundaryTriangle(
+void ExtractElementVertex(
     const uint32_t vertsize,
     const uint32_t* const trilist,
     const uint32_t trisize,

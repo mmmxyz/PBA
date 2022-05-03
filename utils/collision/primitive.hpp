@@ -55,3 +55,19 @@ ClosestPair3D DistTetraTetra(
     const fvec3& b1,
     const fvec3& b2,
     const fvec3& b3);
+
+bool Is_CollideTriTri(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2);
+
+ClosestPair3D DistTriTri(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2);

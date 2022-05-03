@@ -13,7 +13,6 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/fileloader/OBJLoader.hpp"
-#include "utils/collision/primitive.hpp"
 #include "utils/collision/RigidObbBvh.hpp"
 #include "utils/meshprocessing/MeshConv.hpp"
 #include "utils/meshprocessing/IntOnMesh.hpp"
@@ -848,7 +847,9 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec[2].tva.setcolor(0.2, 0.8, 0.3, 1.0);
 	Physics::rbodyvec[2].tva.settype(2);
 	Physics::rbodyvec[2].lva.setcolor(0.8, 0.8, 0.8, 1.0);
+	*/
 
+	/*
 	//Physics::rbodyvec.emplace_back("../../../resource/Dragon.obj", "../../../resource/LightDragon.obj", fvec3(0.0, 8.2, 0.5), 8.00, 7.00);
 	//Physics::rbodyvec[3].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
 	//Physics::rbodyvec[3].omega    = fvec3(0.0, 0.0, 0.0);
@@ -959,7 +960,7 @@ int main(int argc, char const* argv[])
 	Physics::rbodyvec.emplace_back("../../../resource/Bunny.obj", "../../../resource/LightBunny.obj", fvec3(0.0, -11.0, 0.0), 6.00, 5.00);
 	Physics::rbodyvec[0].rotq     = fquaternion(fvec3(.0 * 3.1415, 2.00 * 3.1415, 0.0));
 	Physics::rbodyvec[0].omega    = fvec3(0.0, 4.0, 0.0);
-	Physics::rbodyvec[0].velocity = fvec3(0.0, 20.0, 0.0);
+	Physics::rbodyvec[0].velocity = fvec3(0.0, 15.0, 0.0);
 	Physics::rbodyvec[0].tva.setcolor(0.8, 0.4, 0.3, 1.0);
 	Physics::rbodyvec[0].tva.settype(2);
 	Physics::rbodyvec[0].lva.setcolor(0.8, 0.8, 0.8, 1.0);

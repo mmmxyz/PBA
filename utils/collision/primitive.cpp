@@ -4,6 +4,11 @@
 #include "utils/mathfunc/mathfunc.hpp"
 #include "utils/collision/primitive.hpp"
 
+//TODO
+//アプリケーションによって要求される情報は異なる
+//衝突の有無，最短距離，修正ベクトル，最短距離を構成する頂点．．
+//primitive -> basic として，その点を修正する
+
 constexpr float epsilon = 0.0001;
 
 ClosestDV DistLinePoint(const fvec3& a0, const fvec3& a1, const fvec3& b, float* const pt)
@@ -908,17 +913,17 @@ ClosestPair3D DistTetraTetra(
 			dist = maxb - mina;
 
 			if (
-			    b0.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b0.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon) {
+			    b0on > b1on - epsilon && b0on > b2on - epsilon && b0on > b3on - epsilon) {
 				status = 8 * i + 0;
 				if (is_fliped)
 					status += 4;
 			} else if (
-			    b1.dot(normallist[i]) > b2.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b3.dot(normallist[i]) - epsilon && b1.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon) {
+			    b1on > b2on - epsilon && b1on > b3on - epsilon && b1on > b0on - epsilon) {
 				status = 8 * i + 1;
 				if (is_fliped)
 					status += 4;
 			} else if (
-			    b2.dot(normallist[i]) > b3.dot(normallist[i]) + epsilon && b2.dot(normallist[i]) > b0.dot(normallist[i]) - epsilon && b2.dot(normallist[i]) > b1.dot(normallist[i]) - epsilon) {
+			    b2on > b3on + epsilon && b2on > b0on - epsilon && b2on > b1on - epsilon) {
 				status = 8 * i + 2;
 				if (is_fliped)
 					status += 4;
@@ -1002,17 +1007,17 @@ ClosestPair3D DistTetraTetra(
 			dist = maxa - minb;
 
 			if (
-			    a0.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a0.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon) {
+			    a0on > a1on - epsilon && a0on > a2on - epsilon && a0on > a3on - epsilon) {
 				status = 8 * i + 0;
 				if (is_fliped)
 					status += 4;
 			} else if (
-			    a1.dot(normallist[i]) > a2.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a3.dot(normallist[i]) - epsilon && a1.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon) {
+			    a1on > a2on - epsilon && a1on > a3on - epsilon && a1on > a0on - epsilon) {
 				status = 8 * i + 1;
 				if (is_fliped)
 					status += 4;
 			} else if (
-			    a2.dot(normallist[i]) > a3.dot(normallist[i]) + epsilon && a2.dot(normallist[i]) > a0.dot(normallist[i]) - epsilon && a2.dot(normallist[i]) > a1.dot(normallist[i]) - epsilon) {
+			    a2on > a3on + epsilon && a2on > a0on - epsilon && a2on > a1on - epsilon) {
 				status = 8 * i + 2;
 				if (is_fliped)
 					status += 4;
@@ -1159,6 +1164,289 @@ ClosestPair3D DistTetraTetra(
 				if ((Inda0 == Indmina || Inda1 == Indmina) && (Indb0 == Indmaxb || Indb1 == Indmaxb)) {
 					dist   = maxb - mina;
 					status = 64 + 2 * (i - 8) + 1;
+				}
+			}
+		}
+	}
+
+	return { dist, status };
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+bool Is_CollideTriTri(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2)
+{
+	//sat
+
+	{
+		fvec3 normal = (a1 - a0).cross(a2 - a0);
+		if (normal.sqlength() > 0.0000001) {
+			float maxa = std::max(std::max(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float mina = std::min(std::min(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float maxb = std::max(std::max(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+			float minb = std::min(std::min(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+
+			if (maxa - epsilon < minb || maxb - epsilon < mina)
+				return false;
+		}
+	}
+	{
+		fvec3 normal = (b1 - b0).cross(b2 - b0);
+		if (normal.sqlength() > 0.0000001) {
+			float maxa = std::max(std::max(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float mina = std::min(std::min(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float maxb = std::max(std::max(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+			float minb = std::min(std::min(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+
+			if (maxa - epsilon < minb || maxb - epsilon < mina)
+				return false;
+		}
+	}
+
+	fvec3 normallist[9];
+
+	normallist[0] = (a1 - a0).cross(b1 - b0);
+	normallist[1] = (a1 - a0).cross(b2 - b1);
+	normallist[2] = (a1 - a0).cross(b0 - b2);
+
+	normallist[3] = (a2 - a1).cross(b1 - b0);
+	normallist[4] = (a2 - a1).cross(b2 - b1);
+	normallist[5] = (a2 - a1).cross(b0 - b2);
+
+	normallist[6] = (a0 - a2).cross(b1 - b0);
+	normallist[7] = (a0 - a2).cross(b2 - b1);
+	normallist[8] = (a0 - a2).cross(b0 - b2);
+
+	for (uint32_t i = 0; i < 9; i++) {
+		fvec3& normal = normallist[i];
+		if (normal.sqlength() > 0.0000001) {
+
+			float maxa = std::max(std::max(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float mina = std::min(std::min(a0.dot(normal), a1.dot(normal)), a2.dot(normal));
+			float maxb = std::max(std::max(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+			float minb = std::min(std::min(b0.dot(normal), b1.dot(normal)), b2.dot(normal));
+
+			if (maxa - epsilon < minb || maxb - epsilon < mina)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+ClosestPair3D DistTriTri(
+    const fvec3& a0,
+    const fvec3& a1,
+    const fvec3& a2,
+    const fvec3& b0,
+    const fvec3& b1,
+    const fvec3& b2)
+{
+	float dist     = 99999999.9;
+	int32_t status = -1;
+
+	// 0-11 face v.s. vertex
+	//12-29 (0-17) edge v.s. edge
+
+	{
+		fvec3 normal = (a1 - a0).cross(a2 - a0);
+		if (normal.sqlength() > 0.0000001) {
+
+			normal = normal.normalize();
+
+			float a0on = a0.dot(normal);
+			float a1on = a1.dot(normal);
+			float a2on = a2.dot(normal);
+			float b0on = b0.dot(normal);
+			float b1on = b1.dot(normal);
+			float b2on = b2.dot(normal);
+
+			float maxa = std::max(std::max(a0on, a1on), a2on);
+			float mina = std::min(std::min(a0on, a1on), a2on);
+			float maxb = std::max(std::max(b0on, b1on), b2on);
+			float minb = std::min(std::min(b0on, b1on), b2on);
+
+			if (maxa - epsilon < minb || maxb - epsilon < mina)
+				return { 0.0, -1 };
+
+			if (maxa - minb < maxb - mina) {
+				if (maxa - minb < dist) {
+					dist = maxa - minb;
+					if (b0on < b1on + epsilon && b0on < b2on + epsilon) {
+						status = 0;
+					} else if (b1on < b2on + epsilon && b1on < b0on + epsilon) {
+						status = 1;
+					} else {
+						status = 2;
+					}
+				}
+			} else {
+				if (maxb - mina < dist) {
+					dist = maxb - mina;
+					if (b0on > b1on - epsilon && b0on > b2on - epsilon) {
+						status = 3;
+					} else if (b1on > b2on - epsilon && b1on > b0on - epsilon) {
+						status = 4;
+					} else {
+						status = 5;
+					}
+				}
+			}
+		}
+	}
+	{
+		fvec3 normal = (b1 - b0).cross(b2 - b0);
+		if (normal.sqlength() > 0.0000001) {
+			normal = normal.normalize();
+
+			float a0on = a0.dot(normal);
+			float a1on = a1.dot(normal);
+			float a2on = a2.dot(normal);
+			float b0on = b0.dot(normal);
+			float b1on = b1.dot(normal);
+			float b2on = b2.dot(normal);
+
+			float maxa = std::max(std::max(a0on, a1on), a2on);
+			float mina = std::min(std::min(a0on, a1on), a2on);
+			float maxb = std::max(std::max(b0on, b1on), b2on);
+			float minb = std::min(std::min(b0on, b1on), b2on);
+
+			if (maxa - epsilon < minb || maxb - epsilon < mina)
+				return { 0.0, -1 };
+
+			if (maxa - minb < maxb - mina) {
+				if (maxa - minb < dist) {
+					dist = maxa - minb;
+					if (a0on > a1on - epsilon && a0on > a2on - epsilon) {
+						status = 6;
+					} else if (a1on > a2on - epsilon && a1on > a0on - epsilon) {
+						status = 7;
+					} else {
+						status = 8;
+					}
+				}
+			} else {
+				if (maxb - mina < dist) {
+					dist = maxb - mina;
+					if (a0on < a1on + epsilon && a0on < a2on + epsilon) {
+						status = 9;
+					} else if (a1on < a2on + epsilon && a1on < a0on + epsilon) {
+						status = 10;
+					} else {
+						status = 11;
+					}
+				}
+			}
+		}
+	}
+
+	fvec3 normallist[9];
+
+	normallist[0] = (a1 - a0).cross(b1 - b0);
+	normallist[1] = (a1 - a0).cross(b2 - b1);
+	normallist[2] = (a1 - a0).cross(b0 - b2);
+
+	normallist[3] = (a2 - a1).cross(b1 - b0);
+	normallist[4] = (a2 - a1).cross(b2 - b1);
+	normallist[5] = (a2 - a1).cross(b0 - b2);
+
+	normallist[6] = (a0 - a2).cross(b1 - b0);
+	normallist[7] = (a0 - a2).cross(b2 - b1);
+	normallist[8] = (a0 - a2).cross(b0 - b2);
+
+	for (uint32_t i = 0; i < 9; i++) {
+		fvec3 normal = normallist[i];
+		if (normal.sqlength() < 0.0000001)
+			continue;
+
+		normal = normal.normalize();
+
+		uint32_t Inda0 = i / 3;
+		uint32_t Inda1 = ((i / 3) + 1) % 3;
+		uint32_t Indb0 = i % 3;
+		uint32_t Indb1 = ((i % 3) + 1) % 3;
+
+		float a0on = a0.dot(normal);
+		float a1on = a1.dot(normal);
+		float a2on = a2.dot(normal);
+		float b0on = b0.dot(normal);
+		float b1on = b1.dot(normal);
+		float b2on = b2.dot(normal);
+
+		uint32_t Indmaxa, Indmina, Indmaxb, Indminb;
+		float maxa, mina, maxb, minb;
+
+		if (a0on > a1on - epsilon && a0on > a2on - epsilon) {
+			Indmaxa = 0;
+			maxa	= a0on;
+		} else if (a1on > a2on - epsilon && a1on > a0on - epsilon) {
+			Indmaxa = 1;
+			maxa	= a1on;
+		} else {
+			Indmaxa = 2;
+			maxa	= a2on;
+		}
+
+		if (b0on > b1on - epsilon && b0on > b2on - epsilon) {
+			Indmaxb = 0;
+			maxb	= b0on;
+		} else if (b1on > b2on - epsilon && b1on > b0on - epsilon) {
+			Indmaxb = 1;
+			maxb	= b1on;
+		} else {
+			Indmaxb = 2;
+			maxb	= b2on;
+		}
+
+		if (a0on < a1on + epsilon && a0on < a2on + epsilon) {
+			Indmina = 0;
+			mina	= a0on;
+		} else if (a1on < a2on + epsilon && a1on < a0on + epsilon) {
+			Indmina = 1;
+			mina	= a1on;
+		} else {
+			Indmina = 2;
+			mina	= a2on;
+		}
+
+		if (b0on < b1on + epsilon && b0on < b2on + epsilon) {
+			Indminb = 0;
+			minb	= b0on;
+		} else if (b1on < b2on + epsilon && b1on < b0on + epsilon) {
+			Indminb = 1;
+			minb	= b1on;
+		} else {
+			Indminb = 2;
+			minb	= b2on;
+		}
+
+		if (maxa - epsilon < minb || maxb - epsilon < mina)
+			return { 0.0, -1 };
+
+		if (maxa - minb < maxb - mina) {
+			//aのほうが高い
+			if (maxa - minb < dist) {
+				if ((Inda0 == Indmaxa || Inda1 == Indmaxa) && (Indb0 == Indminb || Indb1 == Indminb)) {
+					dist   = maxa - minb;
+					status = 12 + 2 * i + 0;
+				}
+			}
+		} else {
+			if (maxb - mina < dist) {
+				if ((Inda0 == Indmina || Inda1 == Indmina) && (Indb0 == Indmaxb || Indb1 == Indmaxb)) {
+					dist   = maxb - mina;
+					status = 12 + 2 * i + 1;
 				}
 			}
 		}
