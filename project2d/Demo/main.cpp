@@ -41,7 +41,7 @@ int main(int argc, char const* argv[])
 	Renderer2D::Init();
 
 	uint32_t ilist[3] = { 0, 1, 2 };
-	trianglevertarray tritva(3, nullptr, 3, ilist);
+	trianglevertarray tritva(3, 3, ilist);
 	tritva.setposition(0, 0.0, 0.0, 0.0);
 	tritva.setposition(1, 1.0, 0.0, 0.0);
 	tritva.setposition(2, 0.5, 0.5, 0.0);

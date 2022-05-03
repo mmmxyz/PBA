@@ -17,6 +17,8 @@
 
 #include "utils/meshgenerator/meshgenerator.hpp"
 
+#include "utils/meshprocessing/MeshConv.hpp"
+
 #include "utils/fem/fem.hpp"
 
 #include <imgui.h>
@@ -53,6 +55,9 @@ class ClothMesh {
 	linevertarray lva;
 	trianglevertarray tva;
 
+	uint32_t* VtoElist;
+	uint32_t* VtoEind;
+
 	std::vector<float> ElasticLamdalist;
 
 	std::vector<fmat2> AList;
@@ -77,6 +82,8 @@ class ClothMesh {
 		PositionList.resize(vertsize);
 		RestPositionList.resize(vertsize);
 		VelocityList.resize(vertsize);
+
+		ConvertEVtoVE(vertsize, tridata, trisize, &VtoEind, &VtoElist);
 
 		AList.resize(trisize / 3);
 		VList.resize(trisize / 3);
@@ -305,8 +312,10 @@ class ClothMesh {
 		}
 
 #pragma omp parallel for
-		for (uint32_t i = 0; i < trisize; i++) {
-			TempPosition[tridata[i]] = TempPosition[tridata[i]] + dx[i];
+		for (uint32_t i = 0; i < vertsize; i++) {
+			for (uint32_t j = VtoEind[i]; j < VtoEind[i + 1]; j++) {
+				TempPosition[i] = TempPosition[i] + dx[VtoElist[j]];
+			}
 		}
 	}
 
@@ -346,12 +355,12 @@ void timestep(ClothMesh& CM)
 	}
 
 	if (solver == 0)
-		for (uint32_t x = 0; x < 100; x++) {
+		for (uint32_t x = 0; x < 50; x++) {
 			CM.FemElasticProjectGS(tempp);
 			CM.FixedProjection(tempp);
 		}
 	else if (solver == 1)
-		for (uint32_t x = 0; x < 200; x++) {
+		for (uint32_t x = 0; x < 80; x++) {
 			CM.FemElasticProjectJC(tempp);
 			CM.FixedProjection(tempp);
 		}
