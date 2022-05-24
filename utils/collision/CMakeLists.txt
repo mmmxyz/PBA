@@ -9,7 +9,10 @@ add_library(collisionLib STATIC
 	RigidObbBvh.cpp
 	#primitive.cpp
 	primitive2d.cpp
-	DeformableBvh.cpp
+	#DeformableBvh.cpp
+	DeformableBvh2D.cpp
+	DeformableBvh3D_Tetra.cpp
+	DeformableBvh3D_Tri.cpp
 	basic3d.cpp
 )
 
