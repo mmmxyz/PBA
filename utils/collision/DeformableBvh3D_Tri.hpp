@@ -81,12 +81,15 @@ class DeformableBvh3DTri {
 	void UpdateBvh();
 
 	void DetectSelfCollision(std::vector<ContactFeature3DTri>& ContactList);
+
+	struct IntersecInfo {
+		float pram[4];
+		int32_t elementnum;
+		//       -1: no intersection
+		//otherwise: triangle index
+	};
+
+	IntersecInfo RayIntersection(const fvec3& v0, const fvec3& v1);
 };
 
 void DetectExternalCollision(const DeformableBvh3DTri& RightBvh, const DeformableBvh3DTri& LeftBvh, std::vector<ContactFeature3DTri>& ContactList);
-
-void DetectCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList);
-
-void DetectExternalCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList);
-
-void DetectSemiExternalCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList);

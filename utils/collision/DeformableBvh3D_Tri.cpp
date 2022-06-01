@@ -7,7 +7,7 @@
 #include "utils/collision/primitive2d.hpp"
 #include "utils/collision/basic3d.hpp"
 
-constexpr float Epsilon = 0.001;
+constexpr float Epsilon = 0.000000000001;
 
 DeformableBvh3DTriNode::DeformableBvh3DTriNode(
     const DeformableBvh3DTri& root,
@@ -437,6 +437,109 @@ void DetectExternalCollisionNode(std::vector<ContactFeature3DTri>& ContactList, 
 
 //////////////////////////////////////////
 
+bool Is_CollideAABBRay(const DeformableBvh3DTriNode* const Node, const fvec3& v0, const fvec3& v1)
+{
+	//v0 != v1
+
+	//各軸において，rayはAABBとmax・minの平面と交差する
+	//AABBの平面をray上に射影した際の座標を比較する
+
+	float tmax = 999999999999.9999, tmin = -999999999999.9999;
+
+	fvec3 dir = (v1 - v0).normalize();
+
+	{
+		float xmax = Node->center.x + Node->Lengthx / 2.0;
+		float xmin = Node->center.x - Node->Lengthx / 2.0;
+
+		if (std::abs(dir.x) < Epsilon) {
+		} else if (dir.x > 0.0) {
+			tmax = (xmax - v0.x) / dir.x;
+			tmin = (xmin - v0.x) / dir.x;
+		} else {
+			tmax = (xmin - v0.x) / dir.x;
+			tmin = (xmax - v0.x) / dir.x;
+		}
+	}
+
+	{
+		float ymax = Node->center.y + Node->Lengthy / 2.0;
+		float ymin = Node->center.y - Node->Lengthy / 2.0;
+
+		if (std::abs(dir.y) < Epsilon) {
+		} else if (dir.y > 0.0) {
+			tmax = std::min((ymax - v0.y) / dir.y, tmax);
+			tmin = std::max((ymin - v0.y) / dir.y, tmin);
+		} else {
+			tmax = std::min((ymin - v0.y) / dir.y, tmax);
+			tmin = std::max((ymax - v0.y) / dir.y, tmin);
+		}
+	}
+
+	{
+		float zmax = Node->center.z + Node->Lengthz / 2.0;
+		float zmin = Node->center.z - Node->Lengthz / 2.0;
+
+		if (std::abs(dir.z) < Epsilon) {
+		} else if (dir.z > 0.0) {
+			tmax = std::min((zmax - v0.z) / dir.z, tmax);
+			tmin = std::max((zmin - v0.z) / dir.z, tmin);
+		} else {
+			tmax = std::min((zmin - v0.z) / dir.z, tmax);
+			tmin = std::max((zmax - v0.z) / dir.z, tmin);
+		}
+	}
+
+	if (tmax < tmin - Epsilon)
+		return false;
+
+	if (0.0 < tmax)
+		return true;
+
+	//back intersection
+	return false;
+}
+
+DeformableBvh3DTri::IntersecInfo DetectBvhTriRayIntersection(const DeformableBvh3DTriNode* const Node, const fvec3& v0, const fvec3& v1)
+{
+	if (Is_CollideAABBRay(Node, v0, v1)) {
+		if (Node->Type == 0) {
+			auto IR = DetectBvhTriRayIntersection(Node->RightChild, v0, v1);
+			auto IL = DetectBvhTriRayIntersection(Node->LeftChild, v0, v1);
+
+			if (IR.elementnum != -1 && IL.elementnum != -1) {
+				if (IR.pram[3] > IL.pram[3])
+					return IR;
+				else
+					return IL;
+			} else if (IR.elementnum != -1) {
+				return IR;
+			} else if (IL.elementnum != -1) {
+				return IL;
+			} else {
+				return { 0.0, 0.0, 0.0, 0.0, -1 };
+			}
+
+		} else {
+
+			auto hoge = IntersectTriangleRay(
+			    Node->Root.vertdata[Node->index0],
+			    Node->Root.vertdata[Node->index1],
+			    Node->Root.vertdata[Node->index2],
+			    v0, v1);
+			if (hoge.Is_intersect) {
+				uint32_t ei = (Node->index0) / 3;
+				return { hoge.p[0], hoge.p[1], hoge.p[2], hoge.p[3], ei };
+			} else {
+				return { 0.0, 0.0, 0.0, 0.0, -1 };
+			}
+		}
+	} else
+		return { 0.0, 0.0, 0.0, 0.0, -1 };
+}
+
+//////////////////////////////////////////
+
 DeformableBvh3DTri::DeformableBvh3DTri(
     const fvec3* const vertdata,
     const uint32_t vertsize,
@@ -473,23 +576,7 @@ void DetectExternalCollision(const DeformableBvh3DTri& RightBvh, const Deformabl
 	DetectExternalCollisionNode(ContactList, RightBvh.RootNode, LeftBvh.RootNode);
 }
 
-void DetectCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList)
+DeformableBvh3DTri::IntersecInfo DeformableBvh3DTri::RayIntersection(const fvec3& v0, const fvec3& v1)
 {
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
-}
-
-void DetectExternalCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList)
-{
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
-}
-
-void DetectSemiExternalCollision(const DeformableBvh3DTriNode* const RightBvhNode, const DeformableBvh3DTriNode* const LeftBvhNode, std::vector<ContactFeature3DTri>& ContactList)
-{
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectSemiExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
+	return DetectBvhTriRayIntersection(RootNode, v0, v1);
 }

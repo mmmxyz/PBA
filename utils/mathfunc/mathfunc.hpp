@@ -4,7 +4,6 @@
 #include <cstdint>
 
 //TODO 宣言と定義を分離する(cudamathと同じ形式にする)
-//TODO 暗黙的呼び出しを不許可にする
 
 template <class T>
 class vec2;
@@ -31,22 +30,22 @@ class vec2 {
 	T x, y;
 
 	//constructor
-	inline vec2(const T& x, const T& y)
+	explicit inline vec2(const T& x, const T& y)
 	    : x(x)
 	    , y(y)
 	{
 	}
-	inline vec2(const T& value)
+	explicit inline vec2(const T& value)
 	    : x(value)
 	    , y(value)
 	{
 	}
-	inline vec2(const T (&a)[2])
+	explicit inline vec2(const T (&a)[2])
 	{
 		x = a[0];
 		y = a[1];
 	}
-	inline vec2(void)
+	explicit inline vec2(void)
 	    : x(0.0)
 	    , y(0.0)
 	{
@@ -165,25 +164,25 @@ class vec3 {
 	T x, y, z;
 
 	//constructor
-	inline vec3(const T& x, const T& y, const T& z)
+	explicit inline vec3(const T& x, const T& y, const T& z)
 	    : x(x)
 	    , y(y)
 	    , z(z)
 	{
 	}
-	inline vec3(const T& value)
+	explicit inline vec3(const T& value)
 	    : x(value)
 	    , y(value)
 	    , z(value)
 	{
 	}
-	inline vec3(void)
+	explicit inline vec3(void)
 	    : x(0.0)
 	    , y(0.0)
 	    , z(0.0)
 	{
 	}
-	inline vec3(const T (&a)[3])
+	explicit inline vec3(const T (&a)[3])
 	{
 		x = a[0];
 		y = a[1];
@@ -310,7 +309,7 @@ class vec4 {
 	T x, y, z, w;
 
 	//constructor
-	inline vec4(
+	explicit inline vec4(
 	    const T& x,
 	    const T& y,
 	    const T& z,
@@ -322,7 +321,7 @@ class vec4 {
 	{
 	}
 
-	inline vec4(void)
+	explicit inline vec4(void)
 	    : x(0.0)
 	    , y(0.0)
 	    , z(0.0)
@@ -330,7 +329,7 @@ class vec4 {
 	{
 	}
 
-	inline vec4(
+	explicit inline vec4(
 	    const vec3<T>& a)
 	    : x(a.x)
 	    , y(a.y)
@@ -407,7 +406,7 @@ class mat2 {
 	// m[2],m[3]
 
 	//constructor
-	inline mat2(const vec2<T>& a, const vec2<T>& b)
+	explicit inline mat2(const vec2<T>& a, const vec2<T>& b)
 	{
 		m[0 * 2 + 0] = a.x;
 		m[0 * 2 + 1] = b.x;
@@ -415,19 +414,19 @@ class mat2 {
 		m[1 * 2 + 1] = b.y;
 	}
 
-	inline mat2(const T (&a)[4])
+	explicit inline mat2(const T (&a)[4])
 	{
 		for (uint32_t i = 0; i < 4; i++)
 			m[i] = a[i];
 	}
 
-	inline mat2(void)
+	explicit inline mat2(void)
 	{
 		for (uint32_t i = 0; i < 4; i++)
 			m[i] = 0.0;
 	}
 
-	mat2(const double& omega);
+	explicit mat2(const double& omega);
 
 	//menber func
 	inline T det() const
@@ -568,7 +567,7 @@ class mat3 {
 	// m[6],m[7],m[8]
 
 	//constructor
-	inline mat3(const vec3<T>& a, const vec3<T>& b, const vec3<T>& c)
+	explicit inline mat3(const vec3<T>& a, const vec3<T>& b, const vec3<T>& c)
 	{
 		m[0 * 3 + 0] = a.x;
 		m[0 * 3 + 1] = b.x;
@@ -583,13 +582,13 @@ class mat3 {
 		m[2 * 3 + 2] = c.z;
 	}
 
-	inline mat3(const T (&a)[9])
+	explicit inline mat3(const T (&a)[9])
 	{
 		for (uint32_t i = 0; i < 9; i++)
 			m[i] = a[i];
 	}
 
-	inline mat3(void)
+	explicit inline mat3(void)
 	{
 		for (uint32_t i = 0; i < 9; i++)
 			m[i] = 0.0;
@@ -770,7 +769,7 @@ class mat32 {
 	//m[4],m[5]
 
 	//constructor
-	inline mat32(const vec3<T>& a, const vec3<T>& b)
+	explicit inline mat32(const vec3<T>& a, const vec3<T>& b)
 	{
 		m[0] = a.x;
 		m[2] = a.y;
@@ -779,7 +778,7 @@ class mat32 {
 		m[3] = b.y;
 		m[5] = b.z;
 	}
-	inline mat32(const T (&a)[6])
+	explicit inline mat32(const T (&a)[6])
 	{
 		for (uint32_t i = 0; i < 6; i++)
 			m[i] = a[i];
@@ -876,7 +875,7 @@ class mat4 {
 	// m[12],m[13],m[14],m[15]
 
 	//constructor
-	inline mat4(const vec4<T>& a, const vec4<T>& b, const vec4<T>& c, const vec4<T>& d)
+	explicit inline mat4(const vec4<T>& a, const vec4<T>& b, const vec4<T>& c, const vec4<T>& d)
 	{
 		m[4 * 0 + 0] = a.x;
 		m[4 * 1 + 0] = a.y;
@@ -898,19 +897,20 @@ class mat4 {
 		m[4 * 2 + 3] = d.z;
 		m[4 * 3 + 3] = d.w;
 	}
-	inline mat4(const T (&a)[16])
+
+	explicit inline mat4(const T (&a)[16])
 	{
 		for (uint32_t i = 0; i < 16; i++)
 			m[i] = a[i];
 	}
 
-	inline mat4(void)
+	explicit inline mat4(void)
 	{
 		for (uint32_t i = 0; i < 16; i++)
 			m[i] = 0.0;
 	}
 
-	mat4(const mat3<T>& mat, const vec3<T>& vec)
+	explicit mat4(const mat3<T>& mat, const vec3<T>& vec)
 	{
 		m[0]  = mat.m[0];
 		m[1]  = mat.m[1];
@@ -1058,7 +1058,7 @@ class quaternion {
 	//scalar w
 	//vector x,y,z
 
-	inline quaternion(
+	explicit inline quaternion(
 	    const T& x,
 	    const T& y,
 	    const T& z,
@@ -1070,7 +1070,7 @@ class quaternion {
 	{
 	}
 
-	inline quaternion(const vec3<T>& v, const float& s)
+	explicit inline quaternion(const vec3<T>& v, const float& s)
 	    : x(v.x)
 	    , y(v.y)
 	    , z(v.z)
@@ -1078,9 +1078,9 @@ class quaternion {
 	{
 	}
 
-	quaternion(const vec3<T>& v);
+	explicit quaternion(const vec3<T>& v);
 
-	inline quaternion(void)
+	explicit inline quaternion(void)
 	    : x(0.0)
 	    , y(0.0)
 	    , z(0.0)

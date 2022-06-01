@@ -182,7 +182,7 @@ class Staticcontact {
 		fvec3 vtan = corrv - normal.dot(corrv) * normal;
 
 		if (vtan.length() < 0.00000001)
-			return { fvec3(0.0), 0.0 };
+			return { fvec3(0.0), fvec3(0.0) };
 
 		fvec3 nvtan = vtan.normalize();
 

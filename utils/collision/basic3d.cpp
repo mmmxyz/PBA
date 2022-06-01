@@ -160,6 +160,57 @@ bool Is_CollideTriTri(
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+IntersectP4 IntersectTriangleRay(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b0, const fvec3& b1)
+{
+	// b0 == b1 でないことが保証される
+
+	const fvec3 normal = ((a1 - a0).cross(a2 - a0)).normalize();
+	const float D	   = ((a1 - a0).cross(a2 - a0)).length();
+
+	if (D < epsilon) {
+		//Triangleが潰れている場合は無視
+		return { false };
+	}
+
+	if (std::abs((b1 - b0).dot(normal)) >= epsilon) {
+		// aとbが平行でない
+
+		const float s = ((a0 - b0).dot(normal) / (b1 - b0).dot(normal));
+		const fvec3 b = s * (b1 - b0) + b0;
+
+		const float alpha0 = ((a1 - b).cross(a2 - b)).dot(normal) / D;
+		const float alpha1 = ((a2 - b).cross(a0 - b)).dot(normal) / D;
+		const float alpha2 = ((a0 - b).cross(a1 - b)).dot(normal) / D;
+
+		if (0.0 <= alpha0 && 0.0 <= alpha1 && 0.0 <= alpha2 && 0.0 <= s) {
+			return { true, alpha0, alpha1, alpha2, 1.0f - s };
+		} else {
+			return { false };
+		}
+	} else {
+
+		auto [dist01, p0] = DistLineSegment(b0, b1, a0, a1);
+		auto [dist12, p1] = DistLineSegment(b0, b1, a1, a2);
+		auto [dist20, p2] = DistLineSegment(b0, b1, a2, a0);
+
+		if (dist01 <= dist12 + epsilon && dist01 <= dist20 + epsilon && dist01 < epsilon && p0[0] <= 1.0) {
+			return { true, p0[1], 1.0f - p0[1], 0.0, p0[0] };
+		} else if (dist12 <= dist01 + epsilon && dist12 <= dist20 + epsilon && dist12 < epsilon && p1[0] <= 1.0) {
+			return { true, 0.0, p1[1], 1.0f - p1[1], p1[0] };
+		} else if (dist20 <= dist01 + epsilon && dist20 <= dist12 + epsilon && dist20 < epsilon && p2[0] <= 1.0) {
+			return { dist20, 1.0f - p2[1], 0.0, p2[1], p2[0] };
+		} else {
+			return { false };
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 DistP1 DistLinePoint(const fvec3& a0, const fvec3& a1, const fvec3& b)
 {
 
@@ -345,6 +396,24 @@ DistP2 DistSegmentSegment(const fvec3& a0, const fvec3& a1, const fvec3& b0, con
 			}
 		}
 	}
+}
+
+DistP3 DistTPlanePoint(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b)
+{
+	const fvec3 normal = ((a1 - a0).cross(a2 - a0)).normalize();
+	const float D	   = ((a1 - a0).cross(a2 - a0)).length();
+
+	if (D < epsilon) {
+		//Triangleが潰れている場合は無視
+		return { 0.0, 0.0, 0.0, 0.0 };
+	}
+
+	const float alpha0 = ((a1 - b).cross(a2 - b)).dot(normal) / D;
+	const float alpha1 = ((a2 - b).cross(a0 - b)).dot(normal) / D;
+	const float alpha2 = ((a0 - b).cross(a1 - b)).dot(normal) / D;
+
+	const fvec3 v = alpha0 * a0 + alpha1 * a1 + alpha2 * a2;
+	return { (v - b).length(), alpha0, alpha1, alpha2 };
 }
 
 DistP3 DistTrianglePoint(const fvec3& a0, const fvec3& a1, const fvec3& a2, const fvec3& b)
@@ -1062,7 +1131,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]	    = DistTrianglePoint(*list[Inda0], *list[Inda1], *list[Inda2], b0);
+				auto [dist, p]	    = DistTPlanePoint(*list[Inda0], *list[Inda1], *list[Inda2], b0);
 				pt[Inda0]	    = p[0];
 				pt[Inda1]	    = p[1];
 				pt[Inda2]	    = p[2];
@@ -1078,7 +1147,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]	    = DistTrianglePoint(*list[Inda0], *list[Inda1], *list[Inda2], b1);
+				auto [dist, p]	    = DistTPlanePoint(*list[Inda0], *list[Inda1], *list[Inda2], b1);
 				pt[Inda0]	    = p[0];
 				pt[Inda1]	    = p[1];
 				pt[Inda2]	    = p[2];
@@ -1093,7 +1162,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]	    = DistTrianglePoint(*list[Inda0], *list[Inda1], *list[Inda2], b2);
+				auto [dist, p]	    = DistTPlanePoint(*list[Inda0], *list[Inda1], *list[Inda2], b2);
 				pt[Inda0]	    = p[0];
 				pt[Inda1]	    = p[1];
 				pt[Inda2]	    = p[2];
@@ -1107,7 +1176,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]	    = DistTrianglePoint(*list[Inda0], *list[Inda1], *list[Inda2], b3);
+				auto [dist, p]	    = DistTPlanePoint(*list[Inda0], *list[Inda1], *list[Inda2], b3);
 				pt[Inda0]	    = p[0];
 				pt[Inda1]	    = p[1];
 				pt[Inda2]	    = p[2];
@@ -1166,7 +1235,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]		= DistTrianglePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a0);
+				auto [dist, p]		= DistTPlanePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a0);
 				pt[0]			= 1.0;
 				pt[1]			= 0.0;
 				pt[2]			= 0.0;
@@ -1181,7 +1250,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]		= DistTrianglePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a1);
+				auto [dist, p]		= DistTPlanePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a1);
 				pt[0]			= 0.0;
 				pt[1]			= 1.0;
 				pt[2]			= 0.0;
@@ -1196,7 +1265,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]		= DistTrianglePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a2);
+				auto [dist, p]		= DistTPlanePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a2);
 				pt[0]			= 0.0;
 				pt[1]			= 0.0;
 				pt[2]			= 1.0;
@@ -1210,7 +1279,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 				if (is_fliped)
 					status += 4;
 
-				auto [dist, p]		= DistTrianglePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a3);
+				auto [dist, p]		= DistTPlanePoint(*list[4 + Indb0], *list[4 + Indb1], *list[4 + Indb2], a3);
 				pt[0]			= 0.0;
 				pt[1]			= 0.0;
 				pt[2]			= 0.0;
@@ -1226,10 +1295,6 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 	//同じ法線を生成する組がある場合に，適切な最短の辺の組を計算できない
 	//iに応じて辺を構成する頂点のみ選択する
 	for (uint32_t i = 8; i < 44; i++) {
-		if (normallist[i].sqlength() < 0.00001)
-			continue;
-
-		normallist[i] = normallist[i].normalize();
 
 		//edge v.s. edge
 		//サーチする際に浸透が最も小さい組がedge v.s. edgeの場合である．
@@ -1240,6 +1305,25 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 		const uint32_t Inda1 = normalindlist[4 * i + 1];
 		const uint32_t Indb0 = normalindlist[4 * i + 2];
 		const uint32_t Indb1 = normalindlist[4 * i + 3];
+
+		//a0 == a1
+		//b0 == b1
+		//(a0,a1) // (b0,b1)
+		if (normallist[i].sqlength() < 0.00001) {
+
+			if (((*list[Inda1]) - (*list[Inda0])).sqlength() > epsilon && ((*list[Indb1]) - (*list[Indb0])).sqlength() > epsilon) {
+
+				fvec3 n = (*list[Indb0]) - (*list[Inda0]);
+				if (n.sqlength() < epsilon)
+					continue;
+				fvec3 dir     = (*list[Inda1]) - (*list[Inda0]);
+				normallist[i] = n - (n.dot(dir) / dir.sqlength()) * dir;
+			} else {
+				continue;
+			}
+		}
+
+		normallist[i] = normallist[i].normalize();
 
 		const float a0on = a0.dot(normallist[i]);
 		const float a1on = a1.dot(normallist[i]);
@@ -1332,7 +1416,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 					pt[6] = 0.0;
 					pt[7] = 0.0;
 
-					auto [hoge, p] = DistSegmentSegment(*list[Inda0], *list[Inda1], *list[4 + Indb0], *list[4 + Indb1]);
+					auto [hoge, p] = DistLineLine(*list[Inda0], *list[Inda1], *list[4 + Indb0], *list[4 + Indb1]);
 					pt[Inda0]      = p[0];
 					pt[Inda1]      = 1.0f - p[0];
 					pt[4 + Indb0]  = p[1];
@@ -1355,7 +1439,7 @@ CollisionP8 CollisionTetraTetra(const fvec3& a0, const fvec3& a1, const fvec3& a
 					pt[6] = 0.0;
 					pt[7] = 0.0;
 
-					auto [hoge, p] = DistSegmentSegment(*list[Inda0], *list[Inda1], *list[4 + Indb0], *list[4 + Indb1]);
+					auto [hoge, p] = DistLineLine(*list[Inda0], *list[Inda1], *list[4 + Indb0], *list[4 + Indb1]);
 					pt[Inda0]      = p[0];
 					pt[Inda1]      = 1.0f - p[0];
 					pt[4 + Indb0]  = p[1];

@@ -197,6 +197,15 @@ DeformableBvh3DNode::DeformableBvh3DNode(
 	}
 }
 
+DeformableBvh3DNode::~DeformableBvh3DNode()
+{
+	if (this->Type == 1) {
+	} else {
+		delete this->RightChild;
+		delete this->LeftChild;
+	}
+}
+
 void DeformableBvh3DNode::UpdateBvhNode()
 {
 
@@ -481,6 +490,11 @@ DeformableBvh3D::DeformableBvh3D(
 	RootNode = new DeformableBvh3DNode((*this), elementdata, elementsize);
 }
 
+DeformableBvh3D::~DeformableBvh3D()
+{
+	delete RootNode;
+}
+
 void DeformableBvh3D::UpdateBvh()
 {
 	RootNode->UpdateBvhNode();
@@ -498,25 +512,4 @@ void DetectExternalCollision(const DeformableBvh3D& RightBvh, const DeformableBv
 	ContactList.clear();
 	//ContactList.reserve(RightBvh.elementsize);
 	DetectExternalCollisionNode(ContactList, RightBvh.RootNode, LeftBvh.RootNode);
-}
-
-void DetectCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
-{
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
-}
-
-void DetectExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
-{
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
-}
-
-void DetectSemiExternalCollision(const DeformableBvh3DNode* const RightBvhNode, const DeformableBvh3DNode* const LeftBvhNode, std::vector<ContactFeature3D>& ContactList)
-{
-	ContactList.clear();
-	//ContactList.reserve(RightBvhNode->Root.elementsize);
-	DetectSemiExternalCollisionNode(ContactList, RightBvhNode, LeftBvhNode);
 }

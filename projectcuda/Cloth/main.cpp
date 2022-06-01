@@ -25,6 +25,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <IMGUIMACRO.hpp>
 
 constexpr uint32_t FPS = 60;
 constexpr float dt     = 1.0 / FPS;
@@ -621,16 +622,7 @@ int main(int argc, char const* argv[])
 
 	Visualizer::Init(1024, 1024);
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io    = ImGui::GetIO();
-	io.IniFilename = NULL;
-	(void)io;
-
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplOpenGL3_Init("#version 460 core");
-	ImGui_ImplGlfw_InitForOpenGL(Visualizer::GetWindowPtr(), true);
+	InitializeIMGUI;
 
 	Renderer3D::Init();
 
@@ -745,10 +737,8 @@ int main(int argc, char const* argv[])
 	while (!Visualizer::Is_Closed()) {
 		Renderer3D::Clear();
 		//imgui reset
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGui::SetNextWindowSize(ImVec2(350, 500), ImGuiCond_FirstUseEver);
+
+		NewframeIMGUI(350, 500);
 
 		static bool is_stop = true;
 
