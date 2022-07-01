@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cstdint>
+#include <cassert>
 
 #include "opengl/visualizer.hpp"
 
@@ -12,6 +13,30 @@ namespace Visualizer {
 
 static GLFWwindow* window;
 static uint32_t width, height;
+
+void messagecallback(
+    GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam)
+{
+	std::cerr << "-------------------------" << std::endl;
+	std::cerr << "call back ";
+	if (type == GL_DEBUG_TYPE_ERROR)
+		std::cerr << "error";
+	else
+		std::cerr << "not error";
+	std::cerr << std::endl;
+	std::cerr << "type: " << (type) << std::endl;
+	std::cerr << "severity :" << (severity) << std::endl;
+	std::cerr << "message: " << message << std::endl;
+
+	if (type == GL_DEBUG_TYPE_ERROR)
+		assert(0);
+};
 
 bool Init(const uint32_t& w, const uint32_t& h)
 {
@@ -45,11 +70,22 @@ bool Init(const uint32_t& w, const uint32_t& h)
 		return false;
 	}
 
+	//debug 必要に応じてコメントアウトする
+	//glEnable(GL_DEBUG_OUTPUT);
+	//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	//glDebugMessageCallback(messagecallback, 0);
+
 	//Version
 	std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
 	std::cout << "GLSL Version : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 	std::cout << "Vender : " << glGetString(GL_VENDOR) << std::endl;
 	std::cout << "Renderer : " << glGetString(GL_RENDERER) << std::endl;
+
+	//Values
+	int32_t value;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &value);
+	std::cout << "MAX Vertex attribs: " << value << std::endl;
+
 	std::cout << std::endl;
 
 	return true;

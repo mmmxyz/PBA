@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <glad/glad.h>
 #include <KHR/khrplatform.h>
 
@@ -5,7 +7,8 @@
 
 #include "utils/mathfunc/mathfunc.hpp"
 
-static uint8_t RefCounter[1024] = {};
+constexpr uint32_t REFCOUNTERSIZE	  = 256;
+static uint8_t RefCounter[REFCOUNTERSIZE] = {};
 
 vertarray::vertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
     : size(size)
@@ -81,6 +84,21 @@ vertarray& vertarray::operator=(const vertarray& v)
 	size  = v.size;
 	isize = v.isize;
 
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	if (vao != 0)
+		RefCounter[vao]--;
+	if (vao != 0 && RefCounter[vao] == 0) {
+		if (va != nullptr)
+			delete[] va;
+		glDeleteVertexArrays(1, &vao);
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ibo);
+	}
+
 	va = v.va;
 
 	vao = v.vao;
@@ -94,8 +112,14 @@ vertarray& vertarray::operator=(const vertarray& v)
 
 void vertarray::resetvertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
 {
+	//std::cout << "start" << std::endl;
 	//格納しているvao,vboの解放、vaの解放
 	//glDeleteBuffersは0を入力に取ると何もしない。
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	if (vao != 0)
 		RefCounter[vao]--;
@@ -103,7 +127,7 @@ void vertarray::resetvertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
 	if (vao != 0 && RefCounter[vao] == 0) {
 		if (va != nullptr)
 			delete[] va;
-		glDeleteBuffers(1, &vao);
+		glDeleteVertexArrays(1, &vao);
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ibo);
 	}
@@ -128,7 +152,7 @@ void vertarray::resetvertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	RefCounter[vao] = 1;
+	RefCounter[vao]++;
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -159,6 +183,8 @@ void vertarray::resetvertarray(uint32_t size, uint32_t isize, uint32_t* ilist)
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	//std::cout << "end" << std::endl;
 }
 
 void vertarray::vboupdate()
@@ -188,10 +214,15 @@ vertarray::~vertarray()
 	if (vao != 0)
 		RefCounter[vao]--;
 
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	if (vao != 0 && RefCounter[vao] == 0) {
 		if (va != nullptr)
 			delete[] va;
-		glDeleteBuffers(1, &vao);
+		glDeleteVertexArrays(1, &vao);
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ibo);
 	}
@@ -205,4 +236,11 @@ void vertarray::bind() const
 void vertarray::unbind() const
 {
 	glBindVertexArray(0);
+}
+
+void vertarray::checkRefCounter()
+{
+	for (uint32_t i = 0; i < REFCOUNTERSIZE; i++)
+		if (RefCounter[i] != 0)
+			std::cout << i << " " << uint32_t(RefCounter[i]) << std::endl;
 }

@@ -312,9 +312,9 @@ void DetectCollisionNode(std::vector<ContactFeature3DTri>& ContactList, const De
 			//RNodeとLNodeが同一のrootを持つことを前提にしている
 			//異なるrootに属するならそもそもこの作業は必要ない
 
-			//if (
-			//    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
-			//	return;
+			if (
+			    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
+				return;
 
 			if (Is_CollideTriTri(
 				RNode->Root.vertdata[RNode->index0],
@@ -359,9 +359,9 @@ void DetectSemiExternalCollisionNode(std::vector<ContactFeature3DTri>& ContactLi
 		//std::cout << "11" << std::endl;
 		if (Is_CollideNodeAABB(RNode, LNode)) {
 
-			//if (
-			//    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
-			//	return;
+			if (
+			    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
+				return;
 
 			if (Is_CollideTriTri(
 				RNode->Root.vertdata[RNode->index0],
@@ -413,9 +413,9 @@ void DetectExternalCollisionNode(std::vector<ContactFeature3DTri>& ContactList, 
 		//std::cout << "11" << std::endl;
 		if (Is_CollideNodeAABB(RNode, LNode)) {
 
-			//if (
-			//    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
-			//	return;
+			if (
+			    RNode->index0 == LNode->index0 || RNode->index0 == LNode->index1 || RNode->index0 == LNode->index2 || RNode->index1 == LNode->index0 || RNode->index1 == LNode->index1 || RNode->index1 == LNode->index2 || RNode->index2 == LNode->index0 || RNode->index2 == LNode->index1 || RNode->index2 == LNode->index2)
+				return;
 
 			if (Is_CollideTriTri(
 				RNode->Root.vertdata[RNode->index0],

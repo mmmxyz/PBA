@@ -279,3 +279,54 @@ void ExtractElementVertex(
 
 	delete[] is_boundary;
 }
+
+void Extract_Edge_Triangle(
+    const uint32_t vertsize,
+    const uint32_t* triangledata,
+    const uint32_t trianglesize,
+    uint32_t** edgedata,
+    uint32_t& edgesize)
+{
+	//ignore boundary edge
+
+	std::vector<uint32_t> edgevec;
+	edgevec.reserve(trianglesize);
+
+	for (uint32_t i = 0; i < trianglesize / 3; i++) {
+		const uint32_t v0ind = triangledata[i * 3 + 0];
+		const uint32_t v1ind = triangledata[i * 3 + 1];
+		const uint32_t v2ind = triangledata[i * 3 + 2];
+
+		if (v0ind > v1ind) {
+			edgevec.push_back(v0ind);
+			edgevec.push_back(v1ind);
+		}
+
+		if (v1ind > v2ind) {
+			edgevec.push_back(v1ind);
+			edgevec.push_back(v2ind);
+		}
+
+		if (v2ind > v0ind) {
+			edgevec.push_back(v2ind);
+			edgevec.push_back(v0ind);
+		}
+	}
+
+	edgesize    = edgevec.size();
+	(*edgedata) = new uint32_t[edgesize];
+
+	for (uint32_t i = 0; i < edgesize; i++)
+		(*edgedata)[i] = edgevec[i];
+}
+
+//void Extract_Triangle_Tetrahedra(
+//    const uint32_t vertsize,
+//    const uint32_t* elementlist,
+//    const uint32_t elementsize,
+//    const uint32_t VtoElist,
+//    const uint32_t VtoEind,
+//    uint32_t** triangledata,
+//    uint32_t& trianglesize)
+//{
+//}

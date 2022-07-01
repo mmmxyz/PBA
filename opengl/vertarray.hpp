@@ -225,4 +225,6 @@ class vertarray {
 	{
 		return isize;
 	}
+
+	static void checkRefCounter();
 };

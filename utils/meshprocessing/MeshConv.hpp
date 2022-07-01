@@ -47,3 +47,10 @@ void ExtractElementVertex(
     uint32_t** const TritoVertlist,
     uint32_t& TritoVertsize,
     uint32_t** const nonredTlist);
+
+void Extract_Edge_Triangle(
+    const uint32_t vertsize,
+    const uint32_t* triangledata,
+    const uint32_t trianglesize,
+    uint32_t** edgedata,
+    uint32_t& edgesize);
