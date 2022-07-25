@@ -51,6 +51,14 @@ class DeformableBvh3DTriNode {
 	    const uint32_t elementsize);
 
 	void UpdateBvhNode();
+
+	~DeformableBvh3DTriNode()
+	{
+		if (Type == 0) {
+			delete RightChild;
+			delete LeftChild;
+		}
+	}
 };
 
 void DetectCollisionNode(std::vector<ContactFeature3DTri>& ContactList, const DeformableBvh3DTriNode* const RNode, const DeformableBvh3DTriNode* const LNode);
@@ -90,6 +98,11 @@ class DeformableBvh3DTri {
 	};
 
 	IntersecInfo RayIntersection(const fvec3& v0, const fvec3& v1);
+
+	~DeformableBvh3DTri()
+	{
+		delete RootNode;
+	}
 };
 
 void DetectExternalCollision(const DeformableBvh3DTri& RightBvh, const DeformableBvh3DTri& LeftBvh, std::vector<ContactFeature3DTri>& ContactList);

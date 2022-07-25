@@ -198,7 +198,7 @@ IntersectP4 IntersectTriangleRay(const fvec3& a0, const fvec3& a1, const fvec3& 
 		} else if (dist12 <= dist01 + epsilon && dist12 <= dist20 + epsilon && dist12 < epsilon && p1[0] <= 1.0) {
 			return { true, 0.0, p1[1], 1.0f - p1[1], p1[0] };
 		} else if (dist20 <= dist01 + epsilon && dist20 <= dist12 + epsilon && dist20 < epsilon && p2[0] <= 1.0) {
-			return { dist20, 1.0f - p2[1], 0.0, p2[1], p2[0] };
+			return { true, 1.0f - p2[1], 0.0, p2[1], p2[0] };
 		} else {
 			return { false };
 		}

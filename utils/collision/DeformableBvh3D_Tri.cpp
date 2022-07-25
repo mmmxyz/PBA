@@ -522,13 +522,23 @@ DeformableBvh3DTri::IntersecInfo DetectBvhTriRayIntersection(const DeformableBvh
 
 		} else {
 
+			fvec3 triv0 = Node->Root.vertdata[Node->index0];
+			fvec3 triv1 = Node->Root.vertdata[Node->index1];
+			fvec3 triv2 = Node->Root.vertdata[Node->index2];
+
+			fvec3 cm = (1.0 / 3.0) * (triv0 + triv1 + triv2);
+
+			triv0 = triv0 + 0.01 * (triv0 - cm);
+			triv1 = triv1 + 0.01 * (triv1 - cm);
+			triv2 = triv2 + 0.01 * (triv2 - cm);
+
 			auto hoge = IntersectTriangleRay(
-			    Node->Root.vertdata[Node->index0],
-			    Node->Root.vertdata[Node->index1],
-			    Node->Root.vertdata[Node->index2],
+			    triv0,
+			    triv1,
+			    triv2,
 			    v0, v1);
 			if (hoge.Is_intersect) {
-				uint32_t ei = (Node->index0) / 3;
+				int32_t ei = (Node->index0) / 3;
 				return { hoge.p[0], hoge.p[1], hoge.p[2], hoge.p[3], ei };
 			} else {
 				return { 0.0, 0.0, 0.0, 0.0, -1 };
